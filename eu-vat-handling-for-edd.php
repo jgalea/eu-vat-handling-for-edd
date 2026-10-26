@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       EU VAT Handling for EDD
  * Description:       Decides, applies and records EU VAT treatment on every Easy Digital Downloads order.
- * Version:           0.1.4
+ * Version:           0.1.5
  * Requires at least: 6.6
  * Requires PHP:      7.4
  * Requires Plugins:  easy-digital-downloads
@@ -14,7 +14,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'VATRIGHT_EDD_VERSION', '0.1.4' );
+define( 'VATRIGHT_EDD_VERSION', '0.1.5' );
 define( 'VATRIGHT_EDD_FILE', __FILE__ );
 define( 'VATRIGHT_EDD_DIR', plugin_dir_path( __FILE__ ) );
 define( 'VATRIGHT_EDD_URL', plugin_dir_url( __FILE__ ) );

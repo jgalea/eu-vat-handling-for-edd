@@ -399,4 +399,63 @@ class SettingsSectionTest extends IntegrationTestCase {
 		$this->assertStringContainsString( 'Refund the VAT automatically when a number validates after the order', $html );
 		$this->assertMatchesRegularExpression( '/name="vatright_edd_settings\[auto_refund_on_validation\]" value="1" \/>/', $html );
 	}
+
+	public function test_business_only_mode_is_off_by_default_and_saved_with_its_countries(): void {
+		$this->assertSame( 'off', $this->stored()->b2b_only() );
+		$this->assertSame( array(), $this->stored()->b2b_only_countries() );
+
+		$this->post(
+			array(
+				'b2b_only'           => 'countries',
+				'b2b_only_countries' => array( 'de', 'FR', 'DE', 'XXX', 'ZZ' ),
+			)
+		);
+		$this->submit();
+
+		$this->assertSame( 'countries', $this->stored()->b2b_only() );
+		$this->assertSame( array( 'DE', 'FR' ), $this->stored()->b2b_only_countries() );
+	}
+
+	public function test_an_unknown_business_only_mode_falls_back_to_off(): void {
+		$this->post( array( 'b2b_only' => 'sometimes' ) );
+		$this->submit();
+
+		$this->assertSame( 'off', $this->stored()->b2b_only() );
+	}
+
+	public function test_the_form_offers_the_business_only_choices(): void {
+		ob_start();
+		$this->section->render();
+		$html = (string) ob_get_clean();
+
+		$this->assertStringContainsString( 'name="vatright_edd_settings[b2b_only]"', $html );
+		$this->assertStringContainsString( 'name="vatright_edd_settings[b2b_only_countries][]"', $html );
+		$this->assertStringContainsString( 'value="eu"', $html );
+		$this->assertStringContainsString( 'is never accepted unchecked', $html );
+	}
+
+	public function test_exempt_roles_are_saved_and_unknown_roles_dropped(): void {
+		$this->post( array( 'exempt_roles' => array( 'subscriber', 'no_such_role', 'subscriber' ) ) );
+		$this->submit();
+
+		$this->assertSame( array( 'subscriber' ), $this->stored()->exempt_roles() );
+	}
+
+	public function test_exempt_roles_clear_when_nothing_is_posted(): void {
+		update_option( Settings::OPTION, array( 'exempt_roles' => array( 'subscriber' ) ) );
+		$this->post( array( 'outage_policy' => 'charge' ) );
+		$this->submit();
+
+		$this->assertSame( array(), $this->stored()->exempt_roles() );
+	}
+
+	public function test_the_form_lists_the_roles_and_says_a_role_is_not_a_legal_basis(): void {
+		ob_start();
+		$this->section->render();
+		$html = (string) ob_get_clean();
+
+		$this->assertStringContainsString( 'name="vatright_edd_settings[exempt_roles][]"', $html );
+		$this->assertStringContainsString( 'value="subscriber"', $html );
+		$this->assertStringContainsString( 'not a basis for VAT exemption', $html );
+	}
 }

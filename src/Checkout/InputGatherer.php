@@ -90,7 +90,8 @@ class InputGatherer {
 				null !== $certified && $certified === $billing ? $billing : null
 			),
 			$lines,
-			false
+			false,
+			self::exempt_roles_for_user( get_current_user_id() )
 		);
 	}
 
@@ -99,7 +100,7 @@ class InputGatherer {
 	 * only exist while the shopper is checking out (number, self-certification,
 	 * IP country, the registry answer) come in through $carry.
 	 *
-	 * @param array{number?: string, validation?: ValidationResult|null, self_certified?: string|null, ip?: string|null, threshold_exceeded?: bool} $carry
+	 * @param array{number?: string, validation?: ValidationResult|null, self_certified?: string|null, ip?: string|null, threshold_exceeded?: bool, exempt_roles?: string[]} $carry
 	 * @param bool                                                                                                                                   $own_sale Whether the order is not in the ledger yet, so its amount can push the year over the threshold.
 	 * @param bool                                                                                                                                   $fresh    Ask the registry now instead of the cache.
 	 */
@@ -145,12 +146,14 @@ class InputGatherer {
 				null !== $certified && $certified === $billing ? $billing : null
 			),
 			$lines,
-			! empty( $carry['threshold_exceeded'] )
+			! empty( $carry['threshold_exceeded'] ),
+			array_values( array_intersect( Settings::get()->exempt_roles(), array_map( 'strval', (array) ( $carry['exempt_roles'] ?? array() ) ) ) )
 		);
 	}
 
 	/**
-	 * @param Line[] $lines
+	 * @param Line[]   $lines
+	 * @param string[] $exempt_roles
 	 */
 	private function assemble(
 		string $trigger,
@@ -165,7 +168,8 @@ class InputGatherer {
 		?ValidationResult $validation,
 		Evidence $evidence,
 		array $lines,
-		bool $carried_exceeded
+		bool $carried_exceeded,
+		array $exempt_roles
 	): DecisionInput {
 		$settings = Settings::get();
 		$status   = $this->threshold->status( (int) wp_date( 'Y' ) );
@@ -196,8 +200,22 @@ class InputGatherer {
 			$evidence,
 			$lines,
 			$trigger,
-			gmdate( 'Y-m-d\TH:i:s\Z' )
+			gmdate( 'Y-m-d\TH:i:s\Z' ),
+			$exempt_roles
 		);
+	}
+
+	/**
+	 * The merchant's exempt roles that an authenticated user holds. Only ever
+	 * called with the user the request is running as: a customer record that
+	 * EDD linked to an account by email proves nothing about who is buying.
+	 *
+	 * @return string[]
+	 */
+	public static function exempt_roles_for_user( int $user_id ): array {
+		$configured = Settings::get()->exempt_roles();
+		$user       = $user_id > 0 && array() !== $configured ? get_userdata( $user_id ) : false;
+		return $user ? array_values( array_intersect( $configured, $user->roles ) ) : array();
 	}
 
 	public static function store_country(): string {

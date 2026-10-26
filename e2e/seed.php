@@ -65,3 +65,14 @@ if ( ! get_page_by_path( 'classic-checkout' ) ) {
 		)
 	);
 }
+
+if ( ! username_exists( 'vatright-edd-customer' ) ) {
+	wp_insert_user(
+		array(
+			'user_login' => 'vatright-edd-customer',
+			'user_pass'  => 'vatright-pass',
+			'user_email' => 'wholesale@example.com',
+			'role'       => 'subscriber',
+		)
+	);
+}

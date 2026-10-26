@@ -141,7 +141,7 @@ class OrderDetails {
 		}
 		echo '<ul>';
 		foreach ( $flags as $flag ) {
-			$class = in_array( $flag, array( OrderFinaliser::TAX_DIFFERS_FLAG, 'validation_pending', VatRefund::FLAG_SKIPPED, VatRefund::FLAG_FAILED ), true ) ? 'notice notice-warning inline' : '';
+			$class = in_array( $flag, array( OrderFinaliser::TAX_DIFFERS_FLAG, OrderFinaliser::B2B_ONLY_FLAG, 'validation_pending', VatRefund::FLAG_SKIPPED, VatRefund::FLAG_FAILED ), true ) ? 'notice notice-warning inline' : '';
 			echo '<li class="' . esc_attr( $class ) . '"><span>' . esc_html( self::flag_text( $flag ) ) . '</span></li>';
 		}
 		echo '</ul>';
@@ -157,6 +157,7 @@ class OrderDetails {
 
 		$rows = array(
 			__( 'Billing country', 'eu-vat-handling-for-edd' ) => trim( $customer['billing']['country'] . ' ' . $customer['billing']['postcode'] ),
+			__( 'Exempt customer roles', 'eu-vat-handling-for-edd' ) => implode( ', ', (array) ( $customer['exempt_roles'] ?? array() ) ),
 			__( 'VAT number as typed', 'eu-vat-handling-for-edd' ) => (string) ( $record['vat_number']['raw'] ?? '' ),
 			__( 'VAT number', 'eu-vat-handling-for-edd' ) => (string) ( $record['vat_number']['canonical'] ?? '' ),
 			__( 'Registry answer', 'eu-vat-handling-for-edd' ) => (string) ( $validation['status'] ?? '' ),
@@ -367,6 +368,8 @@ class OrderDetails {
 				return __( 'The VAT number could not be checked: the order was refused.', 'eu-vat-handling-for-edd' );
 			case Rule::INVALID_NUMBER:
 				return __( 'The VAT number is not valid: VAT charged.', 'eu-vat-handling-for-edd' );
+			case Rule::ROLE_EXEMPT:
+				return __( 'VAT-exempt because of the customer role, as set in the EU VAT settings. The legal basis is the merchant\'s responsibility.', 'eu-vat-handling-for-edd' );
 			case Rule::NON_EU_NUMBER_RECORDED:
 				return __( 'Non-EU VAT number recorded: no EU VAT.', 'eu-vat-handling-for-edd' );
 			default:
@@ -412,6 +415,8 @@ class OrderDetails {
 				return __( 'No tax rate was set for the destination, the store rate was charged.', 'eu-vat-handling-for-edd' );
 			case OrderFinaliser::TAX_DIFFERS_FLAG:
 				return __( 'The tax charged on this order does not match the VAT decision. Check whether VAT should be refunded or collected.', 'eu-vat-handling-for-edd' );
+			case OrderFinaliser::B2B_ONLY_FLAG:
+				return __( 'This shop sells to businesses only, but the order was placed without a VAT number the registry confirmed. It came through a payment route that skips the checkout checks, such as Buy Now or a wallet.', 'eu-vat-handling-for-edd' );
 			case OrderFinaliser::NO_ADDRESS_FLAG:
 				return __( 'The order has no billing country, so the decision rests on the store country.', 'eu-vat-handling-for-edd' );
 			case VatRefund::FLAG_REFUNDED:

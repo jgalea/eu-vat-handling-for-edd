@@ -4,6 +4,7 @@ import { expect, type Page } from '@playwright/test';
 export const NUMBERS = {
 	validDe: 'DE114103379',
 	invalidDe: 'DE123475223',
+	outageDe: 'DE129273398',
 };
 
 export const CHECKOUTS = {
@@ -77,9 +78,13 @@ export async function enterVat( page: Page, value: string ) {
 }
 
 export async function fillCustomer( page: Page, email = 'ada@example.com' ) {
-	await page.locator( '#edd-email' ).fill( email );
-	await page.locator( '#edd-first' ).fill( 'Ada' );
-	await page.locator( '#edd-last' ).fill( 'Lovelace' );
+	// A signed-in customer's own details are already in place, and the block layout leaves the fields out.
+	for ( const [ id, value ] of [ [ '#edd-email', email ], [ '#edd-first', 'Ada' ], [ '#edd-last', 'Lovelace' ] ] ) {
+		const field = page.locator( id );
+		if ( await field.isVisible() ) {
+			await field.fill( value );
+		}
+	}
 	for ( const [ id, value ] of [ [ '#card_address', 'Example Strasse 1' ], [ '#card_city', 'Berlin' ], [ '#card_state', 'Berlin' ], [ '#card_zip', '10115' ] ] ) {
 		const field = page.locator( `#edd_cc_address input${ id }` );
 		if ( await field.count() ) {
@@ -104,4 +109,31 @@ export function latestOrder(): { id: number; tax: number; total: number; country
 			'country' => $order && $order->get_address() ? $order->get_address()->country : '',
 		) ) . "@@";
 	` );
+}
+
+export function setSettings( settings: Record<string, unknown> ) {
+	const encoded = Buffer.from( JSON.stringify( settings ) ).toString( 'base64' );
+	wpEval( `update_option( 'vatright_edd_settings', json_decode( base64_decode( '${ encoded }' ), true ) ); echo "@@1@@";` );
+}
+
+export function decisionOf( orderId: number ): any {
+	return wpEval( `
+		$decision = \\VatrightEdd\\Orders\\DecisionStore::get( ${ orderId } );
+		echo "@@" . wp_json_encode( $decision ? $decision->to_array() : null ) . "@@";
+	` );
+}
+
+export async function adminLogin( page: Page ) {
+	await page.goto( '/wp-login.php' );
+	await page.locator( '#user_login' ).fill( 'admin' );
+	await page.locator( '#user_pass' ).fill( 'password' );
+	await Promise.all( [ page.waitForURL( ( url ) => ! url.pathname.includes( 'wp-login' ) ), page.locator( '#wp-submit' ).click() ] );
+}
+
+export const SHOTS = process.env.PORT_SHOTS;
+
+export async function shot( page: Page, name: string ) {
+	if ( SHOTS ) {
+		await page.screenshot( { path: `${ SHOTS }/${ name }.png`, fullPage: true } );
+	}
 }

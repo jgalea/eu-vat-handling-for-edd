@@ -37,6 +37,10 @@ class ThresholdWarningTest extends LedgerTestCase {
 		add_filter(
 			'pre_wp_mail',
 			function ( $short, $atts ) {
+				// EDD 3.1 also sends the purchase receipt and the sale notice when an order completes; they are not what these tests are about.
+				if ( 1 === preg_match( '/^(Purchase Receipt|New download purchase)/', (string) $atts['subject'] ) ) {
+					return true;
+				}
 				$this->mails[] = array(
 					'to'      => $atts['to'],
 					'subject' => $atts['subject'],

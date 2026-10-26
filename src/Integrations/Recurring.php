@@ -243,6 +243,8 @@ class Recurring {
 			'validation'     => $stored,
 			'self_certified' => isset( $evidence['self_certified'] ) ? (string) $evidence['self_certified'] : null,
 			'ip'             => isset( $evidence['ip'] ) ? (string) $evidence['ip'] : null,
+			// Renewals run without the customer, so they keep the roles the signup was decided with.
+			'exempt_roles'   => array_map( 'strval', (array) ( $record['customer']['exempt_roles'] ?? array() ) ),
 		);
 		return $this->rules->decide( $this->gatherer->from_order( $basis, self::TRIGGER, $carry, true, $fresh ) );
 	}

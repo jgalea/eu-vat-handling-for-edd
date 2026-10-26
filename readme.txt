@@ -5,7 +5,7 @@ Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 7.4
 Requires Plugins: easy-digital-downloads
-Stable tag: 0.1.4
+Stable tag: 0.1.5
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -41,6 +41,9 @@ It needs Easy Digital Downloads 3.1 or later with taxes turned on.
 * Reports for a quarter, a month or any date range, in the screen, the CSV and the REST endpoints, for countries that want the EC Sales List monthly.
 * Emails the store admin when EU sales to consumers reach a share of the EUR 10,000 OSS threshold (80% by default) and again when they pass it, once a year per level. You can turn it off or change the share.
 * A separate UK store VAT number: UK customers see it on receipts and invoices and HMRC checks use it, while everyone else gets the EU number and VIES checks keep using that one. With one number set, nothing changes.
+* Optional business-only mode: require a valid VAT number at checkout from everyone, from customers billing in the EU or from the countries you choose. The field shows as required for those countries, a number the registry couldn't check is refused, and Buy Now and wallet orders that can't be refused are flagged on the order.
+* VAT-exempt user roles: customers with a role you choose pay no VAT, recorded on the order under its own rule. A confirmed VAT number takes precedence, and a role isn't a legal basis on its own, so you stay responsible for each exemption. Renewals follow the same rule.
+* A VAT column on EDD's Orders list with the number, its status and the treatment, and a filter for orders pending validation or flagged.
 * REST endpoints for both reports, restricted to users who can view shop reports.
 * Works with EDD Recurring: renewals are recorded at the amount the gateway charged, with the VAT that decision calls for inside it. See the FAQ.
 * A setup check lists what's missing: taxes turned on, your shop country and VAT number, tax rates for destination countries, the IP country source and HMRC credentials.
@@ -142,6 +145,11 @@ EU VAT Handling for EDD is a tool, not tax advice. You, the store owner, are res
 5. The EU VAT reports: OSS return and EC Sales List.
 
 == Changelog ==
+
+= 0.1.5 =
+* Business-only mode: require a valid VAT number to order, everywhere, in the EU or in chosen countries. Buy Now and wallet orders that miss it are flagged.
+* VAT-exempt user roles, recorded on every order they exempt. Roles come from the logged-in customer only, and renewals keep the roles recorded at signup.
+* VAT column and a pending/flagged filter on the Orders list.
 
 = 0.1.4 =
 * Correct an order's VAT number, country of evidence or treatment from the order screen. Each correction needs a reason and is logged with your name; the reports follow, the amounts don't change.

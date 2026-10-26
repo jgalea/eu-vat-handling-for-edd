@@ -30,6 +30,7 @@ use VatrightEdd\Ledger\ThresholdWarningEmail;
 use VatrightEdd\Orders\InvoiceText;
 use VatrightEdd\Orders\OrderDetails;
 use VatrightEdd\Orders\OrderFinaliser;
+use VatrightEdd\Orders\OrdersColumn;
 use VatrightEdd\Orders\Revalidation;
 use VatrightEdd\Orders\VatEdit;
 use VatrightEdd\Orders\VatRefund;
@@ -137,6 +138,7 @@ class Plugin {
 		if ( is_admin() ) {
 			( new ReportsScreen( $oss, $esl ) )->register();
 			( new OrderDetails( $finaliser, new VatEdit( $ledger ) ) )->register();
+			( new OrdersColumn() )->register();
 			( new RatesScreen( $sync ) )->register();
 			( new SettingsSection( new SetupCheck() ) )->register();
 			( new DownloadVatCategory() )->register();

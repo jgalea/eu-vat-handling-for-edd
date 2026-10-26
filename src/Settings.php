@@ -2,6 +2,7 @@
 
 namespace VatrightEdd;
 
+use VatrightEdd\Domain\B2bScope;
 use VatrightEdd\Domain\VatNumber;
 
 class Settings {
@@ -30,6 +31,8 @@ class Settings {
 			'store_vat_number'             => '',
 			'store_vat_number_gb'          => '',
 			'outage_policy'                => 'charge',
+			'b2b_only'                     => 'off',
+			'b2b_only_countries'           => array(),
 			'cache_ttl_valid_days'         => 7,
 			'allow_domestic_exemption'     => false,
 			'oss_registered'               => false,
@@ -43,6 +46,7 @@ class Settings {
 			'hmrc_client_secret'           => '',
 			'report_currency'              => 'EUR',
 			'ip_country_source'            => 'none',
+			'exempt_roles'                 => array(),
 			'receipt_vat_details'          => true,
 			'seller_company'               => '',
 			'seller_email'                 => '',
@@ -97,6 +101,38 @@ class Settings {
 	public function outage_policy(): string {
 		$policy = (string) $this->value( 'outage_policy' );
 		return in_array( $policy, array( 'charge', 'exempt_pending', 'reject' ), true ) ? $policy : 'charge';
+	}
+
+	public function b2b_only(): string {
+		$mode = (string) $this->value( 'b2b_only' );
+		return in_array( $mode, B2bScope::MODES, true ) ? $mode : B2bScope::OFF;
+	}
+
+	/**
+	 * @return string[]
+	 */
+	public function b2b_only_countries(): array {
+		$countries = array();
+		foreach ( (array) $this->value( 'b2b_only_countries' ) as $country ) {
+			$country = strtoupper( trim( (string) $country ) );
+			if ( 1 === preg_match( '/^[A-Z]{2}$/', $country ) ) {
+				$countries[ $country ] = $country;
+			}
+		}
+		return array_values( $countries );
+	}
+
+	/**
+	 * @return string[] Slugs of existing roles whose orders are VAT-exempt.
+	 */
+	public function exempt_roles(): array {
+		$roles = array();
+		foreach ( (array) $this->value( 'exempt_roles' ) as $role ) {
+			if ( is_string( $role ) && wp_roles()->is_role( $role ) ) {
+				$roles[ $role ] = $role;
+			}
+		}
+		return array_values( $roles );
 	}
 
 	public function cache_ttl_valid_days(): int {

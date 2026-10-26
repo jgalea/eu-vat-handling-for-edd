@@ -5,6 +5,7 @@ namespace VatrightEdd\Checkout;
 use VatrightEdd\Domain\Decision;
 use VatrightEdd\Domain\Rule;
 use VatrightEdd\Domain\Scheme;
+use VatrightEdd\Domain\Territory;
 use VatrightEdd\Domain\ValidationResult;
 use VatrightEdd\Domain\VatNumber;
 use VatrightEdd\Orders\OrderFinaliser;
@@ -77,6 +78,7 @@ class VatField {
 			return;
 		}
 		$status    = self::status( $this->decider->current() );
+		$required  = B2bOnly::applies( InputGatherer::billing_country() );
 		$value     = $this->state->number();
 		$prefilled = false;
 		if ( '' === $value ) {
@@ -86,9 +88,9 @@ class VatField {
 		?>
 		<div id="vatright-edd-vat" class="vatright-edd-vat"<?php echo $prefilled ? ' data-prefilled="1"' : ''; ?> data-ajax-url="<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>" data-nonce="<?php echo esc_attr( wp_create_nonce( self::NONCE ) ); ?>">
 			<p id="vatright-edd-vat-number-wrap">
-				<label class="edd-label" for="vatright-edd-vat-number"><?php esc_html_e( 'VAT number (optional)', 'eu-vat-handling-for-edd' ); ?></label>
+				<label class="edd-label" for="vatright-edd-vat-number"><?php echo $required ? esc_html__( 'VAT number', 'eu-vat-handling-for-edd' ) . '<span class="edd-required-indicator" aria-hidden="true">*</span><span class="screen-reader-text">' . esc_html( self::required_text() ) . '</span>' : esc_html__( 'VAT number (optional)', 'eu-vat-handling-for-edd' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts. ?></label>
 				<span class="edd-description" id="vatright-edd-disclosure"><?php echo esc_html( self::disclosure() ); ?></span>
-				<input class="edd-input" type="text" id="vatright-edd-vat-number" name="<?php echo esc_attr( self::NUMBER_FIELD ); ?>" value="<?php echo esc_attr( $value ); ?>" autocomplete="off" aria-describedby="vatright-edd-disclosure" />
+				<input class="edd-input" type="text" id="vatright-edd-vat-number" name="<?php echo esc_attr( self::NUMBER_FIELD ); ?>" value="<?php echo esc_attr( $value ); ?>" autocomplete="off" aria-describedby="vatright-edd-disclosure"<?php echo $required ? ' aria-required="true"' : ''; ?> />
 			</p>
 			<div id="vatright-edd-notice" class="vatright-edd-notice" aria-live="polite"><?php echo $this->notice_html( $status ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts. ?></div>
 		</div>
@@ -173,8 +175,32 @@ class VatField {
 		}
 		$script = self::asset( 'assets/checkout.js' );
 		wp_enqueue_script( 'vatright-edd-checkout', $script['url'], array( 'jquery' ), $script['version'], true );
+		wp_localize_script( 'vatright-edd-checkout', 'vatrightEddB2b', self::script_data() );
 		$style = self::asset( 'assets/checkout.css' );
 		wp_enqueue_style( 'vatright-edd-checkout', $style['url'], array(), $style['version'] );
+	}
+
+	private static function required_text(): string {
+		return __( 'Required', 'easy-digital-downloads' ); // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- the wording EDD itself gives its required fields.
+	}
+
+	/**
+	 * What the checkout script needs to keep the field's label in step with
+	 * the billing country: which countries business-only mode covers, and the
+	 * two labels.
+	 *
+	 * @return array{mode:string,countries:string[],eu:string[],optional:string,required:string,required_text:string}
+	 */
+	public static function script_data(): array {
+		$settings = Settings::get();
+		return array(
+			'mode'          => $settings->b2b_only(),
+			'countries'     => $settings->b2b_only_countries(),
+			'eu'            => Territory::EU,
+			'optional'      => __( 'VAT number (optional)', 'eu-vat-handling-for-edd' ),
+			'required'      => __( 'VAT number', 'eu-vat-handling-for-edd' ),
+			'required_text' => self::required_text(),
+		);
 	}
 
 	/**
@@ -262,6 +288,9 @@ class VatField {
 		$code = $decision->blocking_error();
 		if ( null !== $code ) {
 			return array( 'invalid_vat_number' === $code ? 'invalid' : 'pending', ErrorChecks::message( $code ) );
+		}
+		if ( Rule::ROLE_EXEMPT === $decision->rule() ) {
+			return array( 'verified', __( 'No VAT is charged on this order.', 'eu-vat-handling-for-edd' ) );
 		}
 		if ( $decision->is_vat_exempt() ) {
 			if ( ValidationResult::VALID === $validation ) {

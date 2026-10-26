@@ -29,6 +29,7 @@ class TaxApplier {
 		Scheme::OUTSIDE_TERRITORY,
 		Scheme::REVERSE_CHARGE_SERVICES,
 		Scheme::INTRA_EU_GOODS,
+		Scheme::ROLE_EXEMPT,
 	);
 
 	/**

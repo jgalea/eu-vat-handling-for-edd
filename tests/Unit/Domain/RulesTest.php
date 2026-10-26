@@ -20,7 +20,7 @@ use PHPUnit\Framework\TestCase;
  */
 class RulesTest extends TestCase {
 
-	const EXEMPT_RULES = array( Rule::RC_GOODS_ART138, Rule::RC_SERVICES_ART196, Rule::DOMESTIC_B2B_ALLOWED, Rule::PENDING_EXEMPT );
+	const EXEMPT_RULES = array( Rule::RC_GOODS_ART138, Rule::RC_SERVICES_ART196, Rule::DOMESTIC_B2B_ALLOWED, Rule::PENDING_EXEMPT, Rule::ROLE_EXEMPT );
 
 	/**
 	 * @param array<string,mixed> $o
@@ -44,6 +44,7 @@ class RulesTest extends TestCase {
 				'self_certified'    => null,
 				'lines'             => array( new Line( 'd1', Line::DIGITAL, false ) ),
 				'trigger'           => 'checkout',
+				'exempt_roles'      => array(),
 			),
 			$o
 		);
@@ -81,7 +82,8 @@ class RulesTest extends TestCase {
 			$evidence,
 			$o['lines'],
 			$o['trigger'],
-			'2026-10-17T12:00:00Z'
+			'2026-10-17T12:00:00Z',
+			$o['exempt_roles']
 		);
 	}
 
@@ -1132,6 +1134,94 @@ class RulesTest extends TestCase {
 		$this->assertSame( 'charge', $record['policy']['outage'] );
 		$this->assertSame( 'MT', $record['store']['country'] );
 		$this->assertEquals( $d, Decision::from_array( $record ) );
+	}
+
+	public function test_exempt_role_exempts_a_consumer_with_its_own_rule(): void {
+		$d = $this->decide(
+			array(
+				'billing_country'  => 'FR',
+				'billing_postcode' => '75001',
+				'ip'               => 'FR',
+				'exempt_roles'     => array( 'wholesale_customer' ),
+			)
+		);
+		$this->assertTrue( $d->is_vat_exempt() );
+		$this->assertSame( Rule::ROLE_EXEMPT, $d->rule() );
+		$this->assertSame( Scheme::ROLE_EXEMPT, $d->scheme() );
+		$this->assertSame( array(), $d->legal_text() );
+		$this->assertNull( $d->blocking_error() );
+		$this->assertSame( array( 'wholesale_customer' ), $d->to_array()['customer']['exempt_roles'] );
+		$this->assertEquals( $d, Decision::from_array( $d->to_array() ) );
+	}
+
+	public function test_without_an_exempt_role_nothing_changes_and_the_record_has_no_roles(): void {
+		$d = $this->decide( array( 'billing_country' => 'FR' ) );
+
+		$this->assertFalse( $d->is_vat_exempt() );
+		$this->assertArrayNotHasKey( 'exempt_roles', $d->to_array()['customer'] );
+	}
+
+	public function test_a_confirmed_vat_number_keeps_its_reverse_charge_over_the_role(): void {
+		$d = $this->decide(
+			array(
+				'vat'          => 'DE123456789',
+				'status'       => ValidationResult::VALID,
+				'exempt_roles' => array( 'wholesale_customer' ),
+			)
+		);
+		$this->assertSame( Rule::RC_SERVICES_ART196, $d->rule() );
+		$this->assertSame( array( 'art196' ), $d->legal_text() );
+	}
+
+	public function test_an_invalid_number_does_not_block_a_role_exempt_customer(): void {
+		$d = $this->decide(
+			array(
+				'vat'          => 'DE123456789',
+				'status'       => ValidationResult::INVALID,
+				'exempt_roles' => array( 'wholesale_customer' ),
+			)
+		);
+		$this->assertTrue( $d->is_vat_exempt() );
+		$this->assertSame( Rule::ROLE_EXEMPT, $d->rule() );
+		$this->assertNull( $d->blocking_error() );
+		$this->assertSame( array(), $d->flags() );
+	}
+
+	public function test_a_number_nobody_could_check_does_not_hold_a_role_exempt_customer_back(): void {
+		$d = $this->decide(
+			array(
+				'vat'          => 'DE123456789',
+				'status'       => ValidationResult::UNAVAILABLE,
+				'policy'       => 'reject',
+				'exempt_roles' => array( 'wholesale_customer' ),
+			)
+		);
+		$this->assertSame( Rule::ROLE_EXEMPT, $d->rule() );
+		$this->assertNull( $d->blocking_error() );
+	}
+
+	public function test_role_exemption_leaves_exports_as_they_are(): void {
+		$d = $this->decide(
+			array(
+				'billing_country' => 'US',
+				'ip'              => 'US',
+				'exempt_roles'    => array( 'wholesale_customer' ),
+			)
+		);
+		$this->assertSame( Rule::EXPORT_NON_EU, $d->rule() );
+		$this->assertSame( Scheme::EXPORT, $d->scheme() );
+	}
+
+	public function test_a_domestic_sale_to_a_role_exempt_customer_is_exempt(): void {
+		$d = $this->decide(
+			array(
+				'billing_country' => 'MT',
+				'ip'              => 'MT',
+				'exempt_roles'    => array( 'reseller' ),
+			)
+		);
+		$this->assertTrue( $d->is_vat_exempt() );
+		$this->assertSame( Rule::ROLE_EXEMPT, $d->rule() );
 	}
 
 	public function test_default_id_is_a_uuid4(): void {

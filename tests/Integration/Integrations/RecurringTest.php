@@ -53,9 +53,9 @@ class RecurringTest extends LedgerTestCase {
 		$this->recurring->register();
 	}
 
-	private function parent_order( string $country, int $download = 0 ): Order {
+	private function parent_order( string $country, int $download = 0, int $user_id = 0 ): Order {
 		$this->buy( $download > 0 ? $download : $this->download(), $country );
-		$order = $this->place_order( $country );
+		$order = $this->place_order( $country, array( 'id' => $user_id ) );
 		$this->dated( $order, '2026-03-10 10:00:00' );
 		$this->complete( $order );
 		return $this->fresh( $order );
@@ -326,5 +326,72 @@ class RecurringTest extends LedgerTestCase {
 		edd_delete_order_meta( (int) $order->id, DecisionStore::META );
 		edd_delete_order_meta( (int) $order->id, DecisionStore::LOG_META );
 		$wpdb->delete( \VatrightEdd\Ledger\Schema::ledger_table(), array( 'order_id' => (int) $order->id ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+	}
+
+	public function test_a_renewal_for_a_role_exempt_customer_is_recorded_under_the_role_rule_without_vat(): void {
+		update_option( Settings::OPTION, array( 'exempt_roles' => array( 'subscriber' ) ) );
+		$user = self::factory()->user->create( array( 'role' => 'subscriber' ) );
+		edd_add_customer(
+			array(
+				'email'   => 'buyer@example.com',
+				'name'    => 'Buyer',
+				'user_id' => $user,
+			)
+		);
+		wp_set_current_user( $user );
+		$parent = $this->parent_order( 'FR', 0, $user );
+		$this->assertSame( 'ROLE_EXEMPT', DecisionStore::get( (int) $parent->id )->rule() );
+		wp_set_current_user( 0 );
+
+		$renewal = $this->renew( $this->subscribe( $parent, 0 ), 100.0 );
+
+		$this->assertSame( 0.0, (float) $renewal->tax );
+		$decision = DecisionStore::get( (int) $renewal->id );
+		$this->assertSame( 'ROLE_EXEMPT', $decision->rule() );
+		$this->assertSame( Recurring::TRIGGER, $decision->trigger() );
+		$this->assertNotContains( Recurring::TREATMENT_CHANGED_FLAG, $decision->flags() );
+		$this->assertSame( Scheme::ROLE_EXEMPT, $this->rows( (int) $renewal->id )[0]['scheme'] );
+	}
+
+	public function test_a_renewal_does_not_become_exempt_because_the_user_gained_the_role_later(): void {
+		$user = self::factory()->user->create( array( 'role' => 'subscriber' ) );
+		edd_add_customer(
+			array(
+				'email'   => 'buyer@example.com',
+				'name'    => 'Buyer',
+				'user_id' => $user,
+			)
+		);
+		wp_set_current_user( $user );
+		$parent = $this->parent_order( 'FR', 0, $user );
+		$sub    = $this->subscribe( $parent, 18.0 );
+		update_option( Settings::OPTION, array( 'exempt_roles' => array( 'subscriber' ) ) );
+		wp_set_current_user( 0 );
+
+		$renewal = $this->renew( $sub, 118.0 );
+
+		$this->assertNotSame( 'ROLE_EXEMPT', DecisionStore::get( (int) $renewal->id )->rule() );
+		$this->assertSame( 18.0, (float) $renewal->tax );
+	}
+
+	public function test_a_renewal_stops_being_exempt_when_the_role_leaves_the_setting(): void {
+		update_option( Settings::OPTION, array( 'exempt_roles' => array( 'subscriber' ) ) );
+		$user = self::factory()->user->create( array( 'role' => 'subscriber' ) );
+		edd_add_customer(
+			array(
+				'email'   => 'buyer@example.com',
+				'name'    => 'Buyer',
+				'user_id' => $user,
+			)
+		);
+		wp_set_current_user( $user );
+		$parent = $this->parent_order( 'FR', 0, $user );
+		$sub    = $this->subscribe( $parent, 0 );
+		update_option( Settings::OPTION, array() );
+		wp_set_current_user( 0 );
+
+		$renewal = $this->renew( $sub, 100.0 );
+
+		$this->assertNotSame( 'ROLE_EXEMPT', DecisionStore::get( (int) $renewal->id )->rule() );
 	}
 }

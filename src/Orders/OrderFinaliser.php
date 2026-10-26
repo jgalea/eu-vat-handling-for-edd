@@ -4,6 +4,7 @@ namespace VatrightEdd\Orders;
 
 use EDD\Orders\Order;
 use Throwable;
+use VatrightEdd\Checkout\B2bOnly;
 use VatrightEdd\Checkout\CartState;
 use VatrightEdd\Checkout\Decider;
 use VatrightEdd\Checkout\InputGatherer;
@@ -33,6 +34,8 @@ class OrderFinaliser {
 	const TAX_DIFFERS_FLAG = 'order_tax_differs';
 
 	const NO_ADDRESS_FLAG = 'no_billing_address';
+
+	const B2B_ONLY_FLAG = 'b2b_only_unmet';
 
 	const BUILT = 'order_built';
 
@@ -151,6 +154,9 @@ class OrderFinaliser {
 		if ( ! $billing || empty( $billing->country ) ) {
 			$decision = $decision->with_flag( self::NO_ADDRESS_FLAG );
 		}
+		if ( self::BUILT === $trigger && null !== B2bOnly::error( $decision ) ) {
+			$decision = $decision->with_flag( self::B2B_ONLY_FLAG );
+		}
 		$consistent = self::tax_fits( $order, $decision );
 		if ( ! $consistent ) {
 			$decision = $decision->with_flag( self::TAX_DIFFERS_FLAG );
@@ -166,11 +172,12 @@ class OrderFinaliser {
 
 	/**
 	 * @param string|null $number
-	 * @return array{number: string, validation: ValidationResult|null, self_certified: string|null, ip: string|null, threshold_exceeded: bool}
+	 * @return array{number: string, validation: ValidationResult|null, self_certified: string|null, ip: string|null, threshold_exceeded: bool, exempt_roles: string[]}
 	 */
 	private function carry( Order $order, string $trigger, ?string $number, ?Decision $previous ): array {
 		$stored = null === $previous ? array() : $previous->to_array();
 		$carry  = array(
+			'exempt_roles'       => array(),
 			'number'             => '',
 			'validation'         => null,
 			'self_certified'     => null,
@@ -189,7 +196,10 @@ class OrderFinaliser {
 				$carry['self_certified'] = $this->state->self_certified();
 			}
 			$carry['ip'] = self::visitor_request() ? IpCountry::current() : null;
-			$live        = $this->decider->is_checkout() ? $this->decider->current() : null;
+			// Only the account the checkout is running as, and only when it is the order's own: the customer record may have been linked by email.
+			$user_id               = get_current_user_id();
+			$carry['exempt_roles'] = $user_id > 0 && $user_id === (int) $order->user_id ? InputGatherer::exempt_roles_for_user( $user_id ) : array();
+			$live                  = $this->decider->is_checkout() ? $this->decider->current() : null;
 			if ( null !== $live ) {
 				$record = $live->to_array();
 				if ( ! empty( $record['validation'] ) && ( $record['vat_number']['raw'] ?? '' ) === $carry['number'] ) {
@@ -204,6 +214,11 @@ class OrderFinaliser {
 			$carry['number'] = $number;
 		} elseif ( self::MANUAL !== $trigger ) {
 			$carry['number'] = $kept;
+		}
+
+		// An order keeps the roles it was decided with, which the settings can still withdraw.
+		if ( self::MANUAL !== $trigger ) {
+			$carry['exempt_roles'] = array_map( 'strval', (array) ( $stored['customer']['exempt_roles'] ?? array() ) );
 		}
 
 		$evidence = (array) ( $stored['evidence'] ?? array() );

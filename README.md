@@ -28,6 +28,9 @@ The decision is applied through EDD's own tax calculation.
 - OSS return and EC Sales List reports with CSV export, plus REST endpoints.
 - Reports for a quarter, a month or any date range, on screen, as CSV and over REST.
 - Threshold warning email at a configurable share of the EUR 10,000 OSS threshold (80% by default) and again at 100%, once a year per level.
+- Optional business-only mode: a valid VAT number is required at checkout from everyone, from EU customers or from chosen countries. Orders EDD can't refuse (Buy Now, wallets) are flagged.
+- VAT-exempt user roles, recorded on the order under their own rule; a confirmed VAT number takes precedence and renewals follow.
+- VAT column on the Orders list with the number, its status and the treatment, and a filter for pending or flagged orders.
 - Separate EU and UK store VAT numbers, chosen per order for receipts and invoices, with the right one sent to VIES and HMRC.
 - An importer for Barn2's EDD EU VAT that copies settings and order history, with a dry run.
 - Personal data exporters, erasers and a retention setting.

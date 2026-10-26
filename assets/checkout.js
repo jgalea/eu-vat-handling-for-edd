@@ -7,6 +7,41 @@ jQuery( function ( $ ) {
 		return $( '#edd_cc_address #billing_country' ).val() || '';
 	}
 
+	const b2b = window.vatrightEddB2b;
+
+	function required( code ) {
+		if ( ! b2b ) {
+			return false;
+		}
+		switch ( b2b.mode ) {
+			case 'everywhere':
+				return true;
+			case 'eu':
+				return b2b.eu.indexOf( code ) !== -1;
+			case 'countries':
+				return b2b.countries.indexOf( code ) !== -1;
+			default:
+				return false;
+		}
+	}
+
+	// Business-only mode refuses an empty field on the server; the label only follows the billing country.
+	function markRequired() {
+		const $label = $( 'label[for="vatright-edd-vat-number"]' );
+		const $input = $( '#vatright-edd-vat-number' );
+		if ( ! b2b || ! $label.length ) {
+			return;
+		}
+		const isRequired = required( String( country() ).toUpperCase() );
+		$label.empty().append( document.createTextNode( isRequired ? b2b.required : b2b.optional ) );
+		if ( isRequired ) {
+			$label.append( $( '<span class="edd-required-indicator" aria-hidden="true">*</span>' ), $( '<span class="screen-reader-text"></span>' ).text( b2b.required_text ) );
+			$input.attr( 'aria-required', 'true' );
+		} else {
+			$input.removeAttr( 'aria-required' );
+		}
+	}
+
 	/**
 	 * Sends what changed, shows the notice for the decision that follows and,
 	 * unless EDD has just recalculated, has EDD recalculate the cart.
@@ -60,7 +95,10 @@ jQuery( function ( $ ) {
 		clearTimeout( timer );
 		$( '#vatright-edd-vat-number' ).val( '' );
 		$( '#vatright-edd-notice' ).empty();
+		markRequired();
 	} );
+
+	markRequired();
 
 	$( document.body ).on( 'edd_taxes_recalculated', function () {
 		check( {}, false );

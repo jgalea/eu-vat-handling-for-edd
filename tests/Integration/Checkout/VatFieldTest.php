@@ -219,4 +219,57 @@ class VatFieldTest extends IntegrationTestCase {
 		$this->assertIsArray( $response );
 		return $response;
 	}
+
+	public function test_the_label_says_optional_while_business_only_mode_is_off(): void {
+		$html = $this->render_field();
+
+		$this->assertStringContainsString( 'VAT number (optional)', $html );
+		$this->assertStringNotContainsString( 'edd-required-indicator', $html );
+		$this->assertStringNotContainsString( 'aria-required', $html );
+	}
+
+	public function test_the_field_is_marked_required_for_the_countries_business_only_mode_covers(): void {
+		update_option( Settings::OPTION, array( 'b2b_only' => 'everywhere' ) );
+
+		$html = $this->render_field();
+
+		$this->assertStringNotContainsString( '(optional)', $html );
+		$this->assertStringContainsString( 'VAT number<span class="edd-required-indicator" aria-hidden="true">*</span><span class="screen-reader-text">Required</span>', $html, 'The same markup EDD gives its own required fields.' );
+		$this->assertStringContainsString( 'aria-required="true"', $html );
+	}
+
+	public function test_a_country_the_mode_leaves_out_keeps_the_optional_label(): void {
+		update_option(
+			Settings::OPTION,
+			array(
+				'b2b_only'           => 'countries',
+				'b2b_only_countries' => array( 'DE' ),
+			)
+		);
+		$_POST['billing_country'] = 'FR';
+
+		$this->assertStringContainsString( '(optional)', $this->render_field() );
+
+		$_POST['billing_country'] = 'DE';
+		$this->assertStringContainsString( 'edd-required-indicator', $this->render_field() );
+	}
+
+	public function test_the_script_gets_the_mode_for_the_country_switch(): void {
+		update_option(
+			Settings::OPTION,
+			array(
+				'b2b_only'           => 'countries',
+				'b2b_only_countries' => array( 'DE', 'fr' ),
+			)
+		);
+
+		$data = VatField::script_data();
+
+		$this->assertSame( 'countries', $data['mode'] );
+		$this->assertSame( array( 'DE', 'FR' ), $data['countries'] );
+		$this->assertContains( 'MT', $data['eu'] );
+		$this->assertSame( 'VAT number (optional)', $data['optional'] );
+		$this->assertSame( 'VAT number', $data['required'] );
+		$this->assertSame( 'Required', $data['required_text'] );
+	}
 }

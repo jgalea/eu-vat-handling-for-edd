@@ -2,6 +2,7 @@
 
 namespace VatrightEdd\Admin;
 
+use VatrightEdd\Domain\B2bScope;
 use VatrightEdd\Domain\FormatCheck;
 use VatrightEdd\Domain\VatNumber;
 use VatrightEdd\Geo\IpCountry;
@@ -88,9 +89,23 @@ class SettingsSection {
 					),
 					__( 'Charging VAT and flagging the order is the safe choice: you can refund the VAT once the number validates. Exempting while a registry is down lets anyone enter a made-up number for that country, and the VAT is yours to recover if the re-check fails.', 'eu-vat-handling-for-edd' )
 				);
+				$this->select_row(
+					'b2b_only',
+					__( 'Sell to businesses only', 'eu-vat-handling-for-edd' ),
+					$s->b2b_only(),
+					array(
+						B2bScope::OFF        => __( 'Off: a VAT number is optional', 'eu-vat-handling-for-edd' ),
+						B2bScope::EVERYWHERE => __( 'Require a valid VAT number from every customer', 'eu-vat-handling-for-edd' ),
+						B2bScope::EU         => __( 'Require a valid VAT number from customers billing in the EU', 'eu-vat-handling-for-edd' ),
+						B2bScope::COUNTRIES  => __( 'Require a valid VAT number from customers billing in the countries chosen below', 'eu-vat-handling-for-edd' ),
+					),
+					__( 'The customer has to enter a VAT number that its registry confirms before the order is accepted. A registry outage follows "When a registry is unavailable" above: "Do not accept the order" refuses the order, while the two other choices accept it with VAT charged or exempted and flagged for a re-check. A number the registry has not checked, because no registry covers its country or the lookup was turned away for load, is never accepted unchecked. Orders that skip the checkout checks, such as Buy Now and wallet payments, cannot be refused: they are recorded and flagged on the order.', 'eu-vat-handling-for-edd' )
+				);
+				$this->multiselect_row( 'b2b_only_countries', __( 'Business-only countries', 'eu-vat-handling-for-edd' ), $s->b2b_only_countries(), edd_get_country_list(), __( 'Used when the setting above is "chosen countries". The country is the customer\'s billing country.', 'eu-vat-handling-for-edd' ) );
 				$this->number_row( 'cache_ttl_valid_days', __( 'Keep valid results for (days)', 'eu-vat-handling-for-edd' ), $s->cache_ttl_valid_days(), 1, 90 );
 				$this->checkbox_row( 'self_certification', __( 'Self-certification', 'eu-vat-handling-for-edd' ), __( 'Ask digital customers to confirm their country when the evidence conflicts', 'eu-vat-handling-for-edd' ), $s->self_certification() );
 				$this->checkbox_row( 'allow_domestic_exemption', __( 'Domestic B2B', 'eu-vat-handling-for-edd' ), __( 'Allow VAT exemption for valid numbers from the store country', 'eu-vat-handling-for-edd' ), $s->allow_domestic_exemption() );
+				$this->multiselect_row( 'exempt_roles', __( 'VAT-exempt roles', 'eu-vat-handling-for-edd' ), $s->exempt_roles(), self::role_options(), __( 'Orders from customers with these roles are VAT-exempt. A user role is not a basis for VAT exemption under EU VAT law on its own, so you are responsible for making sure each exemption is correct, for example that these accounts are checked VAT-registered businesses. The role is recorded on every order it exempts. A confirmed VAT number still takes precedence. Leave empty to exempt nobody.', 'eu-vat-handling-for-edd' ) );
 				$this->checkbox_row( 'notify_admin_on_revalidation', __( 'Revalidation emails', 'eu-vat-handling-for-edd' ), __( 'Email the admin when a number validates after the order was placed', 'eu-vat-handling-for-edd' ), $s->notify_admin_on_revalidation() );
 				$this->checkbox_row( 'auto_refund_on_validation', __( 'Automatic VAT refund', 'eu-vat-handling-for-edd' ), __( 'Refund the VAT automatically when a number validates after the order', 'eu-vat-handling-for-edd' ), $s->auto_refund_on_validation(), __( 'Off by default. Refunds exactly the VAT charged, once, through EDD, and only when EDD can refund the order and the gateway is one that supports it. Otherwise the order is flagged for you to handle.', 'eu-vat-handling-for-edd' ) );
 				$this->checkbox_row( 'oss_registered', __( 'OSS', 'eu-vat-handling-for-edd' ), __( 'I am registered for the One Stop Shop (always charge destination VAT)', 'eu-vat-handling-for-edd' ), $s->oss_registered() );
@@ -214,6 +229,10 @@ class SettingsSection {
 		if ( ! in_array( $ip_source, array( 'none', 'cloudflare', 'cloudfront' ), true ) ) {
 			$ip_source = $defaults['ip_country_source'];
 		}
+		$b2b_only = $text( 'b2b_only' );
+		if ( ! in_array( $b2b_only, B2bScope::MODES, true ) ) {
+			$b2b_only = $defaults['b2b_only'];
+		}
 		$client_id = $text( 'hmrc_client_id' );
 		$secret    = isset( $posted['hmrc_client_secret'] ) && is_scalar( $posted['hmrc_client_secret'] ) ? trim( (string) $posted['hmrc_client_secret'] ) : '';
 		if ( '' === $client_id ) {
@@ -226,6 +245,9 @@ class SettingsSection {
 			'store_vat_number'             => $this->sanitize_store_vat_number( $text( 'store_vat_number' ), $current->store_vat_number() ),
 			'store_vat_number_gb'          => $this->sanitize_uk_store_vat_number( $text( 'store_vat_number_gb' ), $current->store_vat_number_gb() ),
 			'outage_policy'                => $policy,
+			'b2b_only'                     => $b2b_only,
+			'b2b_only_countries'           => $this->sanitize_countries( $posted['b2b_only_countries'] ?? array() ),
+			'exempt_roles'                 => $this->sanitize_roles( $posted['exempt_roles'] ?? array() ),
 			'cache_ttl_valid_days'         => $number( 'cache_ttl_valid_days', 1, 90 ),
 			'allow_domestic_exemption'     => ! empty( $posted['allow_domestic_exemption'] ),
 			'oss_registered'               => ! empty( $posted['oss_registered'] ),
@@ -249,6 +271,48 @@ class SettingsSection {
 			'seller_country'               => $text( 'seller_country' ),
 			'delete_data_on_uninstall'     => ! empty( $posted['delete_data_on_uninstall'] ),
 		);
+	}
+
+	/**
+	 * @param mixed $posted
+	 * @return string[]
+	 */
+	private function sanitize_countries( $posted ): array {
+		$known     = edd_get_country_list();
+		$countries = array();
+		foreach ( is_array( $posted ) ? $posted : array() as $code ) {
+			$code = is_scalar( $code ) ? strtoupper( sanitize_text_field( (string) $code ) ) : '';
+			if ( '' !== $code && isset( $known[ $code ] ) ) {
+				$countries[ $code ] = $code;
+			}
+		}
+		return array_values( $countries );
+	}
+
+	/**
+	 * @param mixed $posted
+	 * @return string[]
+	 */
+	private function sanitize_roles( $posted ): array {
+		$roles = array();
+		foreach ( is_array( $posted ) ? $posted : array() as $role ) {
+			$role = is_scalar( $role ) ? sanitize_key( (string) $role ) : '';
+			if ( '' !== $role && wp_roles()->is_role( $role ) ) {
+				$roles[ $role ] = $role;
+			}
+		}
+		return array_values( $roles );
+	}
+
+	/**
+	 * @return array<string,string>
+	 */
+	private static function role_options(): array {
+		$options = array();
+		foreach ( wp_roles()->get_names() as $slug => $name ) {
+			$options[ $slug ] = translate_user_role( $name );
+		}
+		return $options;
 	}
 
 	private function sanitize_store_vat_number( string $raw, string $kept ): string {
@@ -342,6 +406,28 @@ class SettingsSection {
 			esc_attr( $this->name( $key ) ),
 			checked( $checked, true, false ),
 			esc_html( $label ),
+			'' === $description ? '' : '<p class="description">' . esc_html( $description ) . '</p>'
+		);
+	}
+
+	/**
+	 * @param string[]             $selected
+	 * @param array<string,string> $options
+	 */
+	private function multiselect_row( string $key, string $title, array $selected, array $options, string $description = '' ): void {
+		$html = '';
+		foreach ( $options as $option => $label ) {
+			if ( '' === (string) $option ) {
+				continue;
+			}
+			$html .= sprintf( '<option value="%1$s"%2$s>%3$s</option>', esc_attr( (string) $option ), selected( in_array( (string) $option, $selected, true ), true, false ), esc_html( $label ) );
+		}
+		printf(
+			'<tr><th scope="row"><label for="%1$s">%2$s</label></th><td><select id="%1$s" name="%3$s[]" multiple="multiple" size="8" style="min-width:350px">%4$s</select>%5$s</td></tr>',
+			esc_attr( self::FIELD . '_' . $key ),
+			esc_html( $title ),
+			esc_attr( $this->name( $key ) ),
+			$html, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- options are escaped above.
 			'' === $description ? '' : '<p class="description">' . esc_html( $description ) . '</p>'
 		);
 	}
