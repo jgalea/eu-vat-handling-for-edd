@@ -1,0 +1,69 @@
+<h1 align="center">EU VAT Handling for EDD</h1>
+
+<p align="center">
+  <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/LICENSE-GPL-5C9E31?style=for-the-badge"></a>
+  <a href="https://github.com/jgalea"><img alt="Built by" src="https://img.shields.io/badge/BUILT%20BY-JEAN%20GALEA-8A2BE2?style=for-the-badge"></a>
+</p>
+
+<p align="center"><b>Free EU VAT handling for Easy Digital Downloads: number validation, reverse charge, the OSS threshold and a decision record on every order.</b></p>
+
+## What it does
+
+The plugin decides the VAT treatment of each order, applies it through EDD's own tax calculation and stores the decision, with its inputs, on the order.
+
+- VAT number field on the block and shortcode checkouts, checked against VIES (EU), HMRC (GB, with your own credentials), the Swiss UID register and the Brønnøysund register (Norway).
+- Reverse charge for valid B2B numbers, with the legal wording on receipts, emails, EDD Invoices and EDD PDF Invoices.
+- Origin VAT below the EUR 10,000 OSS threshold, destination VAT above it, switching automatically.
+- Location evidence from the billing country and, behind Cloudflare or CloudFront, the IP country, with self-certification when they conflict.
+- Standard and reduced rates imported from the EU's TEDB, with a diff before anything changes, and a VAT category per download.
+- Orders that skip EDD's checkout checks (wallet payments, Buy Now, admin orders) are recorded too.
+- EDD Recurring renewals are decided as new sales and flagged when the treatment changed since signup.
+- Outage policy: by default an unavailable registry means the order is accepted, VAT is charged and the number is re-checked later.
+- OSS return and EC Sales List reports with CSV export, plus REST endpoints.
+- An importer for Barn2's EDD EU VAT that copies settings and order history, with a dry run.
+- Personal data exporters, erasers and a retention setting.
+
+Settings are under Downloads > Settings > Taxes > EU VAT. `readme.txt` has the FAQ and the list of external services the plugin calls.
+
+## Requirements
+
+- WordPress 6.6 or later
+- Easy Digital Downloads 3.1 or later, with taxes turned on
+- PHP 7.4 or later
+
+## Install
+
+Download the zip from the releases page, upload it under Plugins > Add New > Upload Plugin and activate it. Turn on taxes under Downloads > Settings > Taxes, then open the EU VAT section and read the setup check. Coming from Barn2's plugin, run Downloads > Import from Barn2 before deactivating it.
+
+## Known limitations
+
+Each of these errs on the side of charging VAT.
+
+- Consulting, legal, advertising and similar services to consumers outside the EU (Article 59 of the VAT Directive) are charged the store's VAT.
+- Business customers in the UK are treated as consumers unless the store adds its own HMRC API credentials. Swiss and Norwegian numbers that can't be checked at checkout are charged VAT until they're re-checked.
+- In a cart that's partly exempt because of a domestic exemption, the exempt line is charged VAT.
+- Wallet and Buy Now checkouts can't ask the customer to confirm their country, so a conflict is flagged on the order instead.
+
+## Development
+
+```
+composer install
+npm install
+npx wp-env start
+```
+
+Tests never call live services; registry responses come from recorded fixtures.
+
+```
+composer test:unit
+composer lint
+composer stan
+npx wp-env run tests-cli --env-cwd=wp-content/plugins/eu-vat-handling-for-edd vendor/bin/phpunit --bootstrap tests/bootstrap-integration.php --testsuite integration
+npx playwright test
+```
+
+`bin/build-zip.sh` builds the release zip.
+
+## Disclaimer
+
+This plugin is a tool, not tax advice. You, the store owner, are responsible for your VAT treatment and your filings. VAT rates and registry results come from third parties and can be wrong or out of date, so check them with an accountant. The plugin is provided without warranty and without liability, under the GPL.

@@ -1,0 +1,14 @@
+{
+  "_synthetic": true,
+  "_note": "Error name MS_UNAVAILABLE is unverified officially; shape matches the live INVALID_REQUESTER_INFO response.",
+  "request": {
+    "method": "POST",
+    "url": "https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number",
+    "body_contains": "\"vatNumber\":\"90000001\""
+  },
+  "response": {
+    "status": 200,
+    "body": "{\n  \"actionSucceed\": false,\n  \"errorWrappers\": [\n    {\n      \"error\": \"MS_UNAVAILABLE\"\n    }\n  ]\n}",
+    "error": ""
+  }
+}

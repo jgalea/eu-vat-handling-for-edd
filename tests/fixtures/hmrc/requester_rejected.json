@@ -1,0 +1,14 @@
+{
+	"request": {
+		"method": "GET",
+		"url": "https://api.service.hmrc.gov.uk/organisations/vat/check-vat-number/lookup/553557881/999999999"
+	},
+	"response": {
+		"status": 400,
+		"body": "{\"code\": \"INVALID_REQUEST\", \"message\": \"requesterVrn does not match a registered company\"}",
+		"error": ""
+	},
+	"_recorded_at": null,
+	"_synthetic": true,
+	"_source": "HMRC Check a UK VAT number v2 OpenAPI example (downloaded 2026-10-17), not a live response"
+}

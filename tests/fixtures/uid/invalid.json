@@ -1,0 +1,15 @@
+{
+	"request": {
+		"method": "POST",
+		"url": "https://www.uid-wse.admin.ch/V5.0/PublicServices.svc",
+		"body_contains": "<vatNumber>CHE105909036</vatNumber>"
+	},
+	"response": {
+		"status": 200,
+		"body": "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\"><s:Body xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"><ValidateVatNumberResponse xmlns=\"http://www.uid.admin.ch/xmlns/uid-wse\"><ValidateVatNumberResult>false</ValidateVatNumberResult></ValidateVatNumberResponse></s:Body></s:Envelope>",
+		"error": ""
+	},
+	"_recorded_at": "2026-10-17T19:54:16Z",
+	"_synthetic": false,
+	"_source": "live POST https://www.uid-wse.admin.ch/V5.0/PublicServices.svc"
+}

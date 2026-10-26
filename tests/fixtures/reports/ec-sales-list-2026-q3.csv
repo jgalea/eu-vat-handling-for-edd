@@ -1,0 +1,5 @@
+"VAT number",Country,"Goods or services","Net amount (EUR)"
+DE114103379,DE,services,237.89
+
+"VAT number not recorded, not included above",Order,,"Net amount (EUR)"
+,{ORDER},,80.00

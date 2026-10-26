@@ -1,0 +1,14 @@
+{
+  "_synthetic": true,
+  "_note": "HTML from a gateway in front of VIES.",
+  "request": {
+    "method": "POST",
+    "url": "https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number",
+    "body_contains": "\"vatNumber\":\"90000003\""
+  },
+  "response": {
+    "status": 200,
+    "body": "<html><body><h1>Service temporarily unavailable</h1></body></html>",
+    "error": ""
+  }
+}

@@ -1,0 +1,13 @@
+{
+    "_recorded_at": "2026-10-17T19:54:34+00:00",
+    "request": {
+        "method": "GET",
+        "url": "https://ec.europa.eu/taxation_customs/vies/rest-api/check-status",
+        "body_contains": ""
+    },
+    "response": {
+        "status": 200,
+        "body": "{\n  \"vow\" : {\n    \"available\" : true\n  },\n  \"countries\" : [ {\n    \"countryCode\" : \"AT\",\n    \"availability\" : \"Available\"\n  }, {\n    \"countryCode\" : \"BE\",\n    \"availability\" : \"Available\"\n  }, {\n    \"countryCode\" : \"BG\",\n    \"availability\" : \"Available\"\n  }, {\n    \"countryCode\" : \"CY\",\n    \"availability\" : \"Available\"\n  }, {\n    \"countryCode\" : \"CZ\",\n    \"availability\" : \"Available\"\n  }, {\n    \"countryCode\" : \"DE\",\n    \"availability\" : \"Available\"\n  }, {\n    \"countryCode\" : \"DK\",\n    \"availability\" : \"Available\"\n  }, {\n    \"countryCode\" : \"EE\",\n    \"availability\" : \"Available\"\n  }, {\n    \"countryCode\" : \"EL\",\n    \"availability\" : \"Available\"\n  }, {\n    \"countryCode\" : \"ES\",\n    \"availability\" : \"Available\"\n  }, {\n    \"countryCode\" : \"FI\",\n    \"availability\" : \"Available\"\n  }, {\n    \"countryCode\" : \"FR\",\n    \"availability\" : \"Available\"\n  }, {\n    \"countryCode\" : \"HR\",\n    \"availability\" : \"Available\"\n  }, {\n    \"countryCode\" : \"HU\",\n    \"availability\" : \"Available\"\n  }, {\n    \"countryCode\" : \"IE\",\n    \"availability\" : \"Available\"\n  }, {\n    \"countryCode\" : \"IT\",\n    \"availability\" : \"Available\"\n  }, {\n    \"countryCode\" : \"LT\",\n    \"availability\" : \"Available\"\n  }, {\n    \"countryCode\" : \"LU\",\n    \"availability\" : \"Available\"\n  }, {\n    \"countryCode\" : \"LV\",\n    \"availability\" : \"Unavailable\"\n  }, {\n    \"countryCode\" : \"MT\",\n    \"availability\" : \"Available\"\n  }, {\n    \"countryCode\" : \"NL\",\n    \"availability\" : \"Available\"\n  }, {\n    \"countryCode\" : \"PL\",\n    \"availability\" : \"Available\"\n  }, {\n    \"countryCode\" : \"PT\",\n    \"availability\" : \"Available\"\n  }, {\n    \"countryCode\" : \"RO\",\n    \"availability\" : \"Available\"\n  }, {\n    \"countryCode\" : \"SE\",\n    \"availability\" : \"Available\"\n  }, {\n    \"countryCode\" : \"SI\",\n    \"availability\" : \"Available\"\n  }, {\n    \"countryCode\" : \"SK\",\n    \"availability\" : \"Available\"\n  }, {\n    \"countryCode\" : \"XI\",\n    \"availability\" : \"Available\"\n  } ]\n}",
+        "error": ""
+    }
+}

@@ -1,0 +1,13 @@
+{
+    "_recorded_at": "2026-10-17T19:55:29+00:00",
+    "request": {
+        "method": "POST",
+        "url": "https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number",
+        "body_contains": "\"vatNumber\":\"7342867148\""
+    },
+    "response": {
+        "status": 200,
+        "body": "{\n  \"countryCode\" : \"PL\",\n  \"vatNumber\" : \"7342867148\",\n  \"requestDate\" : \"2026-10-17T19:55:29.601Z\",\n  \"valid\" : true,\n  \"requestIdentifier\" : \"\",\n  \"name\" : \"CD PROJEKT RED SPÓŁKA AKCYJNA\",\n  \"address\" : \"JAGIELLOŃSKA 74\\n03-301 WARSZAWA\",\n  \"traderName\" : \"---\",\n  \"traderStreet\" : \"---\",\n  \"traderPostalCode\" : \"---\",\n  \"traderCity\" : \"---\",\n  \"traderCompanyType\" : \"---\",\n  \"traderNameMatch\" : \"NOT_PROCESSED\",\n  \"traderStreetMatch\" : \"NOT_PROCESSED\",\n  \"traderPostalCodeMatch\" : \"NOT_PROCESSED\",\n  \"traderCityMatch\" : \"NOT_PROCESSED\",\n  \"traderCompanyTypeMatch\" : \"NOT_PROCESSED\"\n}",
+        "error": ""
+    }
+}

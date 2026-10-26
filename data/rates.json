@@ -1,0 +1,1080 @@
+{
+    "source": "tedb",
+    "situation_on": "2026-10-17",
+    "countries": {
+        "AT": {
+            "standard": 20.0,
+            "reduced": [
+                {
+                    "rate": 13.0,
+                    "type": "reduced",
+                    "categories": [
+                        "100_YEARS_OLD",
+                        "AGRICULTURAL_PRODUCTION",
+                        "CULTURAL_EVENTS",
+                        "FOODSTUFFS",
+                        "IMPRESSIONS",
+                        "PICTURES",
+                        "SCULPTURES",
+                        "SPORTING_EVENTS",
+                        "TAPESTRIES",
+                        "TRANSPORT_PASSENGERS",
+                        "WRITERS_SERVICES",
+                        "ZOOLOGICAL"
+                    ]
+                },
+                {
+                    "rate": 10.0,
+                    "type": "reduced",
+                    "categories": [
+                        "ACCOMMODATION",
+                        "BROADCASTING_SERVICES",
+                        "CLOTHING_REPAIR",
+                        "FOODSTUFFS",
+                        "LOAN_LIBRARIES",
+                        "NEWSPAPERS",
+                        "PERIODICALS",
+                        "RESTAURANT",
+                        "SHOES_REPAIR",
+                        "SOCIAL_WELLBEING",
+                        "STREET_CLEANING",
+                        "SUPPLY_WATER"
+                    ]
+                },
+                {
+                    "rate": 4.9,
+                    "type": "super_reduced",
+                    "categories": [
+                        "FOODSTUFFS"
+                    ]
+                }
+            ]
+        },
+        "BE": {
+            "standard": 21.0,
+            "reduced": [
+                {
+                    "rate": 12.0,
+                    "type": "parking",
+                    "categories": [
+                        "NEW_PARKING_RATE"
+                    ]
+                },
+                {
+                    "rate": 12.0,
+                    "type": "reduced",
+                    "categories": [
+                        "ACCOMMODATION",
+                        "FOODSTUFFS",
+                        "HOUSING_PROVISION",
+                        "RESTAURANT"
+                    ]
+                },
+                {
+                    "rate": 6.0,
+                    "type": "reduced",
+                    "categories": [
+                        "AGRICULTURAL_PRODUCTION",
+                        "ANTIQUES",
+                        "BICYCLES_RENTAL",
+                        "CLOTHING_REPAIR",
+                        "CONSTRUCTION",
+                        "CULTURAL_EVENTS",
+                        "FOODSTUFFS",
+                        "HOUSING_PROVISION",
+                        "LOAN_LIBRARIES",
+                        "MEDICAL_EQUIPMENT",
+                        "PHARMACEUTICAL_PRODUCTS",
+                        "PLANT",
+                        "PRIVATE_DWELLINGS",
+                        "RENOVATION",
+                        "SHOES_REPAIR",
+                        "SOCIAL_WELLBEING",
+                        "SPORTING_EVENTS",
+                        "SUPPLY_ELECTRICITY",
+                        "SUPPLY_GAS",
+                        "SUPPLY_HEATING",
+                        "SUPPLY_WATER",
+                        "SUSTAINABLE_ENERGY",
+                        "TRANSPORT_PASSENGERS",
+                        "UNDERTAKERS_SERVICES",
+                        "WOOD_ARTICLE98",
+                        "WRITERS_SERVICES"
+                    ]
+                }
+            ]
+        },
+        "BG": {
+            "standard": 20.0,
+            "reduced": [
+                {
+                    "rate": 9.0,
+                    "type": "reduced",
+                    "categories": [
+                        "ACCOMMODATION",
+                        "FOODSTUFFS",
+                        "LOAN_LIBRARIES",
+                        "PHARMACEUTICAL_PRODUCTS"
+                    ]
+                }
+            ]
+        },
+        "HR": {
+            "standard": 25.0,
+            "reduced": [
+                {
+                    "rate": 13.0,
+                    "type": "reduced",
+                    "categories": [
+                        "ACCOMMODATION",
+                        "CHILDREN_CAR_SEATS",
+                        "NEWSPAPERS",
+                        "PHARMACEUTICAL_PRODUCTS",
+                        "RESTAURANT",
+                        "STREET_CLEANING",
+                        "SUPPLY_ELECTRICITY",
+                        "SUPPLY_WATER",
+                        "UNDERTAKERS_SERVICES",
+                        "WRITERS_SERVICES"
+                    ]
+                },
+                {
+                    "rate": 5.0,
+                    "type": "reduced",
+                    "categories": [
+                        "AGRICULTURAL_PRODUCTION",
+                        "CULTURAL_EVENTS",
+                        "FOODSTUFFS",
+                        "LOAN_LIBRARIES",
+                        "MEDICAL_EQUIPMENT",
+                        "NEWSPAPERS",
+                        "PERIODICALS",
+                        "PHARMACEUTICAL_PRODUCTS",
+                        "SPORTING_EVENTS",
+                        "SUPPLY_GAS",
+                        "SUPPLY_HEATING",
+                        "WOOD_ARTICLE98"
+                    ]
+                }
+            ]
+        },
+        "CY": {
+            "standard": 19.0,
+            "reduced": [
+                {
+                    "rate": 9.0,
+                    "type": "reduced",
+                    "categories": [
+                        "ACCOMMODATION",
+                        "RESTAURANT",
+                        "TRANSPORT_PASSENGERS"
+                    ]
+                },
+                {
+                    "rate": 5.0,
+                    "type": "reduced",
+                    "categories": [
+                        "100_YEARS_OLD",
+                        "AGRICULTURAL_PRODUCTION",
+                        "CHILDREN_CAR_SEATS",
+                        "CULTURAL_EVENTS",
+                        "FOODSTUFFS",
+                        "HAIRDRESSING",
+                        "HOUSING_PROVISION",
+                        "MEDICAL_CARE",
+                        "MEDICAL_EQUIPMENT",
+                        "PHARMACEUTICAL_PRODUCTS",
+                        "SPORTING_EVENTS",
+                        "STREET_CLEANING",
+                        "SUPPLY_WATER",
+                        "TRANSPORT_PASSENGERS",
+                        "UNDERTAKERS_SERVICES",
+                        "WRITERS_SERVICES",
+                        "ZOOLOGICAL"
+                    ]
+                },
+                {
+                    "rate": 3.0,
+                    "type": "super_reduced",
+                    "categories": [
+                        "BOOKS",
+                        "MEDICAL_EQUIPMENT",
+                        "NEWSPAPERS",
+                        "PERIODICALS",
+                        "THEATRE_PERFORMANCES",
+                        "WASTE_TREATMENT",
+                        "WASTE_TREATMENT_REFUSAL"
+                    ]
+                }
+            ]
+        },
+        "CZ": {
+            "standard": 21.0,
+            "reduced": [
+                {
+                    "rate": 12.0,
+                    "type": "reduced",
+                    "categories": [
+                        "ACCOMMODATION",
+                        "CHILDREN_CAR_SEATS",
+                        "CULTURAL_EVENTS",
+                        "DOMESTIC_CARE",
+                        "FOODSTUFFS",
+                        "HOUSING_PROVISION",
+                        "MEDICAL_CARE",
+                        "MEDICAL_EQUIPMENT",
+                        "PERIODICALS",
+                        "PHARMACEUTICAL_PRODUCTS",
+                        "PLANT",
+                        "PRIVATE_DWELLINGS",
+                        "RESTAURANT",
+                        "SOCIAL_WELLBEING",
+                        "SPORTING_EVENTS",
+                        "SUPPLY_HEATING",
+                        "SUPPLY_WATER",
+                        "TRANSPORT_PASSENGERS",
+                        "UNDERTAKERS_SERVICES"
+                    ]
+                }
+            ]
+        },
+        "DK": {
+            "standard": 25.0,
+            "reduced": []
+        },
+        "EE": {
+            "standard": 24.0,
+            "reduced": [
+                {
+                    "rate": 13.0,
+                    "type": "reduced",
+                    "categories": [
+                        "ACCOMMODATION"
+                    ]
+                },
+                {
+                    "rate": 9.0,
+                    "type": "reduced",
+                    "categories": [
+                        "LOAN_LIBRARIES",
+                        "MEDICAL_EQUIPMENT",
+                        "NEWSPAPERS",
+                        "PHARMACEUTICAL_PRODUCTS"
+                    ]
+                }
+            ]
+        },
+        "FI": {
+            "standard": 25.5,
+            "reduced": [
+                {
+                    "rate": 13.5,
+                    "type": "reduced",
+                    "categories": [
+                        "ACCOMMODATION",
+                        "BROADCASTING_SERVICES",
+                        "CULTURAL_EVENTS",
+                        "FOODSTUFFS",
+                        "IMPRESSIONS",
+                        "LOAN_LIBRARIES",
+                        "PHARMACEUTICAL_PRODUCTS",
+                        "PHOTOGRAPHS",
+                        "PICTURES",
+                        "RESTAURANT",
+                        "SCULPTURES",
+                        "SCULPTURE_CASTS",
+                        "SPORTING_EVENTS",
+                        "TAPESTRIES",
+                        "TRANSPORT_PASSENGERS",
+                        "WRITERS_SERVICES"
+                    ]
+                },
+                {
+                    "rate": 10.0,
+                    "type": "reduced",
+                    "categories": [
+                        "NEWSPAPERS",
+                        "PERIODICALS"
+                    ]
+                }
+            ]
+        },
+        "FR": {
+            "standard": 20.0,
+            "reduced": [
+                {
+                    "rate": 10.0,
+                    "type": "reduced",
+                    "categories": [
+                        "ACCOMMODATION",
+                        "AGRICULTURAL_PRODUCTION",
+                        "BROADCASTING_SERVICES",
+                        "CULTURAL_EVENTS",
+                        "HOUSING_PROVISION",
+                        "PHARMACEUTICAL_PRODUCTS",
+                        "PRIVATE_DWELLINGS",
+                        "RESTAURANT",
+                        "SUPPLY_WATER",
+                        "TRANSPORT_PASSENGERS",
+                        "WRITERS_SERVICES"
+                    ]
+                },
+                {
+                    "rate": 5.5,
+                    "type": "reduced",
+                    "categories": [
+                        "ANTIQUES",
+                        "CULTURAL_EVENTS",
+                        "DOMESTIC_CARE",
+                        "FOODSTUFFS",
+                        "HOUSING_PROVISION",
+                        "LOAN_LIBRARIES",
+                        "MEDICAL_EQUIPMENT",
+                        "PHARMACEUTICAL_PRODUCTS",
+                        "PRIVATE_DWELLINGS",
+                        "SOLAR_PANELS",
+                        "SPORTING_EVENTS",
+                        "STREET_CLEANING",
+                        "SUPPLY_HEATING"
+                    ]
+                },
+                {
+                    "rate": 2.1,
+                    "type": "super_reduced",
+                    "categories": [
+                        "NEWSPAPERS",
+                        "PERIODICALS",
+                        "PHARMACEUTICAL_PRODUCTS"
+                    ]
+                }
+            ]
+        },
+        "DE": {
+            "standard": 19.0,
+            "reduced": [
+                {
+                    "rate": 7.0,
+                    "type": "reduced",
+                    "categories": [
+                        "ACCOMMODATION",
+                        "CULTURAL_EVENTS",
+                        "FOODSTUFFS",
+                        "IMPRESSIONS",
+                        "LOAN_LIBRARIES",
+                        "MEDICAL_CARE",
+                        "MEDICAL_EQUIPMENT",
+                        "NEWSPAPERS",
+                        "PERIODICALS",
+                        "PHARMACEUTICAL_PRODUCTS",
+                        "PICTURES",
+                        "PLANT",
+                        "POSTAGE",
+                        "SCULPTURES",
+                        "SOCIAL_WELLBEING",
+                        "SUPPLY_WATER",
+                        "TRANSPORT_PASSENGERS",
+                        "WRITERS_SERVICES",
+                        "ZOOLOGICAL"
+                    ]
+                }
+            ]
+        },
+        "GR": {
+            "standard": 24.0,
+            "reduced": [
+                {
+                    "rate": 13.0,
+                    "type": "parking",
+                    "categories": [
+                        "AGRICULTURAL_EQUIPMENT"
+                    ]
+                },
+                {
+                    "rate": 13.0,
+                    "type": "reduced",
+                    "categories": [
+                        "100_YEARS_OLD",
+                        "ACCOMMODATION",
+                        "AGRICULTURAL_PRODUCTION",
+                        "CHILDREN_CAR_SEATS",
+                        "CULTURAL_EVENTS",
+                        "DOMESTIC_CARE",
+                        "FOODSTUFFS",
+                        "IMPRESSIONS",
+                        "MEDICAL_EQUIPMENT",
+                        "PHARMACEUTICAL_PRODUCTS",
+                        "PICTURES",
+                        "POSTAGE",
+                        "RESTAURANT",
+                        "SCULPTURE_CASTS",
+                        "SOCIAL_WELLBEING",
+                        "SPORTING_EVENTS",
+                        "SUPPLY_WATER",
+                        "TRANSPORT_PASSENGERS",
+                        "ZOOLOGICAL"
+                    ]
+                },
+                {
+                    "rate": 6.0,
+                    "type": "reduced",
+                    "categories": [
+                        "AGRICULTURAL_PRODUCTION",
+                        "CULTURAL_EVENTS",
+                        "FOODSTUFFS",
+                        "LOAN_LIBRARIES",
+                        "MEDICAL_CARE",
+                        "MEDICAL_EQUIPMENT",
+                        "NEWSPAPERS",
+                        "PHARMACEUTICAL_PRODUCTS",
+                        "SUPPLY_ELECTRICITY",
+                        "SUPPLY_GAS"
+                    ]
+                },
+                {
+                    "rate": 4.0,
+                    "type": "super_reduced",
+                    "categories": [
+                        "NON_OWNED_RESIDENCY_RENOVATION"
+                    ]
+                }
+            ]
+        },
+        "HU": {
+            "standard": 27.0,
+            "reduced": [
+                {
+                    "rate": 18.0,
+                    "type": "reduced",
+                    "categories": [
+                        "CULTURAL_EVENTS",
+                        "FOODSTUFFS"
+                    ]
+                },
+                {
+                    "rate": 5.0,
+                    "type": "reduced",
+                    "categories": [
+                        "ACCOMMODATION",
+                        "ANTIQUES",
+                        "BROADCASTING_SERVICES",
+                        "FOODSTUFFS",
+                        "HOUSING_PROVISION",
+                        "LOAN_LIBRARIES",
+                        "MEDICAL_EQUIPMENT",
+                        "PHARMACEUTICAL_PRODUCTS",
+                        "RESTAURANT",
+                        "TRANSPORT_PASSENGERS",
+                        "WRITERS_SERVICES"
+                    ]
+                }
+            ]
+        },
+        "IE": {
+            "standard": 23.0,
+            "reduced": [
+                {
+                    "rate": 13.5,
+                    "type": "reduced",
+                    "categories": [
+                        "100_YEARS_OLD",
+                        "ACCOMMODATION",
+                        "AGRICULTURAL_PRODUCTION",
+                        "CERAMICS",
+                        "CULTURAL_EVENTS",
+                        "ENAMELS",
+                        "HOUSING_PROVISION",
+                        "IMPRESSIONS",
+                        "MEDICAL_EQUIPMENT",
+                        "PHARMACEUTICAL_PRODUCTS",
+                        "PHOTOGRAPHS",
+                        "PICTURES",
+                        "PRIVATE_DWELLINGS",
+                        "SCULPTURES",
+                        "SCULPTURE_CASTS",
+                        "STREET_CLEANING",
+                        "TAPESTRIES",
+                        "WINDOW_CLEANING"
+                    ]
+                },
+                {
+                    "rate": 9.0,
+                    "type": "reduced",
+                    "categories": [
+                        "FOODSTUFFS",
+                        "HAIRDRESSING",
+                        "LOAN_LIBRARIES",
+                        "RESTAURANT"
+                    ]
+                }
+            ]
+        },
+        "IT": {
+            "standard": 22.0,
+            "reduced": [
+                {
+                    "rate": 10.0,
+                    "type": "reduced",
+                    "categories": [
+                        "ACCOMMODATION",
+                        "AGRICULTURAL_PRODUCTION",
+                        "CULTURAL_EVENTS",
+                        "FOODSTUFFS",
+                        "FOSSIL_FUEL",
+                        "HOUSING_PROVISION",
+                        "PHARMACEUTICAL_PRODUCTS",
+                        "PRIVATE_DWELLINGS",
+                        "RESTAURANT",
+                        "STREET_CLEANING",
+                        "SUPPLY_ELECTRICITY",
+                        "SUPPLY_GAS",
+                        "SUPPLY_HEATING",
+                        "SUPPLY_WATER",
+                        "TRANSPORT_PASSENGERS",
+                        "WOOD",
+                        "WRITERS_SERVICES"
+                    ]
+                },
+                {
+                    "rate": 5.0,
+                    "type": "reduced",
+                    "categories": [
+                        "ANTIQUES",
+                        "FOODSTUFFS",
+                        "LIVE_EQUINES",
+                        "MEDICAL_EQUIPMENT",
+                        "PHARMACEUTICAL_PRODUCTS",
+                        "SOCIAL_WELLBEING",
+                        "SPORTING_EVENTS",
+                        "TRANSPORT_PASSENGERS"
+                    ]
+                },
+                {
+                    "rate": 4.0,
+                    "type": "super_reduced",
+                    "categories": [
+                        "CHEMICAL_FERTILISERS",
+                        "EXEMPTION_SUPERREDUCED",
+                        "FOODSTUFFS",
+                        "LOAN_LIBRARIES",
+                        "MEDICAL_EQUIPMENT",
+                        "TEMPORARY_EXEMPTION_RATE"
+                    ]
+                }
+            ]
+        },
+        "LV": {
+            "standard": 21.0,
+            "reduced": [
+                {
+                    "rate": 12.0,
+                    "type": "reduced",
+                    "categories": [
+                        "ACCOMMODATION",
+                        "FOODSTUFFS",
+                        "MEDICAL_EQUIPMENT",
+                        "PHARMACEUTICAL_PRODUCTS",
+                        "SUPPLY_HEATING",
+                        "TRANSPORT_PASSENGERS",
+                        "WOOD_ARTICLE98"
+                    ]
+                },
+                {
+                    "rate": 5.0,
+                    "type": "reduced",
+                    "categories": [
+                        "LOAN_LIBRARIES",
+                        "NEWSPAPERS",
+                        "PERIODICALS"
+                    ]
+                }
+            ]
+        },
+        "LT": {
+            "standard": 21.0,
+            "reduced": [
+                {
+                    "rate": 12.0,
+                    "type": "reduced",
+                    "categories": [
+                        "ACCOMMODATION",
+                        "CULTURAL_EVENTS",
+                        "TRANSPORT_PASSENGERS"
+                    ]
+                },
+                {
+                    "rate": 5.0,
+                    "type": "reduced",
+                    "categories": [
+                        "LOAN_LIBRARIES",
+                        "MEDICAL_EQUIPMENT",
+                        "NEWSPAPERS",
+                        "PERIODICALS",
+                        "PHARMACEUTICAL_PRODUCTS"
+                    ]
+                }
+            ]
+        },
+        "LU": {
+            "standard": 17.0,
+            "reduced": [
+                {
+                    "rate": 14.0,
+                    "type": "parking",
+                    "categories": [
+                        "CLEANING_PRODUCT",
+                        "CREDIT_MANAGEMENT",
+                        "FUEL_MINERAL_OIL",
+                        "HEAT_COOLING_STEAM",
+                        "NEW_PARKING_RATE",
+                        "PRINTED_ADVERTISING_MATERIAL",
+                        "SECURITY_MANAGEMENT",
+                        "WINE_FRESH_GRAPE"
+                    ]
+                },
+                {
+                    "rate": 14.0,
+                    "type": "reduced",
+                    "categories": [
+                        "FOSSIL_FUEL"
+                    ]
+                },
+                {
+                    "rate": 8.0,
+                    "type": "super_reduced",
+                    "categories": [
+                        "TEMPORARY_EXEMPTION_RATE"
+                    ]
+                },
+                {
+                    "rate": 8.0,
+                    "type": "reduced",
+                    "categories": [
+                        "AGRICULTURAL_PRODUCTION",
+                        "ANTIQUES",
+                        "BICYCLES_ELECTRIC",
+                        "BICYCLES_RENTAL",
+                        "CHEMICAL_PESTICIDES_ENVIRONMENT",
+                        "CLOTHING_REPAIR",
+                        "FOSSIL_FUEL",
+                        "HAIRDRESSING",
+                        "HOUSEHOLD",
+                        "PLANT",
+                        "SHOES_REPAIR",
+                        "SUPPLY_ELECTRICITY",
+                        "SUPPLY_GAS",
+                        "SUPPLY_HEATING",
+                        "WINDOW_CLEANING",
+                        "WOOD",
+                        "WOOD_ARTICLE98"
+                    ]
+                },
+                {
+                    "rate": 3.0,
+                    "type": "super_reduced",
+                    "categories": [
+                        "CERTAIN_AGRICULTURAL_INPUT",
+                        "CERTAIN_BROADCASTING_SERVICES",
+                        "CHEMICAL_FERTILISERS",
+                        "CHILD_WEAR",
+                        "EVENT_ACCESS",
+                        "EXEMPTION_SUPERREDUCED",
+                        "FOODSTUFFS",
+                        "FOOD_SERVICE",
+                        "FUNERAL",
+                        "HOLIDAY_ACCOMMODATION",
+                        "LOAN_LIBRARIES",
+                        "MEDICAL_EQUIPMENT",
+                        "NON_OWNED_RESIDENCY_RENOVATION",
+                        "PHARMACEUTICAL_PRODUCTS",
+                        "RESIDENTIAL_RENOVATION",
+                        "ROYALTIES",
+                        "SOLAR_PANELS",
+                        "SPORTING_FACILITY_ACCESS",
+                        "SUPPLY_WATER",
+                        "TRANSPORT_PASSENGERS",
+                        "WASTE_TREATMENT",
+                        "WASTE_TREATMENT_REFUSAL"
+                    ]
+                }
+            ]
+        },
+        "MT": {
+            "standard": 18.0,
+            "reduced": [
+                {
+                    "rate": 12.0,
+                    "type": "parking",
+                    "categories": [
+                        "BODY_CARE_SERVICES",
+                        "CREDIT_MANAGEMENT",
+                        "HIRING_SHORT_PERIOD",
+                        "SECURITY_MANAGEMENT"
+                    ]
+                },
+                {
+                    "rate": 7.0,
+                    "type": "reduced",
+                    "categories": [
+                        "ACCOMMODATION"
+                    ]
+                },
+                {
+                    "rate": 5.0,
+                    "type": "reduced",
+                    "categories": [
+                        "100_YEARS_OLD",
+                        "CERAMICS",
+                        "CLOTHING_REPAIR",
+                        "CULTURAL_EVENTS",
+                        "DOMESTIC_CARE",
+                        "ENAMELS",
+                        "FOODSTUFFS",
+                        "IMPRESSIONS",
+                        "LOAN_LIBRARIES",
+                        "MEDICAL_EQUIPMENT",
+                        "NEWSPAPERS",
+                        "PERIODICALS",
+                        "PHARMACEUTICAL_PRODUCTS",
+                        "PHOTOGRAPHS",
+                        "PICTURES",
+                        "POSTAGE",
+                        "SCULPTURES",
+                        "SCULPTURE_CASTS",
+                        "SHOES_REPAIR",
+                        "TAPESTRIES",
+                        "ZOOLOGICAL"
+                    ]
+                }
+            ]
+        },
+        "NL": {
+            "standard": 21.0,
+            "reduced": [
+                {
+                    "rate": 9.0,
+                    "type": "reduced",
+                    "categories": [
+                        "ACCOMMODATION",
+                        "ANTIQUES",
+                        "CLOTHING_REPAIR",
+                        "CULTURAL_EVENTS",
+                        "FOODSTUFFS",
+                        "HAIRDRESSING",
+                        "LOAN_LIBRARIES",
+                        "MEDICAL_EQUIPMENT",
+                        "PHARMACEUTICAL_PRODUCTS",
+                        "PLANT",
+                        "PRIVATE_DWELLINGS",
+                        "RESTAURANT",
+                        "SHOES_REPAIR",
+                        "SPORTING_EVENTS",
+                        "SUPPLY_WATER",
+                        "TRANSPORT_PASSENGERS",
+                        "WINDOW_CLEANING",
+                        "WRITERS_SERVICES"
+                    ]
+                }
+            ]
+        },
+        "PL": {
+            "standard": 23.0,
+            "reduced": [
+                {
+                    "rate": 8.0,
+                    "type": "reduced",
+                    "categories": [
+                        "100_YEARS_OLD",
+                        "ACCOMMODATION",
+                        "AGRICULTURAL_PRODUCTION",
+                        "BROADCASTING_SERVICES",
+                        "CLOTHING_REPAIR",
+                        "CULTURAL_EVENTS",
+                        "FOODSTUFFS",
+                        "HAIRDRESSING",
+                        "HOUSING_PROVISION",
+                        "IMPRESSIONS",
+                        "LOAN_LIBRARIES",
+                        "MEDICAL_EQUIPMENT",
+                        "NEWSPAPERS",
+                        "PERIODICALS",
+                        "PHARMACEUTICAL_PRODUCTS",
+                        "PHOTOGRAPHS",
+                        "PICTURES",
+                        "POSTAGE",
+                        "PRIVATE_DWELLINGS",
+                        "RESTAURANT",
+                        "SCULPTURES",
+                        "SCULPTURE_CASTS",
+                        "SHOES_REPAIR",
+                        "SPORTING_EVENTS",
+                        "STREET_CLEANING",
+                        "SUPPLY_WATER",
+                        "TAPESTRIES",
+                        "TRANSPORT_PASSENGERS",
+                        "UNDERTAKERS_SERVICES",
+                        "WRITERS_SERVICES",
+                        "ZOOLOGICAL"
+                    ]
+                },
+                {
+                    "rate": 8.0,
+                    "type": "super_reduced",
+                    "categories": [
+                        "TEMPORARY_EXEMPTION_RATE"
+                    ]
+                },
+                {
+                    "rate": 5.0,
+                    "type": "reduced",
+                    "categories": [
+                        "CHILDREN_CAR_SEATS",
+                        "FOODSTUFFS",
+                        "LOAN_LIBRARIES",
+                        "PERIODICALS",
+                        "PHARMACEUTICAL_PRODUCTS"
+                    ]
+                }
+            ]
+        },
+        "PT": {
+            "standard": 23.0,
+            "reduced": [
+                {
+                    "rate": 13.0,
+                    "type": "parking",
+                    "categories": [
+                        "NEW_PARKING_RATE"
+                    ]
+                },
+                {
+                    "rate": 13.0,
+                    "type": "reduced",
+                    "categories": [
+                        "FOODSTUFFS",
+                        "FOSSIL_FUEL",
+                        "RESTAURANT",
+                        "SUPPLY_WATER"
+                    ]
+                },
+                {
+                    "rate": 6.0,
+                    "type": "reduced",
+                    "categories": [
+                        "ACCOMMODATION",
+                        "AGRICULTURAL_PRODUCTION",
+                        "CERAMICS",
+                        "DOMESTIC_CARE",
+                        "ENAMELS",
+                        "FOODSTUFFS",
+                        "HOUSING_PROVISION",
+                        "IMPRESSIONS",
+                        "LOAN_LIBRARIES",
+                        "MEDICAL_CARE",
+                        "MEDICAL_EQUIPMENT",
+                        "PHARMACEUTICAL_PRODUCTS",
+                        "PHOTOGRAPHS",
+                        "PICTURES",
+                        "PRIVATE_DWELLINGS",
+                        "SCULPTURES",
+                        "SCULPTURE_CASTS",
+                        "STREET_CLEANING",
+                        "SUPPLY_WATER",
+                        "SUSTAINABLE_ENERGY",
+                        "TAPESTRIES",
+                        "TRANSPORT_PASSENGERS"
+                    ]
+                },
+                {
+                    "rate": 6.0,
+                    "type": "super_reduced",
+                    "categories": [
+                        "TEMPORARY_EXEMPTION_RATE"
+                    ]
+                }
+            ]
+        },
+        "RO": {
+            "standard": 21.0,
+            "reduced": [
+                {
+                    "rate": 11.0,
+                    "type": "reduced",
+                    "categories": [
+                        "ACCOMMODATION",
+                        "AGRICULTURAL_PRODUCTION",
+                        "CULTURAL_EVENTS",
+                        "FOODSTUFFS",
+                        "HOUSING_PROVISION",
+                        "LOAN_LIBRARIES",
+                        "PHARMACEUTICAL_PRODUCTS",
+                        "RESTAURANT",
+                        "SUPPLY_WATER",
+                        "SUSTAINABLE_ENERGY",
+                        "WOOD_ARTICLE98"
+                    ]
+                }
+            ]
+        },
+        "SK": {
+            "standard": 23.0,
+            "reduced": [
+                {
+                    "rate": 19.0,
+                    "type": "reduced",
+                    "categories": [
+                        "FOODSTUFFS",
+                        "RESTAURANT",
+                        "SUPPLY_ELECTRICITY"
+                    ]
+                },
+                {
+                    "rate": 5.0,
+                    "type": "reduced",
+                    "categories": [
+                        "ACCOMMODATION",
+                        "ADMISSION_SPORTING_EVENTS",
+                        "CULTURAL_EVENTS",
+                        "FOODSTUFFS",
+                        "HOUSING_PROVISION",
+                        "MEDICAL_EQUIPMENT",
+                        "NEWSPAPERS",
+                        "PHARMACEUTICAL_PRODUCTS",
+                        "RESTAURANT",
+                        "SOCIAL_WELLBEING",
+                        "SPORTING_EVENTS"
+                    ]
+                }
+            ]
+        },
+        "SI": {
+            "standard": 22.0,
+            "reduced": [
+                {
+                    "rate": 9.5,
+                    "type": "reduced",
+                    "categories": [
+                        "100_YEARS_OLD",
+                        "ACCOMMODATION",
+                        "AGRICULTURAL_PRODUCTION",
+                        "BICYCLES_RENTAL",
+                        "CERAMICS",
+                        "CLOTHING_REPAIR",
+                        "CULTURAL_EVENTS",
+                        "DOMESTIC_CARE",
+                        "ENAMELS",
+                        "FOODSTUFFS",
+                        "HAIRDRESSING",
+                        "HOUSING_PROVISION",
+                        "IMPRESSIONS",
+                        "MEDICAL_EQUIPMENT",
+                        "PHARMACEUTICAL_PRODUCTS",
+                        "PHOTOGRAPHS",
+                        "PICTURES",
+                        "PLANT",
+                        "POSTAGE",
+                        "RESTAURANT",
+                        "SCULPTURES",
+                        "SCULPTURE_CASTS",
+                        "SHOES_REPAIR",
+                        "SPORTING_EVENTS",
+                        "STREET_CLEANING",
+                        "SUPPLY_WATER",
+                        "TAPESTRIES",
+                        "TRANSPORT_PASSENGERS",
+                        "UNDERTAKERS_SERVICES",
+                        "WINDOW_CLEANING",
+                        "WRITERS_SERVICES",
+                        "ZOOLOGICAL"
+                    ]
+                },
+                {
+                    "rate": 5.0,
+                    "type": "reduced",
+                    "categories": [
+                        "LOAN_LIBRARIES",
+                        "RESCUE_EQUIPMENT"
+                    ]
+                }
+            ]
+        },
+        "ES": {
+            "standard": 21.0,
+            "reduced": [
+                {
+                    "rate": 10.0,
+                    "type": "reduced",
+                    "categories": [
+                        "100_YEARS_OLD",
+                        "ACCOMMODATION",
+                        "AGRICULTURAL_PRODUCTION",
+                        "CERAMICS",
+                        "CULTURAL_EVENTS",
+                        "ENAMELS",
+                        "FOODSTUFFS",
+                        "IMPRESSIONS",
+                        "MEDICAL_EQUIPMENT",
+                        "PHARMACEUTICAL_PRODUCTS",
+                        "PHOTOGRAPHS",
+                        "PICTURES",
+                        "POSTAGE",
+                        "PRIVATE_DWELLINGS",
+                        "RESTAURANT",
+                        "SCULPTURES",
+                        "SCULPTURE_CASTS",
+                        "SOCIAL_WELLBEING",
+                        "SPORTING_EVENTS",
+                        "STREET_CLEANING",
+                        "SUPPLY_WATER",
+                        "SUSTAINABLE_ENERGY",
+                        "TAPESTRIES",
+                        "TRANSPORT_PASSENGERS",
+                        "ZOOLOGICAL"
+                    ]
+                },
+                {
+                    "rate": 4.0,
+                    "type": "super_reduced",
+                    "categories": [
+                        "EXEMPTION_SUPERREDUCED"
+                    ]
+                }
+            ]
+        },
+        "SE": {
+            "standard": 25.0,
+            "reduced": [
+                {
+                    "rate": 12.0,
+                    "type": "reduced",
+                    "categories": [
+                        "100_YEARS_OLD",
+                        "ACCOMMODATION",
+                        "CLOTHING_REPAIR",
+                        "IMPRESSIONS",
+                        "PICTURES",
+                        "POSTAGE",
+                        "RESTAURANT",
+                        "SCULPTURES",
+                        "SCULPTURE_CASTS",
+                        "SHOES_REPAIR",
+                        "TAPESTRIES",
+                        "ZOOLOGICAL"
+                    ]
+                },
+                {
+                    "rate": 6.0,
+                    "type": "reduced",
+                    "categories": [
+                        "CULTURAL_EVENTS",
+                        "FOODSTUFFS",
+                        "LOAN_LIBRARIES",
+                        "MEDICAL_EQUIPMENT",
+                        "SPORTING_EVENTS",
+                        "TRANSPORT_PASSENGERS",
+                        "WRITERS_SERVICES"
+                    ]
+                }
+            ]
+        }
+    }
+}

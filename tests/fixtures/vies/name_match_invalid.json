@@ -1,0 +1,14 @@
+{
+  "_synthetic": true,
+  "_note": "Live VIES returns NOT_PROCESSED for every trader field in all tries (BE, MT, DE with and without requester); The INVALID value is an assumption.",
+  "request": {
+    "method": "POST",
+    "url": "https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number",
+    "body_contains": "\"vatNumber\":\"90000004\""
+  },
+  "response": {
+    "status": 200,
+    "body": "{\n  \"countryCode\": \"DE\",\n  \"vatNumber\": \"90000004\",\n  \"requestDate\": \"2026-10-17T12:00:00.000Z\",\n  \"valid\": true,\n  \"requestIdentifier\": \"WAPIAAAAsynthetic\",\n  \"name\": \"---\",\n  \"address\": \"---\",\n  \"traderName\": \"Acme GmbH\",\n  \"traderStreet\": \"---\",\n  \"traderPostalCode\": \"---\",\n  \"traderCity\": \"---\",\n  \"traderCompanyType\": \"---\",\n  \"traderNameMatch\": \"INVALID\",\n  \"traderStreetMatch\": \"NOT_PROCESSED\",\n  \"traderPostalCodeMatch\": \"NOT_PROCESSED\",\n  \"traderCityMatch\": \"NOT_PROCESSED\",\n  \"traderCompanyTypeMatch\": \"NOT_PROCESSED\"\n}",
+    "error": ""
+  }
+}

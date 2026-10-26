@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<ruleset name="VatrightEdd">
+	<file>eu-vat-handling-for-edd.php</file>
+	<file>uninstall.php</file>
+	<file>src</file>
+	<file>tests</file>
+	<exclude-pattern>*/vendor/*</exclude-pattern>
+	<exclude-pattern>*/node_modules/*</exclude-pattern>
+	<exclude-pattern>*/dist/*</exclude-pattern>
+	<arg name="extensions" value="php"/>
+	<arg value="ps"/>
+	<config name="testVersion" value="7.4-"/>
+	<config name="minimum_wp_version" value="6.6"/>
+	<rule ref="PHPCompatibilityWP"/>
+	<rule ref="WordPress-Extra">
+		<exclude name="WordPress.Files.FileName"/>
+	</rule>
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="eu-vat-handling-for-edd"/>
+			</property>
+		</properties>
+	</rule>
+	<rule ref="WordPress.NamingConventions.ValidHookName">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<properties>
+			<property name="prefixes" type="array">
+				<element value="vatright_edd"/>
+				<element value="VatrightEdd"/>
+				<element value="VATRIGHT_EDD"/>
+			</property>
+		</properties>
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+</ruleset>

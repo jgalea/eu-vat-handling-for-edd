@@ -1,0 +1,14 @@
+{
+  "_synthetic": true,
+  "_note": "Transport-level failure.",
+  "request": {
+    "method": "POST",
+    "url": "https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number",
+    "body_contains": "\"vatNumber\":\"90000002\""
+  },
+  "response": {
+    "status": 0,
+    "body": "",
+    "error": "cURL error 28: Operation timed out after 5001 milliseconds"
+  }
+}

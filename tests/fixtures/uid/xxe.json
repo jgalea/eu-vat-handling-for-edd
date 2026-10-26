@@ -1,0 +1,15 @@
+{
+	"request": {
+		"method": "POST",
+		"url": "https://www.uid-wse.admin.ch/V5.0/PublicServices.svc",
+		"body_contains": "<vatNumber>CHE100000005</vatNumber>"
+	},
+	"response": {
+		"status": 200,
+		"body": "<?xml version=\"1.0\"?><!DOCTYPE r [<!ENTITY x SYSTEM \"file:///etc/passwd\">]><s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\"><s:Body><ValidateVatNumberResponse xmlns=\"http://www.uid.admin.ch/xmlns/uid-wse\"><ValidateVatNumberResult>&x;</ValidateVatNumberResult></ValidateVatNumberResponse></s:Body></s:Envelope>",
+		"error": ""
+	},
+	"_recorded_at": null,
+	"_synthetic": true,
+	"_source": "XXE payload"
+}

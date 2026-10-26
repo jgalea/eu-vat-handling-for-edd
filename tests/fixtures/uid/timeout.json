@@ -1,0 +1,15 @@
+{
+	"request": {
+		"method": "POST",
+		"url": "https://www.uid-wse.admin.ch/V5.0/PublicServices.svc",
+		"body_contains": "<vatNumber>CHE100000003</vatNumber>"
+	},
+	"response": {
+		"status": 0,
+		"body": "",
+		"error": "cURL error 28: Operation timed out"
+	},
+	"_recorded_at": null,
+	"_synthetic": true,
+	"_source": "synthetic"
+}

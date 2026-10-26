@@ -1,0 +1,35 @@
+<?php
+
+namespace VatrightEdd\Registry;
+
+class WpHttpTransport implements HttpTransport {
+
+	public function request( string $method, string $url, string $body = '', array $headers = array(), int $timeout = 5 ): array {
+		$timeout = (int) ceil( min( 5.0, max( 1.0, (float) apply_filters( 'vatright_edd_registry_timeout', (float) $timeout ) ) ) );
+
+		$args = array(
+			'method'  => $method,
+			'headers' => $headers,
+			'timeout' => $timeout,
+		);
+
+		if ( '' !== $body ) {
+			$args['body'] = $body;
+		}
+
+		$response = wp_remote_request( $url, $args );
+		if ( is_wp_error( $response ) ) {
+			return array(
+				'status' => 0,
+				'body'   => '',
+				'error'  => $response->get_error_message(),
+			);
+		}
+
+		return array(
+			'status' => (int) wp_remote_retrieve_response_code( $response ),
+			'body'   => (string) wp_remote_retrieve_body( $response ),
+			'error'  => '',
+		);
+	}
+}

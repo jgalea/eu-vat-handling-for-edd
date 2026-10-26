@@ -1,0 +1,22 @@
+includes:
+	- vendor/szepeviktor/phpstan-wordpress/extension.neon
+
+parameters:
+	level: 8
+	paths:
+		- src
+		- eu-vat-handling-for-edd.php
+	bootstrapFiles:
+		- vendor/mralaminahamed/easy-digital-downloads-stubs/easy-digital-downloads-constants-stubs.stub
+	scanFiles:
+		- vendor/mralaminahamed/easy-digital-downloads-stubs/easy-digital-downloads-stubs.stub
+		- vendor/php-stubs/wp-cli-stubs/wp-cli-stubs.php
+	ignoreErrors:
+		-
+			message: '#Function as_[a-z_]+ not found#'
+			path: src/Scheduler.php
+		-
+			message: '#EDD\\Database\\Rows\\TaxRate#'
+			paths:
+				- src/Rates/RateResolver.php
+				- src/Orders/OrderFinaliser.php

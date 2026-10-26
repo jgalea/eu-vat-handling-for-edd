@@ -1,0 +1,12 @@
+{
+  "name": "eu-vat-handling-for-edd",
+  "private": true,
+  "devDependencies": {
+    "@wordpress/env": "^11.17.0",
+    "@playwright/test": "^1.64.1"
+  },
+  "scripts": {
+    "env:start": "wp-env start",
+    "test:e2e": "playwright test"
+  }
+}

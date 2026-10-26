@@ -1,0 +1,13 @@
+{
+    "_recorded_at": "2026-10-17T19:55:24+00:00",
+    "request": {
+        "method": "POST",
+        "url": "https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number",
+        "body_contains": "\"vatNumber\":\"7740001454\""
+    },
+    "response": {
+        "status": 200,
+        "body": "{\n  \"countryCode\" : \"PL\",\n  \"vatNumber\" : \"7740001454\",\n  \"requestDate\" : \"2026-10-17T19:55:24.315Z\",\n  \"valid\" : true,\n  \"requestIdentifier\" : \"\",\n  \"name\" : \"ORLEN SPÓŁKA AKCYJNA\",\n  \"address\" : \"CHEMIKÓW 7\\n09-411 PŁOCK\",\n  \"traderName\" : \"---\",\n  \"traderStreet\" : \"---\",\n  \"traderPostalCode\" : \"---\",\n  \"traderCity\" : \"---\",\n  \"traderCompanyType\" : \"---\",\n  \"traderNameMatch\" : \"NOT_PROCESSED\",\n  \"traderStreetMatch\" : \"NOT_PROCESSED\",\n  \"traderPostalCodeMatch\" : \"NOT_PROCESSED\",\n  \"traderCityMatch\" : \"NOT_PROCESSED\",\n  \"traderCompanyTypeMatch\" : \"NOT_PROCESSED\"\n}",
+        "error": ""
+    }
+}

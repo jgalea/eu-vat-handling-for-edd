@@ -1,0 +1,14 @@
+{
+	"request": {
+		"method": "GET",
+		"url": "https://data.brreg.no/enhetsregisteret/api/enheter/100000001"
+	},
+	"response": {
+		"status": 500,
+		"body": "",
+		"error": ""
+	},
+	"_recorded_at": null,
+	"_synthetic": true,
+	"_source": "synthetic"
+}

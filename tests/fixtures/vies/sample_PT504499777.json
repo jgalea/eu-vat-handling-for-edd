@@ -1,0 +1,13 @@
+{
+    "_recorded_at": "2026-10-17T19:55:34+00:00",
+    "request": {
+        "method": "POST",
+        "url": "https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number",
+        "body_contains": "\"vatNumber\":\"504499777\""
+    },
+    "response": {
+        "status": 200,
+        "body": "{\n  \"countryCode\" : \"PT\",\n  \"vatNumber\" : \"504499777\",\n  \"requestDate\" : \"2026-10-17T19:55:34.349Z\",\n  \"valid\" : true,\n  \"requestIdentifier\" : \"\",\n  \"name\" : \"GALP ENERGIA SGPS S A\",\n  \"address\" : \"AVENIDA DA INDIA 8 ALCANTARA\\nLISBOA\\n1349-065 LISBOA\",\n  \"traderName\" : \"---\",\n  \"traderStreet\" : \"---\",\n  \"traderPostalCode\" : \"---\",\n  \"traderCity\" : \"---\",\n  \"traderCompanyType\" : \"---\",\n  \"traderNameMatch\" : \"NOT_PROCESSED\",\n  \"traderStreetMatch\" : \"NOT_PROCESSED\",\n  \"traderPostalCodeMatch\" : \"NOT_PROCESSED\",\n  \"traderCityMatch\" : \"NOT_PROCESSED\",\n  \"traderCompanyTypeMatch\" : \"NOT_PROCESSED\"\n}",
+        "error": ""
+    }
+}

@@ -1,0 +1,13 @@
+{
+    "_recorded_at": "2026-10-17T19:54:18+00:00",
+    "request": {
+        "method": "POST",
+        "url": "https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number",
+        "body_contains": "\"requesterNumber\":\"20000010\""
+    },
+    "response": {
+        "status": 200,
+        "body": "{\n  \"countryCode\" : \"MT\",\n  \"vatNumber\" : \"20000010\",\n  \"requestDate\" : \"2026-10-17T19:54:18.517Z\",\n  \"valid\" : true,\n  \"requestIdentifier\" : \"17c58933-84e7-491a-b3a6-30989b27d775\",\n  \"name\" : \"Example Ltd\",\n  \"address\" : \"1\\nExample Street\\nVLT 1000\\nValletta\",\n  \"traderName\" : \"---\",\n  \"traderStreet\" : \"---\",\n  \"traderPostalCode\" : \"---\",\n  \"traderCity\" : \"---\",\n  \"traderCompanyType\" : \"---\",\n  \"traderNameMatch\" : \"NOT_PROCESSED\",\n  \"traderStreetMatch\" : \"NOT_PROCESSED\",\n  \"traderPostalCodeMatch\" : \"NOT_PROCESSED\",\n  \"traderCityMatch\" : \"NOT_PROCESSED\",\n  \"traderCompanyTypeMatch\" : \"NOT_PROCESSED\"\n}",
+        "error": ""
+    }
+}

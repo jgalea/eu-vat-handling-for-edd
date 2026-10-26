@@ -1,0 +1,13 @@
+{
+    "_recorded_at": "2026-10-17T19:55:17+00:00",
+    "request": {
+        "method": "POST",
+        "url": "https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number",
+        "body_contains": "\"vatNumber\":\"0202239951\""
+    },
+    "response": {
+        "status": 200,
+        "body": "{\n  \"countryCode\" : \"BE\",\n  \"vatNumber\" : \"0202239951\",\n  \"requestDate\" : \"2026-10-17T19:55:17.934Z\",\n  \"valid\" : true,\n  \"requestIdentifier\" : \"\",\n  \"name\" : \"SA DPU PROXIMUS\",\n  \"address\" : \"Boulevard du Roi AlbertII 27\\n1030 Schaerbeek\",\n  \"traderName\" : \"---\",\n  \"traderStreet\" : \"---\",\n  \"traderPostalCode\" : \"---\",\n  \"traderCity\" : \"---\",\n  \"traderCompanyType\" : \"---\",\n  \"traderNameMatch\" : \"NOT_PROCESSED\",\n  \"traderStreetMatch\" : \"NOT_PROCESSED\",\n  \"traderPostalCodeMatch\" : \"NOT_PROCESSED\",\n  \"traderCityMatch\" : \"NOT_PROCESSED\",\n  \"traderCompanyTypeMatch\" : \"NOT_PROCESSED\"\n}",
+        "error": ""
+    }
+}

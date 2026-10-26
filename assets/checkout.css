@@ -1,0 +1,32 @@
+.vatright-edd-notice:empty {
+	display: none;
+}
+
+.vatright-edd-notice__message {
+	margin: 0 0 0.75em;
+	padding-inline-start: 0.75em;
+	border-inline-start: 3px solid color-mix(in oklch, currentColor 35%, transparent);
+	font-size: 0.875rem;
+	line-height: 1.5;
+}
+
+.vatright-edd-notice__message--verified {
+	border-inline-start-color: oklch(0.55 0.13 150);
+}
+
+.vatright-edd-notice__message--invalid {
+	border-inline-start-color: oklch(0.55 0.2 27);
+}
+
+.vatright-edd-self-certify {
+	display: flex;
+	align-items: center;
+	gap: 0.5em;
+	min-block-size: 2.75rem;
+	margin: 0;
+}
+
+#vatright-edd-notice .vatright-edd-self-certify label {
+	margin: 0;
+	font-weight: normal;
+}

@@ -1,0 +1,14 @@
+{
+	"request": {
+		"method": "GET",
+		"url": "https://api.service.hmrc.gov.uk/organisations/vat/check-vat-number/lookup/333333333"
+	},
+	"response": {
+		"status": 0,
+		"body": "",
+		"error": "cURL error 28: Operation timed out"
+	},
+	"_recorded_at": null,
+	"_synthetic": true,
+	"_source": "HMRC Check a UK VAT number v2 OpenAPI example (downloaded 2026-10-17), not a live response"
+}

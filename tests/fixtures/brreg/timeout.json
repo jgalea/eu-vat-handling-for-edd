@@ -1,0 +1,14 @@
+{
+	"request": {
+		"method": "GET",
+		"url": "https://data.brreg.no/enhetsregisteret/api/enheter/100000002"
+	},
+	"response": {
+		"status": 0,
+		"body": "",
+		"error": "cURL error 28: Operation timed out"
+	},
+	"_recorded_at": null,
+	"_synthetic": true,
+	"_source": "synthetic"
+}

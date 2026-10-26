@@ -1,0 +1,13 @@
+{
+    "_recorded_at": "2026-10-17T19:54:48+00:00",
+    "request": {
+        "method": "POST",
+        "url": "https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number",
+        "body_contains": "\"vatNumber\":\"00905811006\""
+    },
+    "response": {
+        "status": 200,
+        "body": "{\n  \"countryCode\" : \"IT\",\n  \"vatNumber\" : \"00905811006\",\n  \"requestDate\" : \"2026-10-17T19:54:48.691Z\",\n  \"valid\" : true,\n  \"requestIdentifier\" : \"\",\n  \"name\" : \"ENI SPA\",\n  \"address\" : \"PIAZZALE ENRICO MATTEI 1 \\n00144 ROMA RM\\n\",\n  \"traderName\" : \"---\",\n  \"traderStreet\" : \"---\",\n  \"traderPostalCode\" : \"---\",\n  \"traderCity\" : \"---\",\n  \"traderCompanyType\" : \"---\",\n  \"traderNameMatch\" : \"NOT_PROCESSED\",\n  \"traderStreetMatch\" : \"NOT_PROCESSED\",\n  \"traderPostalCodeMatch\" : \"NOT_PROCESSED\",\n  \"traderCityMatch\" : \"NOT_PROCESSED\",\n  \"traderCompanyTypeMatch\" : \"NOT_PROCESSED\"\n}",
+        "error": ""
+    }
+}

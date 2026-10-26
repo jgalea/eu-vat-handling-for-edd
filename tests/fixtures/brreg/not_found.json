@@ -1,0 +1,14 @@
+{
+	"request": {
+		"method": "GET",
+		"url": "https://data.brreg.no/enhetsregisteret/api/enheter/999999999"
+	},
+	"response": {
+		"status": 404,
+		"body": "",
+		"error": ""
+	},
+	"_recorded_at": "2026-10-17T19:54:16Z",
+	"_synthetic": false,
+	"_source": "live GET https://data.brreg.no/enhetsregisteret/api/enheter/999999999"
+}

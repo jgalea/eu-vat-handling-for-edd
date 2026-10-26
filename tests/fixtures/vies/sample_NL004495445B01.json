@@ -1,0 +1,13 @@
+{
+    "_recorded_at": "2026-10-17T19:55:03+00:00",
+    "request": {
+        "method": "POST",
+        "url": "https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number",
+        "body_contains": "\"vatNumber\":\"004495445B01\""
+    },
+    "response": {
+        "status": 200,
+        "body": "{\n  \"countryCode\" : \"NL\",\n  \"vatNumber\" : \"004495445B01\",\n  \"requestDate\" : \"2026-10-17T19:55:03.666Z\",\n  \"valid\" : true,\n  \"requestIdentifier\" : \"\",\n  \"name\" : \"OPENJONGERENVERENIGING DE KOORNBEURS\",\n  \"address\" : \"\\nVOLDERSGRACHT 00001\\n2611ET DELFT\\n\",\n  \"traderName\" : \"---\",\n  \"traderStreet\" : \"---\",\n  \"traderPostalCode\" : \"---\",\n  \"traderCity\" : \"---\",\n  \"traderCompanyType\" : \"---\",\n  \"traderNameMatch\" : \"NOT_PROCESSED\",\n  \"traderStreetMatch\" : \"NOT_PROCESSED\",\n  \"traderPostalCodeMatch\" : \"NOT_PROCESSED\",\n  \"traderCityMatch\" : \"NOT_PROCESSED\",\n  \"traderCompanyTypeMatch\" : \"NOT_PROCESSED\"\n}",
+        "error": ""
+    }
+}

@@ -1,0 +1,13 @@
+{
+    "_recorded_at": "2026-10-17T19:55:40+00:00",
+    "request": {
+        "method": "POST",
+        "url": "https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number",
+        "body_contains": "\"vatNumber\":\"980780684\""
+    },
+    "response": {
+        "status": 200,
+        "body": "{\n  \"countryCode\" : \"XI\",\n  \"vatNumber\" : \"980780684\",\n  \"requestDate\" : \"2026-10-17T19:55:40.402Z\",\n  \"valid\" : false,\n  \"requestIdentifier\" : \"\",\n  \"name\" : \"\",\n  \"address\" : \"\",\n  \"traderName\" : \"---\",\n  \"traderStreet\" : \"---\",\n  \"traderPostalCode\" : \"---\",\n  \"traderCity\" : \"---\",\n  \"traderCompanyType\" : \"---\",\n  \"traderNameMatch\" : \"NOT_PROCESSED\",\n  \"traderStreetMatch\" : \"NOT_PROCESSED\",\n  \"traderPostalCodeMatch\" : \"NOT_PROCESSED\",\n  \"traderCityMatch\" : \"NOT_PROCESSED\",\n  \"traderCompanyTypeMatch\" : \"NOT_PROCESSED\"\n}",
+        "error": ""
+    }
+}

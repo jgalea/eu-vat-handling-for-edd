@@ -1,0 +1,14 @@
+{
+    "_recorded_at": "2026-10-17T19:54:32+00:00",
+    "request": {
+        "method": "POST",
+        "url": "https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number",
+        "body_contains": "\"vatNumber\":\"500\""
+    },
+    "response": {
+        "status": 500,
+        "body": "{\n  \"actionSucceed\" : false,\n  \"errorWrappers\" : [ {\n    \"error\" : \"VOW-ERR-1\",\n    \"message\" : \"An unexpected error occurred. Please retry later or contact the support team.\"\n  } ]\n}",
+        "error": ""
+    },
+    "_note": "Recorded by posting an unparseable body; replayed for vatNumber 500."
+}

@@ -1,0 +1,13 @@
+{
+    "_recorded_at": "2026-10-17T19:54:29+00:00",
+    "request": {
+        "method": "POST",
+        "url": "https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number",
+        "body_contains": "\"requesterNumber\":\"99999999\""
+    },
+    "response": {
+        "status": 200,
+        "body": "{\n  \"actionSucceed\" : false,\n  \"errorWrappers\" : [ {\n    \"error\" : \"INVALID_REQUESTER_INFO\"\n  } ]\n}",
+        "error": ""
+    }
+}
