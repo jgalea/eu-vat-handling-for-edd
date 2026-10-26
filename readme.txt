@@ -5,7 +5,7 @@ Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 7.4
 Requires Plugins: easy-digital-downloads
-Stable tag: 0.1.1
+Stable tag: 0.1.2
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -131,6 +131,9 @@ EU VAT Handling for EDD is a tool, not tax advice. You, the store owner, are res
 5. The EU VAT reports: OSS return and EC Sales List.
 
 == Changelog ==
+
+= 0.1.2 =
+* Fix: on hosts where WordPress fetches over cURL with OpenSSL 3, VIES checks failed and business customers were charged VAT. Registry requests now ask for uncompressed answers.
 
 = 0.1.1 =
 * Orders outside the EU are no longer flagged as a tax mismatch, and a non-EU order charged VAT by mistake now is.
