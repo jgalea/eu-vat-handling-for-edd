@@ -306,7 +306,7 @@ class Recurring {
 			$decision = $decision->with_flag( self::TREATMENT_CHANGED_FLAG );
 		}
 
-		if ( ! $decision->is_vat_exempt() ) {
+		if ( null !== TaxApplier::charged_line( $decision ) ) {
 			$percent = $this->decision_rate( $decision, $product_id );
 			$signup  = self::signup_percent( $subscription );
 			if ( null !== $percent && $signup > 0 && abs( $percent - $signup ) >= 0.005 ) {

@@ -125,6 +125,14 @@ class Barn2Settings {
 		return is_array( $report ) ? $report : null;
 	}
 
+	/**
+	 * Barn2 lists "EU MOSS Number" among the countries of VAT registration, for
+	 * an EU-prefixed number from the non-Union OSS scheme, which charges destination VAT from the first sale.
+	 */
+	public static function oss_country(): bool {
+		return 'EU' === strtoupper( trim( (string) edd_get_option( self::COUNTRY_OPTION, '' ) ) );
+	}
+
 	private static function has( string $option ): bool {
 		$value = edd_get_option( $option, '' );
 		return is_scalar( $value ) && '' !== trim( (string) $value );

@@ -3,6 +3,7 @@
 namespace VatrightEdd\Import;
 
 use DateTimeImmutable;
+use VatrightEdd\Admin\SettingsSection;
 use VatrightEdd\Coexistence;
 use VatrightEdd\Ledger\Backfill;
 
@@ -40,6 +41,7 @@ class ImportScreen {
 		add_filter( 'edd_settings_page_title', array( $this, 'page_title' ), 10, 2 );
 		add_action( 'admin_post_vatright_edd_import_dry', array( $this, 'handle_dry_run' ) );
 		add_action( 'admin_post_vatright_edd_import_run', array( $this, 'handle_run' ) );
+		add_action( 'admin_post_vatright_edd_import_oss', array( $this, 'handle_enable_oss' ) );
 		add_action( 'admin_notices', array( $this, 'notice' ) );
 		add_action( 'load-' . self::SCREEN_ID, array( $this, 'refresh_while_running' ) );
 	}
@@ -120,6 +122,9 @@ class ImportScreen {
 		<p><?php esc_html_e( 'Copies Barn2\'s settings and records each past order\'s VAT treatment from the data Barn2 saved on it. Settings that are already filled in here are kept unless you choose to overwrite them. Importing twice changes nothing the second time.', 'eu-vat-handling-for-edd' ); ?></p>
 		<?php
 		$this->render_progress( $state );
+		if ( $this->imported() ) {
+			$this->render_oss_notice( OssAdvice::for_store( ! empty( $state['destination'] ) ) );
+		}
 		$this->render_form();
 		$this->render_dry_run();
 		$this->render_settings_report();
@@ -136,11 +141,12 @@ class ImportScreen {
 
 	public function handle_dry_run(): void {
 		$this->authorise();
-		$plan = array(
+		$plan        = array(
 			'since'    => $this->posted_since()->format( 'Y-m-d' ),
 			'settings' => ! empty( $_POST['vatright_edd_settings'] ) ? $this->settings->import( ! empty( $_POST['vatright_edd_overwrite'] ), false ) : null, // phpcs:ignore WordPress.Security.NonceVerification.Missing -- checked in authorise().
 			'history'  => ! empty( $_POST['vatright_edd_history'] ) ? $this->importer->dry_run( $this->posted_since() ) : null, // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		);
+		$plan['oss'] = OssAdvice::for_store( ! empty( $plan['history']['destination'] ) );
 		set_transient( self::DRY_TRANSIENT, $plan, HOUR_IN_SECONDS );
 		wp_safe_redirect( self::url() );
 		exit;
@@ -155,6 +161,13 @@ class ImportScreen {
 		if ( ! empty( $_POST['vatright_edd_history'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			$this->importer->start( $this->posted_since() );
 		}
+		wp_safe_redirect( self::url() );
+		exit;
+	}
+
+	public function handle_enable_oss(): void {
+		$this->authorise();
+		OssAdvice::enable();
 		wp_safe_redirect( self::url() );
 		exit;
 	}
@@ -278,6 +291,7 @@ class ImportScreen {
 		}
 		echo '<h2>' . esc_html__( 'Dry run', 'eu-vat-handling-for-edd' ) . '</h2>';
 		echo '<p>' . esc_html__( 'Nothing was written.', 'eu-vat-handling-for-edd' ) . '</p>';
+		$this->render_oss_notice( $plan['oss'] ?? null );
 		if ( is_array( $plan['settings'] ?? null ) ) {
 			$this->render_fields( $plan['settings'] );
 		}
@@ -325,6 +339,29 @@ class ImportScreen {
 				<?php endforeach; ?>
 			</tbody>
 		</table>
+		<?php
+	}
+
+	/**
+	 * Recommends the OSS setting with a link to it and a one-click control.
+	 *
+	 * @param mixed $reason A reason from OssAdvice, or anything else for no notice.
+	 */
+	private function render_oss_notice( $reason ): void {
+		if ( ! in_array( $reason, array( OssAdvice::SETTING, OssAdvice::ORDERS ), true ) ) {
+			return;
+		}
+		?>
+		<div class="notice notice-warning inline">
+			<p><strong><?php esc_html_e( 'Recommended: turn on OSS registration.', 'eu-vat-handling-for-edd' ); ?></strong> <?php echo esc_html( OssAdvice::message( (string) $reason ) ); ?></p>
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+				<?php wp_nonce_field( self::NONCE ); ?>
+				<p>
+					<button type="submit" class="button button-primary" name="action" value="vatright_edd_import_oss"><?php esc_html_e( 'Turn on OSS registration', 'eu-vat-handling-for-edd' ); ?></button>
+					<a href="<?php echo esc_url( SettingsSection::url() ); ?>"><?php esc_html_e( 'Open the setting', 'eu-vat-handling-for-edd' ); ?></a>
+				</p>
+			</form>
+		</div>
 		<?php
 	}
 

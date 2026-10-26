@@ -213,15 +213,16 @@ class OrderFinaliser {
 	}
 
 	/**
-	 * Whether the tax on the order fits the decision: exempt decisions on an
-	 * untaxed order, charged decisions on a taxed one. Free orders fit either.
+	 * Whether the tax on the order fits the decision: decisions that charge
+	 * no VAT (exempt, export, outside the territory) on an untaxed order,
+	 * charged decisions on a taxed one. Free orders fit either.
 	 */
 	private function charged_as_decided( Order $order, Decision $decision ): bool {
 		if ( (float) $order->subtotal - (float) $order->discount <= 0 ) {
 			return true;
 		}
 		$taxed = abs( (float) $order->tax ) > 0.0;
-		return $decision->is_vat_exempt() ? ! $taxed : $taxed;
+		return null === TaxApplier::charged_line( $decision ) ? ! $taxed : $taxed;
 	}
 
 	/**

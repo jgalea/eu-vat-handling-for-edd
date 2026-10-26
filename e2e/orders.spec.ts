@@ -1,4 +1,5 @@
 import { expect, test, type Browser, type Page } from '@playwright/test';
+import { BASE_URL } from './base-url';
 import { CHECKOUTS, NUMBERS, chooseCountry, downloadId, enterVat, latestOrder, notice, openCheckout, purchase, resetState, taxAmount, vatInput, wp, wpEval } from './helpers';
 
 const WORDING = 'Article 196 Council Directive 2006/112/EC';
@@ -21,7 +22,7 @@ async function login( page: Page, user: string, password: string ) {
 }
 
 async function adminPage( browser: Browser ): Promise<Page> {
-	const page = await ( await browser.newContext( { baseURL: 'http://localhost:8911' } ) ).newPage();
+	const page = await ( await browser.newContext( { baseURL: BASE_URL } ) ).newPage();
 	await login( page, 'admin', 'password' );
 	return page;
 }
@@ -123,7 +124,7 @@ test( 'the order screen shows the decision and a re-check records a new entry', 
 test( 'a returning customer sees their last VAT number checked on load', async ( { browser } ) => {
 	expect( wp( 'eval-file', 'wp-content/plugins/eu-vat-handling-for-edd/e2e/returning-customer.php' ) ).toMatch( /@@[1-9]\d*@@/ );
 
-	const context = await browser.newContext( { baseURL: 'http://localhost:8911' } );
+	const context = await browser.newContext( { baseURL: BASE_URL } );
 	const page = await context.newPage();
 	await login( page, 'returning', 'returning-pass' );
 	await page.goto( `/?edd_action=add_to_cart&download_id=${ software }` );

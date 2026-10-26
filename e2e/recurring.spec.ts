@@ -1,10 +1,11 @@
 import { expect, test, type Page } from '@playwright/test';
 import { execFileSync } from 'node:child_process';
+import { BASE_URL } from './base-url';
 import { NUMBERS, chooseCountry, downloadId, enterVat, latestOrder, openCheckout, purchase, wp } from './helpers';
 
 const PLUGIN_DIR = process.env.E2E_PLUGIN_DIR || 'eu-vat-handling-for-edd';
 
-test.use( { baseURL: process.env.E2E_BASE_URL || 'http://localhost:8911' } );
+test.use( { baseURL: BASE_URL } );
 
 function evalFile( file: string, extra: string[] = [] ): any {
 	const args = [ 'wp-env', 'run', 'cli', 'wp', 'eval-file', `wp-content/plugins/${ PLUGIN_DIR }/e2e/${ file }`, ...extra ];

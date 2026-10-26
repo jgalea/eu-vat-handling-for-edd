@@ -1,4 +1,5 @@
 import { defineConfig } from '@playwright/test';
+import { BASE_URL } from './e2e/base-url';
 
 export default defineConfig( {
 	testDir: './e2e',
@@ -9,7 +10,7 @@ export default defineConfig( {
 	workers: 1,
 	retries: 0,
 	use: {
-		baseURL: `http://localhost:${ process.env.WP_PORT || 8911 }`,
+		baseURL: BASE_URL,
 		trace: 'retain-on-failure',
 		screenshot: 'only-on-failure',
 	},

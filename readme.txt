@@ -5,15 +5,19 @@ Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 7.4
 Requires Plugins: easy-digital-downloads
-Stable tag: 0.1.0
+Stable tag: 0.1.1
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
-EU VAT for Easy Digital Downloads: checks VAT numbers, applies reverse charge or destination VAT, tracks the OSS threshold, records each decision.
+Free EU VAT for Easy Digital Downloads. Every order records why it was taxed the way it was, and checkout keeps working when VIES is down.
 
 == Description ==
 
-The plugin decides which VAT treatment each Easy Digital Downloads order gets, applies it through EDD's own tax calculation, and records the decision with its inputs on the order. It's free, has no Pro version, and shows no branding in your store.
+Every order gets a VAT decision and a record of why: the customer's VAT number, the registry's answer, the location evidence and the rule that applied. If a tax office asks how an order was taxed, the answer is on the order.
+
+When VIES is down, checkout keeps working. By default VAT is charged, the order is flagged and the number is checked again later, so an outage is never recorded as an invalid number. When a customer's billing country and IP country disagree, the customer confirms their country instead of the plugin picking one.
+
+The plugin applies each decision through EDD's own tax calculation. It's free, has no Pro version and shows no branding in your store. Stores moving from Barn2's EDD EU VAT can bring their settings and order history across in one import.
 
 Settings live under Downloads > Settings > Taxes > EU VAT. The rates screen is under Downloads > EU VAT and the reports under Downloads > EU VAT reports.
 
@@ -127,6 +131,11 @@ EU VAT Handling for EDD is a tool, not tax advice. You, the store owner, are res
 5. The EU VAT reports: OSS return and EC Sales List.
 
 == Changelog ==
+
+= 0.1.1 =
+* Orders outside the EU are no longer flagged as a tax mismatch, and a non-EU order charged VAT by mistake now is.
+* EDD Invoices shows your seller details when its own company fields are empty, as after moving from Barn2's plugin.
+* The Barn2 import recommends turning on "I'm OSS-registered" when your old setup charged destination VAT.
 
 = 0.1.0 =
 * First release.

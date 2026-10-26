@@ -65,6 +65,26 @@ class InvoiceAddonsTest extends OrdersTestCase {
 		edd_delete_option( 'edd-invoices-tax' );
 	}
 
+	public function test_the_seller_is_named_when_the_add_on_has_no_company_details(): void {
+		$this->settings(
+			array(
+				'seller_company'   => 'Example Store Ltd',
+				'seller_address_1' => '1 Example Street',
+				'seller_city'      => 'Valletta',
+				'seller_postcode'  => 'VLT 1000',
+			)
+		);
+		$order = $this->domestic_charged();
+
+		$html = InvoiceAddonStandIns::html_invoice( $order );
+		$this->assertSame( 1, substr_count( $html, 'Example Store Ltd' ) );
+		$this->assertStringContainsString( '1 Example Street', $html );
+
+		edd_update_option( 'edd-invoices-company-name', 'Their Name Ltd' );
+		$this->assertStringNotContainsString( 'Example Store Ltd', InvoiceAddonStandIns::html_invoice( $order ), 'The add-on prints its own company details.' );
+		edd_delete_option( 'edd-invoices-company-name' );
+	}
+
 	public function test_the_receipt_setting_switches_the_invoice_output_off(): void {
 		$order = $this->reverse_charged();
 		$this->settings( array( 'receipt_vat_details' => false ) );

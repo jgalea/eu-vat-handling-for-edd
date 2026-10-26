@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { BASE_URL } from './base-url';
 import { CHECKOUTS, NUMBERS, chooseCountry, downloadId, enterVat, fillCustomer, latestOrder, notice, openCheckout, purchase, resetState, taxAmount, vatInput } from './helpers';
 
 let software: number;
@@ -72,7 +73,7 @@ for ( const [ name, path ] of Object.entries( CHECKOUTS ) ) {
 		} );
 
 		test( 'a location that disagrees with the billing country asks for self-certification', async ( { page, context } ) => {
-			await context.addCookies( [ { name: 'vatright_edd_e2e_ip_country', value: 'FR', url: 'http://localhost:8911' } ] );
+			await context.addCookies( [ { name: 'vatright_edd_e2e_ip_country', value: 'FR', url: BASE_URL } ] );
 			await openCheckout( page, path, software );
 			await chooseCountry( page, 'DE' );
 

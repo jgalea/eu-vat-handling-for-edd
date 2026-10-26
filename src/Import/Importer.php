@@ -6,6 +6,7 @@ use DateTimeImmutable;
 use DateTimeZone;
 use EDD\Orders\Order;
 use Throwable;
+use VatrightEdd\Checkout\InputGatherer;
 use VatrightEdd\Coexistence;
 use VatrightEdd\Ledger\Backfill;
 use VatrightEdd\Ledger\Fx;
@@ -73,7 +74,7 @@ class Importer {
 	/**
 	 * Counts, per quarter and scheme, what a run from $since would write.
 	 *
-	 * @return array{orders:int,rows:int,barn2_orders:int,backfill_orders:int,quarters:array<string,array{orders:int,rows:int,schemes:array<string,int>}>}
+	 * @return array{orders:int,rows:int,barn2_orders:int,backfill_orders:int,destination:bool,quarters:array<string,array{orders:int,rows:int,schemes:array<string,int>}>}
 	 */
 	public function dry_run( DateTimeImmutable $since ): array {
 		$report = array(
@@ -81,10 +82,12 @@ class Importer {
 			'rows'            => 0,
 			'barn2_orders'    => 0,
 			'backfill_orders' => 0,
+			'destination'     => false,
 			'quarters'        => array(),
 		);
 
 		foreach ( $this->walk( $since ) as $order ) {
+			$report['destination'] = $report['destination'] || $this->charged_destination( $order );
 			if ( $this->done( $order ) ) {
 				continue;
 			}
@@ -167,6 +170,7 @@ class Importer {
 		}
 
 		foreach ( $orders as $order ) {
+			$state['destination'] = ! empty( $state['destination'] ) || $this->charged_destination( $order );
 			if ( $this->done( $order ) ) {
 				continue;
 			}
@@ -192,6 +196,24 @@ class Importer {
 		$state['finished'] = $more ? '' : gmdate( 'Y-m-d H:i:s' );
 		$this->save( $state );
 		return $more;
+	}
+
+	/**
+	 * Whether Barn2 charged this order's consumer the destination country's
+	 * rate. Orders the import already handled count too, so a second run
+	 * recommends the same.
+	 */
+	private function charged_destination( Order $order ): bool {
+		$order_id = (int) $order->id;
+		if ( ! Barn2History::has_barn2_meta( $order_id ) || abs( (float) $order->tax ) <= 0.0 ) {
+			return false;
+		}
+		$address = $order->get_address();
+		$billing = $address && ! empty( $address->country ) ? strtoupper( (string) $address->country ) : '';
+		$store   = InputGatherer::store_country();
+		$charged = '' === $billing ? '' : $this->backfill->charged_country( $order, $billing, $store );
+		$number  = '' !== trim( (string) edd_get_order_meta( $order_id, Barn2History::NUMBER_META, true ) );
+		return OssAdvice::destination_charge( $billing, $store, $charged, $number );
 	}
 
 	/**
@@ -221,15 +243,16 @@ class Importer {
 	private function begin( DateTimeImmutable $since ): void {
 		$this->save(
 			array(
-				'status'   => self::RUNNING,
-				'since'    => $since->format( 'Y-m-d' ),
-				'offset'   => 0,
-				'orders'   => 0,
-				'rows'     => 0,
-				'failed'   => 0,
-				'prepared' => false,
-				'started'  => gmdate( 'Y-m-d H:i:s' ),
-				'finished' => '',
+				'status'      => self::RUNNING,
+				'since'       => $since->format( 'Y-m-d' ),
+				'offset'      => 0,
+				'orders'      => 0,
+				'rows'        => 0,
+				'failed'      => 0,
+				'destination' => false,
+				'prepared'    => false,
+				'started'     => gmdate( 'Y-m-d H:i:s' ),
+				'finished'    => '',
 			)
 		);
 	}

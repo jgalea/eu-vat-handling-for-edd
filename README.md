@@ -5,11 +5,15 @@
   <a href="https://github.com/jgalea"><img alt="Built by" src="https://img.shields.io/badge/BUILT%20BY-JEAN%20GALEA-8A2BE2?style=for-the-badge"></a>
 </p>
 
-<p align="center"><b>Free EU VAT handling for Easy Digital Downloads: number validation, reverse charge, the OSS threshold and a decision record on every order.</b></p>
+<p align="center"><b>Free EU VAT handling for Easy Digital Downloads: number validation, reverse charge, the OSS threshold and a record on every order of why it was taxed that way.</b></p>
 
 ## What it does
 
-The plugin decides the VAT treatment of each order, applies it through EDD's own tax calculation and stores the decision, with its inputs, on the order.
+Every order gets a VAT decision and a record of why: the customer's VAT number, the registry's answer, the location evidence and the rule that applied. If a tax office asks how an order was taxed, the answer is on the order.
+
+When VIES is down, checkout keeps working. By default VAT is charged, the order is flagged and the number is checked again later, so an outage is never recorded as an invalid number. When the billing and IP countries disagree, the customer confirms their country instead of the plugin picking one.
+
+The decision is applied through EDD's own tax calculation.
 
 - VAT number field on the block and shortcode checkouts, checked against VIES (EU), HMRC (GB, with your own credentials), the Swiss UID register and the Brønnøysund register (Norway).
 - Reverse charge for valid B2B numbers, with the legal wording on receipts, emails, EDD Invoices and EDD PDF Invoices.

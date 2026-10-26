@@ -272,7 +272,7 @@ class Backfill {
 	 * charged tells: the store's rate means origin VAT, anything else is taken
 	 * to be the destination's.
 	 */
-	private function charged_country( Order $order, string $customer, string $store ): string {
+	public function charged_country( Order $order, string $customer, string $store ): string {
 		$row     = get_object_vars( (object) $order->get_tax_rate_object() );
 		$country = (string) ( $row['country'] ?? $row['name'] ?? '' );
 		if ( '' !== $country ) {

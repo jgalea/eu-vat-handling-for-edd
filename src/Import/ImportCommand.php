@@ -38,6 +38,9 @@ class ImportCommand {
 	 * [--overwrite]
 	 * : Replace settings that are already filled in here.
 	 *
+	 * [--oss-registered]
+	 * : Turn on "I am registered for the One Stop Shop", so destination VAT is always charged. Without it the import only recommends the setting when Barn2 charged destination VAT.
+	 *
 	 * @subcommand import-barn2
 	 *
 	 * @param array<int,string>   $args  Positional arguments.

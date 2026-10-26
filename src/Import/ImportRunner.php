@@ -4,7 +4,9 @@ namespace VatrightEdd\Import;
 
 use DateTimeImmutable;
 use InvalidArgumentException;
+use VatrightEdd\Admin\SettingsSection;
 use VatrightEdd\Ledger\Backfill;
+use VatrightEdd\Settings;
 
 class ImportRunner {
 
@@ -57,6 +59,7 @@ class ImportRunner {
 		$settings  = empty( $assoc['history-only'] );
 		$history   = empty( $assoc['settings-only'] );
 		$overwrite = ! empty( $assoc['overwrite'] );
+		$oss       = ! empty( $assoc['oss-registered'] );
 		$since     = $this->since( isset( $assoc['since'] ) ? (string) $assoc['since'] : '' );
 		$lines     = array();
 
@@ -75,20 +78,44 @@ class ImportRunner {
 			}
 		}
 
+		if ( $oss ) {
+			$lines[] = $this->register_oss( $dry );
+		}
+
+		$destination = false;
 		if ( $history ) {
 			$lines[] = $dry ? 'History from ' . $since->format( 'Y-m-d' ) . ' (dry run, nothing written):' : 'History from ' . $since->format( 'Y-m-d' ) . ':';
 			if ( $dry ) {
-				$lines = array_merge( $lines, self::describe( $this->importer->dry_run( $since ) ) );
+				$plan        = $this->importer->dry_run( $since );
+				$destination = $plan['destination'];
+				$lines       = array_merge( $lines, self::describe( $plan ) );
 			} else {
 				$state = $this->importer->run_all( $since );
 				if ( null === $state ) {
 					throw new InvalidArgumentException( 'An import is already running. Wait for it to finish.' );
 				}
-				$lines[] = sprintf( '  Imported %d orders and %d ledger rows; %d failed.', (int) $state['orders'], (int) $state['rows'], (int) $state['failed'] );
+				$destination = ! empty( $state['destination'] );
+				$lines[]     = sprintf( '  Imported %d orders and %d ledger rows; %d failed.', (int) $state['orders'], (int) $state['rows'], (int) $state['failed'] );
 			}
 		}
 
+		$reason = $oss ? null : OssAdvice::for_store( $destination );
+		if ( null !== $reason ) {
+			$lines[] = 'Recommendation: ' . OssAdvice::message( $reason ) . ' Run again with --oss-registered, or change it at ' . SettingsSection::url();
+		}
+
 		return $lines;
+	}
+
+	private function register_oss( bool $dry ): string {
+		if ( Settings::get()->oss_registered() ) {
+			return 'OSS registration: already on.';
+		}
+		if ( $dry ) {
+			return 'OSS registration (dry run, nothing written): would turn on "' . OssAdvice::setting_label() . '".';
+		}
+		OssAdvice::enable();
+		return 'OSS registration: turned on "' . OssAdvice::setting_label() . '".';
 	}
 
 	/**

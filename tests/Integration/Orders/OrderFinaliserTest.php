@@ -213,6 +213,25 @@ class OrderFinaliserTest extends OrdersTestCase {
 		$this->assertSame( $this->active_rate_id( 'DE' ), (int) $this->fresh( $order )->tax_rate_id );
 	}
 
+	public function test_an_untaxed_order_outside_the_eu_is_not_flagged(): void {
+		$this->buy( $this->download(), 'US' );
+		$order = $this->place_order( 'US' );
+
+		$this->assertSame( 0.0, (float) $order->tax );
+		$decision = DecisionStore::get( (int) $order->id );
+		$this->assertSame( Scheme::EXPORT, $decision->scheme() );
+		$this->assertNotContains( OrderFinaliser::TAX_DIFFERS_FLAG, $decision->flags() );
+	}
+
+	public function test_control_a_taxed_order_outside_the_eu_is_flagged(): void {
+		$this->buy( $this->download(), 'US' );
+		$order = $this->place_order( 'US' );
+		edd_update_order( $order->id, array( 'tax' => 18 ) );
+		do_action( 'edd_updated_edited_purchase', $order->id );
+
+		$this->assertContains( OrderFinaliser::TAX_DIFFERS_FLAG, DecisionStore::get( (int) $order->id )->flags() );
+	}
+
 	public function test_a_free_order_is_not_flagged(): void {
 		$this->buy( $this->download( 0.0 ), 'FR' );
 		$order = $this->place_order( 'FR' );

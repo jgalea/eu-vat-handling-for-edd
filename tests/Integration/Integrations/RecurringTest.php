@@ -5,6 +5,7 @@ namespace VatrightEdd\Tests\Integration\Integrations;
 use EDD\Orders\Order;
 use EDD_Subscription;
 use VatrightEdd\Checkout\InputGatherer;
+use VatrightEdd\Checkout\TaxApplier;
 use VatrightEdd\Domain\Rules;
 use VatrightEdd\Domain\Scheme;
 use VatrightEdd\Integrations\Recurring;
@@ -188,6 +189,18 @@ class RecurringTest extends LedgerTestCase {
 		$row = $this->rows( (int) $renewal->id )[0];
 		$this->assertSame( 'FR', $row['place_of_supply'] );
 		$this->assertSame( 19.67, (float) $row['vat'] );
+	}
+
+	public function test_a_renewal_outside_the_eu_records_no_vat_without_warnings(): void {
+		$parent  = $this->parent_order( 'US' );
+		$renewal = $this->renew( $this->subscribe( $parent, 0 ), 100.0 );
+
+		$this->assertSame( 0.0, (float) $renewal->tax );
+		$decision = DecisionStore::get( (int) $renewal->id );
+		$this->assertSame( Scheme::EXPORT, $decision->scheme() );
+		$this->assertNotContains( Recurring::VAT_NOT_CHARGED_FLAG, $decision->flags() );
+		$this->assertNotContains( TaxApplier::MISSING_FLAG, $decision->flags() );
+		$this->assertNotContains( OrderFinaliser::TAX_DIFFERS_FLAG, DecisionStore::get( (int) $parent->id )->flags() );
 	}
 
 	public function test_a_number_that_turned_invalid_is_flagged_and_no_vat_is_taken_from_a_net_priced_gross(): void {
