@@ -41,9 +41,13 @@ class Revalidation {
 	/** @var RevalidatedEmail */
 	private $email;
 
-	public function __construct( Validator $validator, ?RevalidatedEmail $email = null ) {
+	/** @var VatRefund|null */
+	private $refund;
+
+	public function __construct( Validator $validator, ?RevalidatedEmail $email = null, ?VatRefund $refund = null ) {
 		$this->validator = $validator;
 		$this->email     = $email ?? new RevalidatedEmail();
+		$this->refund    = $refund;
 	}
 
 	public function register(): void {
@@ -128,7 +132,12 @@ class Revalidation {
 			return;
 		}
 		edd_insert_payment_note( $order_id, __( 'VAT was charged because the registry was unavailable. The number is valid, so the customer may be due a refund of the VAT.', 'eu-vat-handling-for-edd' ) );
-		$this->notify( $order_id, RevalidatedEmail::REFUND );
+		$outcome = null === $this->refund ? VatRefund::OFF : $this->refund->refund_if_enabled( $order_id );
+		if ( VatRefund::REFUNDED === $outcome ) {
+			$this->notify( $order_id, RevalidatedEmail::REFUNDED );
+		} elseif ( ! in_array( $outcome, array( VatRefund::ALREADY, VatRefund::BUSY ), true ) ) {
+			$this->notify( $order_id, RevalidatedEmail::REFUND );
+		}
 	}
 
 	private function settle_invalid( int $order_id, Decision $decision, ValidationResult $result, string $trigger, int $actor ): void {

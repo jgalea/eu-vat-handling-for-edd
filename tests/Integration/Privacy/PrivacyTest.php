@@ -194,4 +194,46 @@ class PrivacyTest extends LedgerTestCase {
 	public function test_the_policy_text_names_the_retention_period(): void {
 		$this->assertStringContainsString( '10 years', $this->privacy->policy_text() );
 	}
+
+	public function test_a_scrub_blanks_the_numbers_in_the_edit_log_but_keeps_who_and_why(): void {
+		$order = $this->reverse_charged_order( '2010-03-10 10:00:00' );
+		DecisionStore::apply(
+			(int) $order->id,
+			DecisionStore::get( (int) $order->id ),
+			'admin_vat_edit',
+			3,
+			array(
+				'reason'  => 'Typo in the number',
+				'changes' => array( 'vat_number' => array( 'DE111111111', self::VALID_DE ) ),
+			)
+		);
+
+		$this->privacy->erase( self::EMAIL );
+
+		$log   = DecisionStore::log( (int) $order->id );
+		$entry = $log[ count( $log ) - 1 ];
+		$this->assertSame( array( null, null ), $entry['detail']['changes']['vat_number'] );
+		$this->assertSame( 'Typo in the number', $entry['detail']['reason'] );
+		$this->assertStringNotContainsString( 'DE111111111', (string) wp_json_encode( $log ) );
+	}
+
+	public function test_an_order_whose_only_number_is_in_the_edit_log_still_counts_as_holding_personal_data(): void {
+		$order = $this->reverse_charged_order( '2010-03-10 10:00:00' );
+		edd_delete_order_meta( (int) $order->id, DecisionStore::NUMBER_META );
+		$record               = DecisionStore::get( (int) $order->id )->to_array();
+		$record['vat_number'] = null;
+		$record['validation'] = null;
+		edd_update_order_meta( (int) $order->id, DecisionStore::META, wp_slash( (string) wp_json_encode( $record ) ) );
+		$this->assertFalse( Retention::holds_personal_data( $this->fresh( $order ) ), 'The control: nothing else holds a number.' );
+
+		DecisionStore::apply(
+			(int) $order->id,
+			DecisionStore::get( (int) $order->id ),
+			'admin_vat_edit',
+			3,
+			array( 'changes' => array( 'vat_number' => array( self::VALID_DE, '' ) ) )
+		);
+
+		$this->assertTrue( Retention::holds_personal_data( $this->fresh( $order ) ) );
+	}
 }

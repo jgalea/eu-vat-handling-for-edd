@@ -5,7 +5,7 @@ Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 7.4
 Requires Plugins: easy-digital-downloads
-Stable tag: 0.1.3
+Stable tag: 0.1.4
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -35,6 +35,8 @@ It needs Easy Digital Downloads 3.1 or later with taxes turned on.
 * Records the decision on every order: the number, the registry answer, the VIES consultation number when you've entered your own VAT number, the location evidence and the rule that applied. It also corrects the tax rate EDD links to the order, so refunds and renewals use the right one. An EU VAT section on the order screen shows the decision, with a log and a button to re-check the number.
 * Records orders that skip EDD's checkout checks too, such as wallet payments and manual orders added in the admin, and flags the ones it couldn't decide cleanly.
 * Re-checks numbers that couldn't be validated at checkout and can email you when one validates after the order was placed.
+* Lets a shop manager correct the VAT number, the country of evidence and the treatment on an order, with a required reason. The change is added to the decision log with who, when, old and new values, and the OSS and EC Sales List reports follow. It never changes the amounts charged or refunds anything.
+* Optional: refunds the VAT automatically, through EDD's own refund, when a number that couldn't be checked at checkout validates later. Off by default.
 * Quarterly OSS return and EC Sales List reports with CSV export, in EUR. Orders in other currencies are converted at the ECB reference rate. Refunds and revoked orders are recorded against the period they belong to.
 * Reports for a quarter, a month or any date range, in the screen, the CSV and the REST endpoints, for countries that want the EC Sales List monthly.
 * Emails the store admin when EU sales to consumers reach a share of the EUR 10,000 OSS threshold (80% by default) and again when they pass it, once a year per level. You can turn it off or change the share.
@@ -64,6 +66,12 @@ While Barn2's plugin is active, this plugin only offers the import and doesn't t
 = What happens when VIES is down? =
 
 Checkout still works. By default the order is accepted, VAT is charged and the order is flagged as pending validation. The plugin checks the number again later and, if it validates, marks the order and can email you so you can refund the VAT. The setting "When a registry is unavailable" offers two alternatives: accept the order, exempt the VAT and re-check later, or don't accept the order. Registry requests time out after a few seconds. When VIES turns your store away for sending too many requests, or the plugin's own hourly lookup limit is reached, VAT is charged whatever that setting says, because visitors can cause either. Exempting while a registry is down lets anyone enter a made-up number for that country, so the VAT is yours to recover if the re-check fails.
+
+= When does the plugin refund VAT automatically? =
+
+Only when the setting "Refund the VAT automatically when a number validates after the order" is on (it's off by default), and only for an order that was charged VAT because the registry was down at checkout, when the registry then confirms the number is valid and the order would be reverse-charged with it. The plugin then creates a partial refund in EDD for exactly the VAT charged, once. The order's own totals stay as they were and the refund shows in EDD like one you made yourself, in the decision log and in the VAT reports, in the period of the refund.
+
+It does not refund when the order was already refunded in part, when the tax on the order doesn't match the VAT decision, when EDD won't refund the order (its status or refund window), or when the order was paid through a gateway other than EDD's Store Gateway. Those orders are flagged and get an order note, and you get the usual email, so you can decide. EDD's refund only records the refund unless it's issued from its refund form, so for payment providers the plugin doesn't refund through, the money has to be returned by you. A developer can add a gateway with the vatright_edd_auto_refund_gateways filter once refunds on it move money without the form.
 
 = How do I validate UK VAT numbers? =
 
@@ -134,6 +142,10 @@ EU VAT Handling for EDD is a tool, not tax advice. You, the store owner, are res
 5. The EU VAT reports: OSS return and EC Sales List.
 
 == Changelog ==
+
+= 0.1.4 =
+* Correct an order's VAT number, country of evidence or treatment from the order screen. Each correction needs a reason and is logged with your name; the reports follow, the amounts don't change.
+* Optional automatic VAT refund when a number validates after the order, off by default. It only acts on gateways where EDD itself returns the money (the Store Gateway); other orders are flagged for you to refund. See the FAQ.
 
 = 0.1.3 =
 * OSS return and EC Sales List reports for a month or any date range, as well as by quarter, in the screen, CSV and REST.

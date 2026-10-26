@@ -37,6 +37,7 @@ class Settings {
 			'threshold_warning_percent'    => 80,
 			'self_certification'           => true,
 			'notify_admin_on_revalidation' => true,
+			'auto_refund_on_validation'    => false,
 			'retention_years'              => 10,
 			'hmrc_client_id'               => '',
 			'hmrc_client_secret'           => '',
@@ -124,6 +125,10 @@ class Settings {
 
 	public function notify_admin_on_revalidation(): bool {
 		return (bool) $this->value( 'notify_admin_on_revalidation' );
+	}
+
+	public function auto_refund_on_validation(): bool {
+		return (bool) $this->value( 'auto_refund_on_validation' );
 	}
 
 	public function retention_years(): int {

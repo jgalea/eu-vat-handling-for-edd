@@ -87,7 +87,7 @@ class Retention {
 	}
 
 	public static function holds_personal_data( Order $order ): bool {
-		if ( '' !== (string) edd_get_order_meta( (int) $order->id, DecisionStore::NUMBER_META, true ) ) {
+		if ( '' !== (string) edd_get_order_meta( (int) $order->id, DecisionStore::NUMBER_META, true ) || DecisionStore::log_holds_numbers( (int) $order->id ) ) {
 			return true;
 		}
 		foreach ( self::FOREIGN_PERSONAL_META as $key ) {
@@ -118,6 +118,7 @@ class Retention {
 		$changed  = self::holds_personal_data( $order );
 
 		edd_delete_order_meta( $order_id, DecisionStore::NUMBER_META );
+		DecisionStore::redact_log_numbers( $order_id );
 		foreach ( self::FOREIGN_PERSONAL_META as $key ) {
 			edd_delete_order_meta( $order_id, $key );
 		}

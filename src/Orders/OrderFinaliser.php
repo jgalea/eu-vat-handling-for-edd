@@ -8,6 +8,7 @@ use VatrightEdd\Checkout\CartState;
 use VatrightEdd\Checkout\Decider;
 use VatrightEdd\Checkout\InputGatherer;
 use VatrightEdd\Checkout\TaxApplier;
+use VatrightEdd\Domain\Correction;
 use VatrightEdd\Domain\Decision;
 use VatrightEdd\Domain\Rules;
 use VatrightEdd\Domain\ValidationResult;
@@ -38,6 +39,8 @@ class OrderFinaliser {
 	const MANUAL = 'manual';
 
 	const EDITED = 'admin_edit';
+
+	const ADMIN_CORRECTED_FLAG = Correction::FLAG;
 
 	const RECHECK = 'recheck';
 
@@ -101,6 +104,19 @@ class OrderFinaliser {
 		return $this->decide( $order, self::RECHECK, trim( $raw_number ), true, $actor );
 	}
 
+	/**
+	 * What the rules decide for the order as it stands, with the registry
+	 * answer already on file. Nothing is stored and the registry is not asked.
+	 */
+	public function preview( int $order_id ): ?Decision {
+		$order = self::sale( $order_id );
+		if ( null === $order ) {
+			return null;
+		}
+		$carry = $this->carry( $order, self::RECHECK, null, DecisionStore::get( $order_id ) );
+		return $this->rules->decide( $this->gatherer->from_order( $order, self::RECHECK, $carry, false, false ) );
+	}
+
 	private function guarded( int $order_id, string $trigger ): void {
 		try {
 			$order = self::sale( $order_id );
@@ -135,7 +151,7 @@ class OrderFinaliser {
 		if ( ! $billing || empty( $billing->country ) ) {
 			$decision = $decision->with_flag( self::NO_ADDRESS_FLAG );
 		}
-		$consistent = $this->charged_as_decided( $order, $decision );
+		$consistent = self::tax_fits( $order, $decision );
 		if ( ! $consistent ) {
 			$decision = $decision->with_flag( self::TAX_DIFFERS_FLAG );
 		}
@@ -217,7 +233,7 @@ class OrderFinaliser {
 	 * no VAT (exempt, export, outside the territory) on an untaxed order,
 	 * charged decisions on a taxed one. Free orders fit either.
 	 */
-	private function charged_as_decided( Order $order, Decision $decision ): bool {
+	public static function tax_fits( Order $order, Decision $decision ): bool {
 		if ( (float) $order->subtotal - (float) $order->discount <= 0 ) {
 			return true;
 		}

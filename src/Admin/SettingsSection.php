@@ -92,6 +92,7 @@ class SettingsSection {
 				$this->checkbox_row( 'self_certification', __( 'Self-certification', 'eu-vat-handling-for-edd' ), __( 'Ask digital customers to confirm their country when the evidence conflicts', 'eu-vat-handling-for-edd' ), $s->self_certification() );
 				$this->checkbox_row( 'allow_domestic_exemption', __( 'Domestic B2B', 'eu-vat-handling-for-edd' ), __( 'Allow VAT exemption for valid numbers from the store country', 'eu-vat-handling-for-edd' ), $s->allow_domestic_exemption() );
 				$this->checkbox_row( 'notify_admin_on_revalidation', __( 'Revalidation emails', 'eu-vat-handling-for-edd' ), __( 'Email the admin when a number validates after the order was placed', 'eu-vat-handling-for-edd' ), $s->notify_admin_on_revalidation() );
+				$this->checkbox_row( 'auto_refund_on_validation', __( 'Automatic VAT refund', 'eu-vat-handling-for-edd' ), __( 'Refund the VAT automatically when a number validates after the order', 'eu-vat-handling-for-edd' ), $s->auto_refund_on_validation(), __( 'Off by default. Refunds exactly the VAT charged, once, through EDD, and only when EDD can refund the order and the gateway is one that supports it. Otherwise the order is flagged for you to handle.', 'eu-vat-handling-for-edd' ) );
 				$this->checkbox_row( 'oss_registered', __( 'OSS', 'eu-vat-handling-for-edd' ), __( 'I am registered for the One Stop Shop (always charge destination VAT)', 'eu-vat-handling-for-edd' ), $s->oss_registered() );
 				$this->checkbox_row( 'threshold_warning', __( 'Threshold warning', 'eu-vat-handling-for-edd' ), __( 'Email the admin when EU sales near and pass the EUR 10,000 OSS threshold', 'eu-vat-handling-for-edd' ), $s->threshold_warning() );
 				$this->number_row( 'threshold_warning_percent', __( 'Warn at (% of the threshold)', 'eu-vat-handling-for-edd' ), $s->threshold_warning_percent(), 1, 99 );
@@ -232,6 +233,7 @@ class SettingsSection {
 			'threshold_warning_percent'    => $number( 'threshold_warning_percent', 1, 99 ),
 			'self_certification'           => ! empty( $posted['self_certification'] ),
 			'notify_admin_on_revalidation' => ! empty( $posted['notify_admin_on_revalidation'] ),
+			'auto_refund_on_validation'    => ! empty( $posted['auto_refund_on_validation'] ),
 			'retention_years'              => $number( 'retention_years', 1, 30 ),
 			'hmrc_client_id'               => $client_id,
 			'hmrc_client_secret'           => $secret,
@@ -333,13 +335,14 @@ class SettingsSection {
 		);
 	}
 
-	private function checkbox_row( string $key, string $title, string $label, bool $checked ): void {
+	private function checkbox_row( string $key, string $title, string $label, bool $checked, string $description = '' ): void {
 		printf(
-			'<tr><th scope="row">%1$s</th><td><label><input type="checkbox" name="%2$s" value="1"%3$s /> %4$s</label></td></tr>',
+			'<tr><th scope="row">%1$s</th><td><label><input type="checkbox" name="%2$s" value="1"%3$s /> %4$s</label>%5$s</td></tr>',
 			esc_html( $title ),
 			esc_attr( $this->name( $key ) ),
 			checked( $checked, true, false ),
-			esc_html( $label )
+			esc_html( $label ),
+			'' === $description ? '' : '<p class="description">' . esc_html( $description ) . '</p>'
 		);
 	}
 

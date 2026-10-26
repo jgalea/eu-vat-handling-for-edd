@@ -37,9 +37,12 @@ final class DecisionStore {
 	/**
 	 * Stores the decision and keeps the number and Recurring's flag in step
 	 * with it. A log entry is only added when the outcome differs from the one
-	 * already stored.
+	 * already stored, or when the caller passes detail to record (a reason, a
+	 * refund) that must be logged either way.
+	 *
+	 * @param array<string,mixed> $detail
 	 */
-	public static function apply( int $order_id, Decision $decision, string $trigger, int $actor = 0 ): void {
+	public static function apply( int $order_id, Decision $decision, string $trigger, int $actor = 0, array $detail = array() ): void {
 		$previous = self::get( $order_id );
 		$record   = $decision->to_array();
 
@@ -59,27 +62,53 @@ final class DecisionStore {
 			edd_delete_order_meta( $order_id, self::REVERSE_CHARGED_META );
 		}
 
-		if ( null !== $previous && self::signature( $previous ) === self::signature( $decision ) ) {
+		if ( array() === $detail && null !== $previous && self::signature( $previous ) === self::signature( $decision ) ) {
 			return;
 		}
-		edd_add_order_meta(
-			$order_id,
-			self::LOG_META,
-			wp_slash(
-				(string) wp_json_encode(
-					array(
-						'at'            => gmdate( 'Y-m-d\TH:i:s\Z' ),
-						'trigger'       => $trigger,
-						'decision_id'   => $decision->id(),
-						'previous_id'   => null === $previous ? null : $previous->id(),
-						'scheme'        => $decision->scheme(),
-						'rule'          => $decision->rule(),
-						'flags'         => $decision->flags(),
-						'actor_user_id' => $actor,
-					)
-				)
-			)
+		$entry = array(
+			'at'            => gmdate( 'Y-m-d\TH:i:s\Z' ),
+			'trigger'       => $trigger,
+			'decision_id'   => $decision->id(),
+			'previous_id'   => null === $previous ? null : $previous->id(),
+			'scheme'        => $decision->scheme(),
+			'rule'          => $decision->rule(),
+			'flags'         => $decision->flags(),
+			'actor_user_id' => $actor,
 		);
+		if ( array() !== $detail ) {
+			$entry['detail'] = $detail;
+		}
+		edd_add_order_meta( $order_id, self::LOG_META, wp_slash( (string) wp_json_encode( $entry ) ) );
+	}
+
+	/**
+	 * Whether a log entry still holds a VAT number an admin typed or replaced.
+	 */
+	public static function log_holds_numbers( int $order_id ): bool {
+		foreach ( self::log( $order_id ) as $entry ) {
+			if ( array() !== array_filter( (array) ( $entry['detail']['changes']['vat_number'] ?? array() ), 'is_string' ) ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Blanks the VAT numbers in the log's edit entries. The entries, their
+	 * reasons and their order stay.
+	 */
+	public static function redact_log_numbers( int $order_id ): void {
+		if ( ! self::log_holds_numbers( $order_id ) ) {
+			return;
+		}
+		$entries = self::log( $order_id );
+		edd_delete_order_meta( $order_id, self::LOG_META );
+		foreach ( $entries as $entry ) {
+			if ( isset( $entry['detail']['changes']['vat_number'] ) ) {
+				$entry['detail']['changes']['vat_number'] = array( null, null );
+			}
+			edd_add_order_meta( $order_id, self::LOG_META, wp_slash( (string) wp_json_encode( $entry ) ) );
+		}
 	}
 
 	/**

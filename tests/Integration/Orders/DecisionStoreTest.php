@@ -53,4 +53,49 @@ class DecisionStoreTest extends OrdersTestCase {
 
 		$this->assertNull( DecisionStore::get( (int) $order->id ) );
 	}
+
+	public function test_detail_is_logged_even_when_the_outcome_is_the_same(): void {
+		$this->buy( $this->download(), 'DE' );
+		$order = $this->place_order( 'DE' );
+		$id    = (int) $order->id;
+
+		DecisionStore::apply( $id, DecisionStore::get( $id ), 'admin_vat_edit', 7, array( 'reason' => 'Checked by hand' ) );
+
+		$log = DecisionStore::log( $id );
+		$this->assertCount( 2, $log );
+		$this->assertSame( array( 'reason' => 'Checked by hand' ), $log[1]['detail'] );
+		$this->assertSame( 7, $log[1]['actor_user_id'] );
+		$this->assertArrayNotHasKey( 'detail', $log[0], 'Entries without detail keep their old shape.' );
+	}
+
+	public function test_the_numbers_in_edit_entries_can_be_blanked_and_the_rest_stays(): void {
+		$this->buy( $this->download(), 'DE' );
+		$order = $this->place_order( 'DE' );
+		$id    = (int) $order->id;
+		DecisionStore::apply(
+			$id,
+			DecisionStore::get( $id ),
+			'admin_vat_edit',
+			7,
+			array(
+				'reason'  => 'Typo',
+				'changes' => array(
+					'vat_number' => array( 'DE111111111', 'DE114103379' ),
+					'country'    => array( 'FR', 'DE' ),
+				),
+			)
+		);
+		$this->assertTrue( DecisionStore::log_holds_numbers( $id ) );
+
+		DecisionStore::redact_log_numbers( $id );
+
+		$log = DecisionStore::log( $id );
+		$this->assertCount( 2, $log );
+		$this->assertSame( array( null, null ), $log[1]['detail']['changes']['vat_number'] );
+		$this->assertSame( array( 'FR', 'DE' ), $log[1]['detail']['changes']['country'] );
+		$this->assertSame( 'Typo', $log[1]['detail']['reason'] );
+		$this->assertSame( 7, $log[1]['actor_user_id'] );
+		$this->assertFalse( DecisionStore::log_holds_numbers( $id ) );
+		$this->assertStringNotContainsString( '114103379', (string) wp_json_encode( $log ) );
+	}
 }

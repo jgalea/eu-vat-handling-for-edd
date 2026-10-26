@@ -380,4 +380,23 @@ class SettingsSectionTest extends IntegrationTestCase {
 
 		$this->assertFalse( $this->stored()->receipt_vat_details() );
 	}
+
+	public function test_the_automatic_refund_is_saved_and_off_when_unticked(): void {
+		$this->post( array( 'auto_refund_on_validation' => '1' ) );
+		$this->submit();
+		$this->assertTrue( $this->stored()->auto_refund_on_validation() );
+
+		$this->post( array( 'outage_policy' => 'charge' ) );
+		$this->submit();
+		$this->assertFalse( $this->stored()->auto_refund_on_validation() );
+	}
+
+	public function test_the_form_offers_the_automatic_refund_unticked_by_default(): void {
+		ob_start();
+		$this->section->render();
+		$html = (string) ob_get_clean();
+
+		$this->assertStringContainsString( 'Refund the VAT automatically when a number validates after the order', $html );
+		$this->assertMatchesRegularExpression( '/name="vatright_edd_settings\[auto_refund_on_validation\]" value="1" \/>/', $html );
+	}
 }

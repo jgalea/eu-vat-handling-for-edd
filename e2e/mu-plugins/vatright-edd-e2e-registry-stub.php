@@ -20,6 +20,14 @@ function vatright_edd_e2e_vies_answer( $digits ) {
 			'requestDate' => gmdate( 'Y-m-d\TH:i:s\Z' ),
 		);
 	}
+	if ( '129273398' === $digits && get_option( 'vatright_edd_e2e_outage_over' ) ) {
+		return array(
+			'valid'       => true,
+			'requestDate' => gmdate( 'Y-m-d\TH:i:s\Z' ),
+			'name'        => 'Example GmbH',
+			'address'     => 'Example Strasse 1',
+		);
+	}
 	if ( '129273398' === $digits ) {
 		return array(
 			'actionSucceed' => false,

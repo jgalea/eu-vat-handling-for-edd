@@ -31,6 +31,8 @@ use VatrightEdd\Orders\InvoiceText;
 use VatrightEdd\Orders\OrderDetails;
 use VatrightEdd\Orders\OrderFinaliser;
 use VatrightEdd\Orders\Revalidation;
+use VatrightEdd\Orders\VatEdit;
+use VatrightEdd\Orders\VatRefund;
 use VatrightEdd\Privacy\Privacy;
 use VatrightEdd\Privacy\Retention;
 use VatrightEdd\Rates\RateResolver;
@@ -109,7 +111,7 @@ class Plugin {
 
 		$finaliser = new OrderFinaliser( $gatherer, new Rules(), $state, $decider );
 		$finaliser->register();
-		$revalidation = new Revalidation( $validator );
+		$revalidation = new Revalidation( $validator, null, new VatRefund( $finaliser ) );
 		$revalidation->register();
 		( new Recurring( $gatherer, new Rules(), $rates, $ledger, $backfill, $decider, Recurring::is_installed() ) )->register();
 		// Renewals are decided after edd_built_order, so their pending numbers are queued here.
@@ -134,7 +136,7 @@ class Plugin {
 
 		if ( is_admin() ) {
 			( new ReportsScreen( $oss, $esl ) )->register();
-			( new OrderDetails( $finaliser ) )->register();
+			( new OrderDetails( $finaliser, new VatEdit( $ledger ) ) )->register();
 			( new RatesScreen( $sync ) )->register();
 			( new SettingsSection( new SetupCheck() ) )->register();
 			( new DownloadVatCategory() )->register();

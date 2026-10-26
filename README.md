@@ -23,6 +23,8 @@ The decision is applied through EDD's own tax calculation.
 - Orders that skip EDD's checkout checks (wallet payments, Buy Now, admin orders) are recorded too.
 - EDD Recurring renewals are decided as new sales and flagged when the treatment changed since signup.
 - Outage policy: by default an unavailable registry means the order is accepted, VAT is charged and the number is re-checked later.
+- Correct an order's VAT number, country of evidence and treatment by hand, with a required reason kept in the decision log. The reports follow; amounts and refunds are untouched.
+- Optional automatic refund of the VAT, through EDD's refund, when a number that couldn't be checked at checkout validates later. Off by default; skips and flags anything unusual.
 - OSS return and EC Sales List reports with CSV export, plus REST endpoints.
 - Reports for a quarter, a month or any date range, on screen, as CSV and over REST.
 - Threshold warning email at a configurable share of the EUR 10,000 OSS threshold (80% by default) and again at 100%, once a year per level.

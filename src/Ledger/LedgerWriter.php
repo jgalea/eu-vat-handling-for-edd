@@ -151,6 +151,25 @@ class LedgerWriter {
 		return true;
 	}
 
+	/**
+	 * Writes the order's sale and refund rows again after its decision was
+	 * corrected. Does nothing for an order that is not in the ledger yet, and
+	 * leaves a revoked order alone, as its void rows may be in a filed period.
+	 *
+	 * @return bool Whether the rows were rewritten.
+	 */
+	public function rebook( Order $order ): bool {
+		$order_id = (int) $order->id;
+		if ( 0 === $this->count_rows( $order_id, 'sale' ) || 0 !== $this->count_rows( $order_id, 'void' ) ) {
+			return false;
+		}
+		$this->record_order( $order );
+		foreach ( edd_get_order_refunds( $order_id ) as $refund ) {
+			$this->record_refund( $order_id, (int) $refund->id );
+		}
+		return true;
+	}
+
 	public function record_refund( int $order_id, int $refund_id ): void {
 		$order  = edd_get_order( $order_id );
 		$refund = edd_get_order( $refund_id );

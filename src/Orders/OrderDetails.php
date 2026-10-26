@@ -3,6 +3,7 @@
 namespace VatrightEdd\Orders;
 
 use EDD\Orders\Order;
+use VatrightEdd\Domain\Correction;
 use VatrightEdd\Domain\Rule;
 use VatrightEdd\Domain\ValidationResult;
 
@@ -17,18 +18,25 @@ class OrderDetails {
 
 	const ACTION = 'vatright_edd_recheck';
 
+	const EDIT_ACTION = 'vatright_edd_edit';
+
 	const CAPABILITY = 'edit_shop_payments';
 
 	/** @var OrderFinaliser */
 	private $finaliser;
 
-	public function __construct( OrderFinaliser $finaliser ) {
+	/** @var VatEdit|null */
+	private $edit;
+
+	public function __construct( OrderFinaliser $finaliser, ?VatEdit $edit = null ) {
 		$this->finaliser = $finaliser;
+		$this->edit      = $edit;
 	}
 
 	public function register(): void {
 		add_filter( 'edd_get_order_details_sections', array( $this, 'add_section' ), 10, 2 );
 		add_action( 'wp_ajax_' . self::ACTION, array( $this, 'ajax_recheck' ) );
+		add_action( 'wp_ajax_' . self::EDIT_ACTION, array( $this, 'ajax_edit' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue' ) );
 	}
 
@@ -77,6 +85,7 @@ class OrderDetails {
 		$this->render_flags( $record['flags'] );
 		$this->render_inputs( $record );
 		$this->render_recheck( $order_id, (string) ( $record['vat_number']['canonical'] ?? '' ) );
+		$this->render_edit( $order_id, $record );
 		$this->render_log( DecisionStore::log( $order_id ) );
 	}
 
@@ -95,6 +104,34 @@ class OrderDetails {
 		wp_send_json_success( array( 'headline' => self::headline( $decision->to_array() ) ) );
 	}
 
+	public function ajax_edit(): void {
+		check_ajax_referer( self::EDIT_ACTION, 'nonce' );
+		if ( ! current_user_can( self::CAPABILITY ) ) {
+			wp_send_json_error( array( 'message' => __( 'You are not allowed to do this.', 'eu-vat-handling-for-edd' ) ), 403 );
+		}
+		if ( null === $this->edit ) {
+			wp_send_json_error( array( 'message' => __( 'Editing is not available.', 'eu-vat-handling-for-edd' ) ), 404 );
+		}
+
+		$result = $this->edit->apply(
+			isset( $_POST['order_id'] ) ? absint( $_POST['order_id'] ) : 0,
+			isset( $_POST['vat_number'] ) ? sanitize_text_field( wp_unslash( $_POST['vat_number'] ) ) : '',
+			isset( $_POST['country'] ) ? sanitize_text_field( wp_unslash( $_POST['country'] ) ) : '',
+			isset( $_POST['treatment'] ) ? sanitize_key( wp_unslash( $_POST['treatment'] ) ) : '',
+			isset( $_POST['reason'] ) ? sanitize_text_field( wp_unslash( $_POST['reason'] ) ) : '',
+			get_current_user_id()
+		);
+		if ( is_wp_error( $result ) ) {
+			wp_send_json_error( array( 'message' => $result->get_error_message() ), 'no_order' === $result->get_error_code() || 'no_decision' === $result->get_error_code() ? 404 : 422 );
+		}
+		wp_send_json_success(
+			array(
+				'headline' => self::headline( $result['decision']->to_array() ),
+				'rebooked' => $result['rebooked'],
+			)
+		);
+	}
+
 	/**
 	 * @param string[] $flags
 	 */
@@ -104,7 +141,7 @@ class OrderDetails {
 		}
 		echo '<ul>';
 		foreach ( $flags as $flag ) {
-			$class = in_array( $flag, array( OrderFinaliser::TAX_DIFFERS_FLAG, 'validation_pending' ), true ) ? 'notice notice-warning inline' : '';
+			$class = in_array( $flag, array( OrderFinaliser::TAX_DIFFERS_FLAG, 'validation_pending', VatRefund::FLAG_SKIPPED, VatRefund::FLAG_FAILED ), true ) ? 'notice notice-warning inline' : '';
 			echo '<li class="' . esc_attr( $class ) . '"><span>' . esc_html( self::flag_text( $flag ) ) . '</span></li>';
 		}
 		echo '</ul>';
@@ -177,6 +214,66 @@ class OrderDetails {
 	}
 
 	/**
+	 * @param array<string,mixed> $record
+	 */
+	private function render_edit( int $order_id, array $record ): void {
+		if ( ! current_user_can( self::CAPABILITY ) || null === $this->edit ) {
+			return;
+		}
+		$treatment = Correction::treatment_of( (string) $record['scheme'] );
+		$country   = (string) ( $record['evidence']['resolved'] ?? '' );
+		$options   = array(
+			Correction::REVERSE_CHARGE  => __( 'Reverse charge (customer accounts for the VAT)', 'eu-vat-handling-for-edd' ),
+			Correction::DOMESTIC        => __( 'Domestic (VAT of the store country)', 'eu-vat-handling-for-edd' ),
+			Correction::OSS_DESTINATION => __( 'OSS, VAT of the destination country', 'eu-vat-handling-for-edd' ),
+			Correction::ORIGIN          => __( 'Origin (VAT of the store country on an EU sale)', 'eu-vat-handling-for-edd' ),
+			Correction::EXPORT          => __( 'Export (outside the EU VAT area)', 'eu-vat-handling-for-edd' ),
+		);
+		?>
+		<div class="vatright-edd-edit" data-order="<?php echo esc_attr( (string) $order_id ); ?>" data-nonce="<?php echo esc_attr( wp_create_nonce( self::EDIT_ACTION ) ); ?>" data-ajax-url="<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>">
+			<h4><?php esc_html_e( 'Correct the VAT record', 'eu-vat-handling-for-edd' ); ?></h4>
+			<p class="description"><?php esc_html_e( 'This changes the record and the VAT reports only. It does not change the amounts charged and it does not refund anything: refund through EDD if VAT should come back. Every correction is logged below with your name and the reason.', 'eu-vat-handling-for-edd' ); ?></p>
+			<p>
+				<label for="vatright-edd-edit-number"><?php esc_html_e( 'Customer VAT number', 'eu-vat-handling-for-edd' ); ?></label><br />
+				<input type="text" id="vatright-edd-edit-number" class="regular-text" value="<?php echo esc_attr( (string) ( $record['vat_number']['canonical'] ?? '' ) ); ?>" autocomplete="off" />
+			</p>
+			<p>
+				<label for="vatright-edd-edit-country"><?php esc_html_e( 'Country of evidence', 'eu-vat-handling-for-edd' ); ?></label><br />
+				<select id="vatright-edd-edit-country">
+					<option value=""><?php esc_html_e( 'Choose a country', 'eu-vat-handling-for-edd' ); ?></option>
+					<?php foreach ( edd_get_country_list() as $code => $name ) : ?>
+						<?php if ( '' !== (string) $code ) : ?>
+							<option value="<?php echo esc_attr( (string) $code ); ?>"<?php selected( $country, (string) $code ); ?>><?php echo esc_html( $name ); ?></option>
+						<?php endif; ?>
+					<?php endforeach; ?>
+				</select>
+			</p>
+			<p>
+				<label for="vatright-edd-edit-treatment"><?php esc_html_e( 'Treatment', 'eu-vat-handling-for-edd' ); ?></label><br />
+				<select id="vatright-edd-edit-treatment">
+					<option value=""><?php esc_html_e( 'Choose a treatment', 'eu-vat-handling-for-edd' ); ?></option>
+					<?php foreach ( $options as $value => $label ) : ?>
+						<option value="<?php echo esc_attr( $value ); ?>"<?php selected( $treatment, $value ); ?>><?php echo esc_html( $label ); ?></option>
+					<?php endforeach; ?>
+				</select>
+			</p>
+			<p>
+				<label for="vatright-edd-edit-reason"><?php esc_html_e( 'Reason (required)', 'eu-vat-handling-for-edd' ); ?></label><br />
+				<input type="text" id="vatright-edd-edit-reason" class="large-text" maxlength="<?php echo esc_attr( (string) VatEdit::REASON_MAX ); ?>" autocomplete="off" />
+			</p>
+			<p>
+				<button type="button" class="button" id="vatright-edd-edit-save"><?php esc_html_e( 'Save correction', 'eu-vat-handling-for-edd' ); ?></button>
+				<span class="vatright-edd-edit__result" role="status" aria-live="polite"></span>
+			</p>
+		</div>
+		<?php
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- only shows a message after the redirect.
+		if ( isset( $_GET['vatright_edited'] ) ) {
+			echo '<div class="notice notice-success inline"><p>' . esc_html__( 'The VAT record was corrected and the reports follow it. The amounts charged were not changed.', 'eu-vat-handling-for-edd' ) . '</p></div>';
+		}
+	}
+
+	/**
 	 * @param array<int,array<string,mixed>> $log
 	 */
 	private function render_log( array $log ): void {
@@ -185,15 +282,57 @@ class OrderDetails {
 		}
 		echo '<h4>' . esc_html__( 'Decision log', 'eu-vat-handling-for-edd' ) . '</h4>';
 		echo '<table class="widefat striped"><thead><tr>';
-		foreach ( array( __( 'When (UTC)', 'eu-vat-handling-for-edd' ), __( 'Trigger', 'eu-vat-handling-for-edd' ), __( 'User', 'eu-vat-handling-for-edd' ), __( 'Rule', 'eu-vat-handling-for-edd' ), __( 'Flags', 'eu-vat-handling-for-edd' ) ) as $heading ) {
+		foreach ( array( __( 'When (UTC)', 'eu-vat-handling-for-edd' ), __( 'Trigger', 'eu-vat-handling-for-edd' ), __( 'User', 'eu-vat-handling-for-edd' ), __( 'Rule', 'eu-vat-handling-for-edd' ), __( 'Flags', 'eu-vat-handling-for-edd' ), __( 'Details', 'eu-vat-handling-for-edd' ) ) as $heading ) {
 			echo '<th>' . esc_html( $heading ) . '</th>';
 		}
 		echo '</tr></thead><tbody>';
 		foreach ( $log as $entry ) {
 			$user = ! empty( $entry['actor_user_id'] ) ? get_userdata( (int) $entry['actor_user_id'] ) : false;
-			echo '<tr><td>' . esc_html( str_replace( array( 'T', 'Z' ), array( ' ', '' ), (string) ( $entry['at'] ?? '' ) ) ) . '</td><td>' . esc_html( (string) ( $entry['trigger'] ?? '' ) ) . '</td><td>' . esc_html( $user ? $user->display_name : '' ) . '</td><td>' . esc_html( self::rule_text( (string) ( $entry['rule'] ?? '' ) ) ) . '</td><td>' . esc_html( implode( ', ', (array) ( $entry['flags'] ?? array() ) ) ) . '</td></tr>';
+			echo '<tr><td>' . esc_html( str_replace( array( 'T', 'Z' ), array( ' ', '' ), (string) ( $entry['at'] ?? '' ) ) ) . '</td><td>' . esc_html( (string) ( $entry['trigger'] ?? '' ) ) . '</td><td>' . esc_html( $user ? $user->display_name : '' ) . '</td><td>' . esc_html( self::rule_text( (string) ( $entry['rule'] ?? '' ) ) ) . '</td><td>' . esc_html( implode( ', ', (array) ( $entry['flags'] ?? array() ) ) ) . '</td><td>' . nl2br( esc_html( self::detail_text( (array) ( $entry['detail'] ?? array() ) ) ) ) . '</td></tr>';
 		}
 		echo '</tbody></table>';
+	}
+
+	/**
+	 * @param array<string,mixed> $detail
+	 */
+	public static function detail_text( array $detail ): string {
+		$lines = array();
+		if ( ! empty( $detail['reason'] ) && is_string( $detail['reason'] ) ) {
+			/* translators: %s: the reason an admin gave. */
+			$lines[] = sprintf( __( 'Reason: %s', 'eu-vat-handling-for-edd' ), $detail['reason'] );
+		}
+		$labels = array(
+			'vat_number' => __( 'VAT number', 'eu-vat-handling-for-edd' ),
+			'country'    => __( 'Country of evidence', 'eu-vat-handling-for-edd' ),
+			'treatment'  => __( 'Treatment', 'eu-vat-handling-for-edd' ),
+		);
+		foreach ( (array) ( $detail['changes'] ?? array() ) as $field => $pair ) {
+			if ( isset( $labels[ $field ] ) && is_array( $pair ) ) {
+				/* translators: 1: field name, 2: old value, 3: new value. */
+				$lines[] = sprintf( __( '%1$s: %2$s to %3$s', 'eu-vat-handling-for-edd' ), $labels[ $field ], self::shown( $pair[0] ?? null ), self::shown( $pair[1] ?? null ) );
+			}
+		}
+		if ( ! empty( $detail['refund_id'] ) ) {
+			/* translators: 1: refund order number, 2: amount with currency. */
+			$lines[] = sprintf( __( 'Refund %1$s of %2$s', 'eu-vat-handling-for-edd' ), (string) (int) $detail['refund_id'], edd_currency_filter( edd_format_amount( (float) ( $detail['amount'] ?? 0 ) ), (string) ( $detail['currency'] ?? '' ) ) );
+		}
+		if ( ! empty( $detail['skipped'] ) && is_string( $detail['skipped'] ) ) {
+			/* translators: %s: reason in words. */
+			$lines[] = sprintf( __( 'Not refunded: %s', 'eu-vat-handling-for-edd' ), VatRefund::reason_text( $detail['skipped'] ) );
+		}
+		if ( ! empty( $detail['message'] ) && is_string( $detail['message'] ) ) {
+			/* translators: %s: error message. */
+			$lines[] = sprintf( __( 'Refund failed: %s', 'eu-vat-handling-for-edd' ), $detail['message'] );
+		}
+		return implode( "\n", $lines );
+	}
+
+	/**
+	 * @param mixed $value
+	 */
+	private static function shown( $value ): string {
+		return is_scalar( $value ) && '' !== (string) $value ? (string) $value : __( '(none)', 'eu-vat-handling-for-edd' );
 	}
 
 	public static function rule_text( string $rule ): string {
@@ -275,6 +414,14 @@ class OrderDetails {
 				return __( 'The tax charged on this order does not match the VAT decision. Check whether VAT should be refunded or collected.', 'eu-vat-handling-for-edd' );
 			case OrderFinaliser::NO_ADDRESS_FLAG:
 				return __( 'The order has no billing country, so the decision rests on the store country.', 'eu-vat-handling-for-edd' );
+			case VatRefund::FLAG_REFUNDED:
+				return __( 'The VAT was refunded automatically after the number validated.', 'eu-vat-handling-for-edd' );
+			case VatRefund::FLAG_SKIPPED:
+				return __( 'The VAT was not refunded automatically. Check the order notes for why, and refund it by hand if it is due.', 'eu-vat-handling-for-edd' );
+			case VatRefund::FLAG_FAILED:
+				return __( 'The automatic VAT refund failed. Nothing was refunded: check the order notes.', 'eu-vat-handling-for-edd' );
+			case Correction::FLAG:
+				return __( 'An admin corrected this VAT record by hand. See the decision log for who and why.', 'eu-vat-handling-for-edd' );
 			case OrderFinaliser::MANUAL:
 				return __( 'Added by hand: the tax was set by the person who created the order.', 'eu-vat-handling-for-edd' );
 			default:
