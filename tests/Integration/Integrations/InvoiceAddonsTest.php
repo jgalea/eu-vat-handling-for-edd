@@ -65,6 +65,24 @@ class InvoiceAddonsTest extends OrdersTestCase {
 		edd_delete_option( 'edd-invoices-tax' );
 	}
 
+	public function test_the_invoice_prints_the_store_number_for_the_customers_country(): void {
+		$this->settings(
+			array(
+				'store_vat_number'    => 'MT20000010',
+				'store_vat_number_gb' => 'GB333289454',
+			)
+		);
+		$this->buy( $this->download(), 'GB' );
+		$uk = InvoiceAddonStandIns::html_invoice( $this->place_order( 'GB' ) );
+		$this->assertStringContainsString( 'GB333289454', $uk );
+		$this->assertStringNotContainsString( 'MT20000010', $uk );
+
+		edd_empty_cart();
+		$fr = InvoiceAddonStandIns::html_invoice( $this->domestic_charged() );
+		$this->assertStringContainsString( 'MT20000010', $fr );
+		$this->assertStringNotContainsString( 'GB333289454', $fr );
+	}
+
 	public function test_the_seller_is_named_when_the_add_on_has_no_company_details(): void {
 		$this->settings(
 			array(

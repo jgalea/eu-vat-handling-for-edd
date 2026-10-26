@@ -18,17 +18,19 @@ class Barn2Settings {
 	const SKIPPED     = 'skipped';
 	const MISMATCH    = 'country differs from the shop country';
 
-	const TEXT   = 'text';
-	const EMAIL  = 'email';
-	const NUMBER = 'number';
-	const FLAG   = 'flag';
-	const SECRET = 'secret';
+	const TEXT      = 'text';
+	const EMAIL     = 'email';
+	const NUMBER    = 'number';
+	const UK_NUMBER = 'uk number';
+	const FLAG      = 'flag';
+	const SECRET    = 'secret';
 
 	/**
 	 * Barn2 option => array( our key, type ).
 	 */
 	const MAP = array(
 		'edd_vat_number'                      => array( 'store_vat_number', self::NUMBER ),
+		'edd_uk_vat_number'                   => array( 'store_vat_number_gb', self::UK_NUMBER ),
 		'edd_vat_reverse_charge_base_country' => array( 'allow_domestic_exemption', self::FLAG ),
 		'edd_vat_hmrc_client_id'              => array( 'hmrc_client_id', self::TEXT ),
 		'edd_vat_hmrc_client_secret'          => array( 'hmrc_client_secret', self::SECRET ),
@@ -45,7 +47,6 @@ class Barn2Settings {
 	 * Barn2 settings with no counterpart here.
 	 */
 	const UNMAPPED = array(
-		'edd_uk_vat_number',
 		'edd_vat_vatsense_api_key',
 		'edd_vat_show_website_address',
 		'edd_vat_address_invoice',
@@ -171,6 +172,9 @@ class Barn2Settings {
 			case self::NUMBER:
 				$parsed = VatNumber::parse( $text, (string) edd_get_shop_country() );
 				return null !== $parsed && FormatCheck::is_plausible( $parsed ) ? $parsed->canonical() : null;
+			case self::UK_NUMBER:
+				$parsed = VatNumber::parse( $text, 'GB' );
+				return null !== $parsed && 'GB' === $parsed->prefix() && FormatCheck::is_plausible( $parsed ) ? $parsed->canonical() : null;
 			case self::SECRET:
 				return $text;
 			default:

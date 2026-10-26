@@ -112,6 +112,87 @@ class SettingsSectionTest extends IntegrationTestCase {
 		$this->assertSame( 'EUR', $s->report_currency() );
 	}
 
+	public function test_a_uk_store_number_is_saved_as_a_gb_number(): void {
+		$this->post(
+			array(
+				'store_vat_number'    => 'MT20000010',
+				'store_vat_number_gb' => 'gb 333 2894 54',
+			)
+		);
+		$this->submit();
+
+		$this->assertSame( 'GB333289454', $this->stored()->store_vat_number_gb() );
+		$this->assertSame( 'MT20000010', $this->stored()->store_vat_number() );
+
+		$this->post( array( 'store_vat_number_gb' => '333289454' ) );
+		$this->submit();
+		$this->assertSame( 'GB333289454', $this->stored()->store_vat_number_gb(), 'Bare digits are a GB number in this field.' );
+	}
+
+	public function test_the_uk_store_number_can_be_cleared_and_only_gb_numbers_are_kept(): void {
+		update_option( Settings::OPTION, array_merge( Settings::defaults(), array( 'store_vat_number_gb' => 'GB333289454' ) ) );
+
+		$this->post( array( 'store_vat_number_gb' => 'DE114103379' ) );
+		$this->submit();
+		$this->assertSame( 'GB333289454', $this->stored()->store_vat_number_gb(), 'An EU number is not a UK number.' );
+
+		$this->post( array( 'store_vat_number_gb' => 'GB12' ) );
+		$this->submit();
+		$this->assertSame( 'GB333289454', $this->stored()->store_vat_number_gb(), 'A malformed number is not saved.' );
+
+		$this->post( array( 'store_vat_number_gb' => '' ) );
+		$this->submit();
+		$this->assertSame( '', $this->stored()->store_vat_number_gb() );
+	}
+
+	public function test_the_form_shows_the_uk_store_number(): void {
+		ob_start();
+		$this->section->render();
+		$html = (string) ob_get_clean();
+
+		$this->assertStringContainsString( 'name="vatright_edd_settings[store_vat_number_gb]"', $html );
+	}
+
+	public function test_the_threshold_warning_is_saved_with_its_share(): void {
+		$this->post(
+			array(
+				'threshold_warning'         => '1',
+				'threshold_warning_percent' => '65',
+			)
+		);
+		$this->submit();
+
+		$this->assertTrue( $this->stored()->threshold_warning() );
+		$this->assertSame( 65, $this->stored()->threshold_warning_percent() );
+
+		$this->post( array( 'threshold_warning_percent' => '65' ) );
+		$this->submit();
+		$this->assertFalse( $this->stored()->threshold_warning(), 'An unchecked box turns it off.' );
+	}
+
+	public function test_the_threshold_share_stays_under_the_threshold_itself(): void {
+		$this->post( array( 'threshold_warning_percent' => '250' ) );
+		$this->submit();
+		$this->assertSame( 99, $this->stored()->threshold_warning_percent() );
+
+		$this->post( array( 'threshold_warning_percent' => '0' ) );
+		$this->submit();
+		$this->assertSame( 1, $this->stored()->threshold_warning_percent() );
+
+		$this->post( array( 'threshold_warning_percent' => 'lots' ) );
+		$this->submit();
+		$this->assertSame( 80, $this->stored()->threshold_warning_percent() );
+	}
+
+	public function test_the_form_shows_the_threshold_warning_fields(): void {
+		ob_start();
+		$this->section->render();
+		$html = (string) ob_get_clean();
+
+		$this->assertStringContainsString( 'name="vatright_edd_settings[threshold_warning]"', $html );
+		$this->assertMatchesRegularExpression( '/name="vatright_edd_settings\[threshold_warning_percent\]" value="80"/', $html );
+	}
+
 	public function test_an_empty_secret_field_keeps_the_saved_secret(): void {
 		update_option(
 			Settings::OPTION,

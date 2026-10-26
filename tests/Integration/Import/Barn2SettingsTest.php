@@ -62,7 +62,7 @@ class Barn2SettingsTest extends LedgerTestCase {
 	private function barn2_options(): array {
 		return array(
 			'edd_vat_number'                      => 'MT 1234-5678',
-			'edd_uk_vat_number'                   => 'GB123456789',
+			'edd_uk_vat_number'                   => 'GB333289454',
 			'edd_vat_vatsense_api_key'            => self::VATSENSE,
 			'edd_vat_reverse_charge_base_country' => '1',
 			'edd_vat_address_country'             => 'EU',
@@ -97,12 +97,30 @@ class Barn2SettingsTest extends LedgerTestCase {
 		$this->assertSame( Settings::get()->hmrc_client_secret(), self::SECRET );
 	}
 
-	public function test_the_vatsense_key_and_the_uk_number_are_reported_but_not_copied(): void {
+	public function test_the_vatsense_key_is_reported_but_not_copied(): void {
 		$report = $this->barn2->import( false );
 
 		$this->assertSame( Barn2Settings::SKIPPED, $report['edd_vat_vatsense_api_key'] );
-		$this->assertSame( Barn2Settings::SKIPPED, $report['edd_uk_vat_number'] );
 		$this->assertStringNotContainsString( self::VATSENSE, (string) wp_json_encode( $this->ours() ) );
+	}
+
+	public function test_the_uk_vat_number_becomes_the_uk_store_number(): void {
+		$report = $this->barn2->import( false );
+
+		$this->assertSame( Barn2Settings::IMPORTED, $report['edd_uk_vat_number'] );
+		$this->assertSame( 'GB333289454', $this->ours()['store_vat_number_gb'] );
+		$this->assertSame( 'MT12345678', $this->ours()['store_vat_number'], 'The EU number is not touched.' );
+	}
+
+	public function test_a_uk_number_without_its_prefix_is_read_as_gb_and_a_foreign_one_is_skipped(): void {
+		edd_update_option( 'edd_uk_vat_number', '333 2894 54' );
+		$this->assertSame( Barn2Settings::IMPORTED, $this->barn2->import( true )['edd_uk_vat_number'] );
+		$this->assertSame( 'GB333289454', $this->ours()['store_vat_number_gb'] );
+
+		delete_option( Settings::OPTION );
+		edd_update_option( 'edd_uk_vat_number', 'DE114103379' );
+		$this->assertSame( Barn2Settings::SKIPPED, $this->barn2->import( true )['edd_uk_vat_number'] );
+		$this->assertArrayNotHasKey( 'store_vat_number_gb', $this->ours() );
 	}
 
 	public function test_filled_in_settings_are_kept_unless_overwrite_is_asked_for(): void {

@@ -25,6 +25,8 @@ use VatrightEdd\Ledger\Fx;
 use VatrightEdd\Ledger\LedgerWriter;
 use VatrightEdd\Ledger\Schema;
 use VatrightEdd\Ledger\ThresholdTracker;
+use VatrightEdd\Ledger\ThresholdWarning;
+use VatrightEdd\Ledger\ThresholdWarningEmail;
 use VatrightEdd\Orders\InvoiceText;
 use VatrightEdd\Orders\OrderDetails;
 use VatrightEdd\Orders\OrderFinaliser;
@@ -102,6 +104,7 @@ class Plugin {
 		$backfill = new Backfill( $ledger, $rates );
 		$ledger->register();
 		$backfill->register();
+		( new ThresholdWarning( new ThresholdTracker(), new ThresholdWarningEmail() ) )->register();
 		self::wire_import( $backfill, $ledger, new Fx( $transport ) );
 
 		$finaliser = new OrderFinaliser( $gatherer, new Rules(), $state, $decider );

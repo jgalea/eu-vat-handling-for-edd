@@ -5,7 +5,7 @@ Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 7.4
 Requires Plugins: easy-digital-downloads
-Stable tag: 0.1.2
+Stable tag: 0.1.3
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -36,6 +36,9 @@ It needs Easy Digital Downloads 3.1 or later with taxes turned on.
 * Records orders that skip EDD's checkout checks too, such as wallet payments and manual orders added in the admin, and flags the ones it couldn't decide cleanly.
 * Re-checks numbers that couldn't be validated at checkout and can email you when one validates after the order was placed.
 * Quarterly OSS return and EC Sales List reports with CSV export, in EUR. Orders in other currencies are converted at the ECB reference rate. Refunds and revoked orders are recorded against the period they belong to.
+* Reports for a quarter, a month or any date range, in the screen, the CSV and the REST endpoints, for countries that want the EC Sales List monthly.
+* Emails the store admin when EU sales to consumers reach a share of the EUR 10,000 OSS threshold (80% by default) and again when they pass it, once a year per level. You can turn it off or change the share.
+* A separate UK store VAT number: UK customers see it on receipts and invoices and HMRC checks use it, while everyone else gets the EU number and VIES checks keep using that one. With one number set, nothing changes.
 * REST endpoints for both reports, restricted to users who can view shop reports.
 * Works with EDD Recurring: renewals are recorded at the amount the gateway charged, with the VAT that decision calls for inside it. See the FAQ.
 * A setup check lists what's missing: taxes turned on, your shop country and VAT number, tax rates for destination countries, the IP country source and HMRC credentials.
@@ -131,6 +134,11 @@ EU VAT Handling for EDD is a tool, not tax advice. You, the store owner, are res
 5. The EU VAT reports: OSS return and EC Sales List.
 
 == Changelog ==
+
+= 0.1.3 =
+* OSS return and EC Sales List reports for a month or any date range, as well as by quarter, in the screen, CSV and REST.
+* Email warning when cross-border EU consumer sales near the EUR 10,000 threshold, and again when they pass it.
+* A separate UK store VAT number, used on receipts and HMRC checks for UK customers. The Barn2 import copies it.
 
 = 0.1.2 =
 * Fix: on hosts where WordPress fetches over cURL with OpenSSL 3, VIES checks failed and business customers were charged VAT. Registry requests now ask for uncompressed answers.

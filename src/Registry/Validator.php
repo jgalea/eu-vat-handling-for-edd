@@ -76,12 +76,17 @@ class Validator {
 		return $result;
 	}
 
+	/**
+	 * The first store number the registry accepts as a requester: the EU
+	 * number for VIES, the GB number for HMRC.
+	 */
 	private function requester_for( Registry $registry ): ?VatNumber {
-		$store = VatNumber::parse( $this->settings->store_vat_number(), '' );
-		if ( null === $store || ! $registry->supports( $store ) ) {
-			return null;
+		foreach ( $this->settings->store_requesters() as $store ) {
+			if ( $registry->supports( $store ) ) {
+				return $store;
+			}
 		}
-		return $store;
+		return null;
 	}
 
 	private function with_detail( ValidationResult $result, string $detail ): ValidationResult {

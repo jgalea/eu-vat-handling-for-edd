@@ -15,7 +15,7 @@ class EddInvoices {
 	public function register(): void {
 		add_action( 'edd_invoices_after_customer_details', array( $this, 'customer_number' ), 20, 1 );
 		add_action( 'edd_invoices_after_company_details', array( $this, 'seller' ), 10, 0 );
-		add_action( 'edd_invoices_after_company_details', array( $this, 'store_number' ), 20, 0 );
+		add_action( 'edd_invoices_after_company_details', array( $this, 'store_number' ), 20, 1 );
 		add_action( 'edd_invoices_invoice_additional_info', array( $this, 'wording' ), 20, 1 );
 	}
 
@@ -59,8 +59,11 @@ class EddInvoices {
 		echo implode( '<br />', array_map( 'esc_html', $seller ) ) . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- each part is escaped.
 	}
 
-	public function store_number(): void {
-		$number = InvoiceText::store_vat_number();
+	/**
+	 * @param mixed $order
+	 */
+	public function store_number( $order = null ): void {
+		$number = InvoiceText::store_vat_number( self::order_id( $order ) );
 		if ( '' === $number || '' !== (string) edd_get_option( 'edd-invoices-tax', '' ) ) {
 			return;
 		}

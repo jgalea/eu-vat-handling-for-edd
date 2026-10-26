@@ -62,11 +62,32 @@ class InvoiceText {
 	}
 
 	/**
-	 * The store's own VAT number, when the receipt settings ask for it.
+	 * The store's own VAT number for this order, when the receipt settings
+	 * ask for it: the UK number for a UK customer, the EU one otherwise.
 	 */
-	public static function store_vat_number(): string {
+	public static function store_vat_number( int $order_id = 0 ): string {
 		$settings = Settings::get();
-		return $settings->receipt_vat_details() ? $settings->store_vat_number() : '';
+		return $settings->receipt_vat_details() ? $settings->store_vat_number_for( self::customer_country( $order_id ) ) : '';
+	}
+
+	/**
+	 * The country the sale was decided for, as the ledger records it, or the
+	 * order's address when no decision was kept.
+	 */
+	public static function customer_country( int $order_id ): string {
+		if ( $order_id < 1 ) {
+			return '';
+		}
+		$decision = DecisionStore::get( $order_id );
+		if ( null !== $decision ) {
+			$record   = $decision->to_array();
+			$resolved = $record['evidence']['resolved'] ?? null;
+			$billing  = (string) ( $record['customer']['billing']['country'] ?? '' );
+			return is_string( $resolved ) && '' !== $resolved ? $resolved : $billing;
+		}
+		$order   = edd_get_order( $order_id );
+		$address = $order ? $order->get_address() : null;
+		return $address ? (string) $address->country : '';
 	}
 
 	/**
@@ -75,7 +96,7 @@ class InvoiceText {
 	public function render_receipt( $order ): void {
 		$id     = is_object( $order ) && ! empty( $order->id ) ? (int) $order->id : 0;
 		$facts  = 0 < $id ? self::facts( $id ) : null;
-		$seller = Settings::get()->receipt_vat_details() ? Settings::get()->seller_details() : array();
+		$seller = Settings::get()->receipt_vat_details() ? Settings::get()->seller_details( self::customer_country( $id ) ) : array();
 		if ( null === $facts && array() === $seller ) {
 			return;
 		}

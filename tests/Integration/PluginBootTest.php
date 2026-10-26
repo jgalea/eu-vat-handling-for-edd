@@ -32,6 +32,7 @@ class PluginBootTest extends IntegrationTestCase {
 		Plugin::boot();
 		$this->assertNotFalse( has_action( 'init', array( Scheduler::class, 'ensure' ) ) );
 		$this->assertFalse( has_action( 'admin_notices', array( Coexistence::class, 'notice' ) ) );
+		$this->assertNotFalse( has_action( 'vatright_edd_sale_recorded' ), 'The threshold warning listens for recorded sales.' );
 	}
 
 	public function test_edds_own_vat_on_free_edd_is_an_upsell_and_does_not_stop_the_plugin(): void {

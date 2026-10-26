@@ -2,6 +2,8 @@
 
 namespace VatrightEdd;
 
+use VatrightEdd\Domain\VatNumber;
+
 class Settings {
 
 	const OPTION = 'vatright_edd_settings';
@@ -26,10 +28,13 @@ class Settings {
 	public static function defaults(): array {
 		return array(
 			'store_vat_number'             => '',
+			'store_vat_number_gb'          => '',
 			'outage_policy'                => 'charge',
 			'cache_ttl_valid_days'         => 7,
 			'allow_domestic_exemption'     => false,
 			'oss_registered'               => false,
+			'threshold_warning'            => true,
+			'threshold_warning_percent'    => 80,
 			'self_certification'           => true,
 			'notify_admin_on_revalidation' => true,
 			'retention_years'              => 10,
@@ -53,6 +58,41 @@ class Settings {
 		return (string) $this->value( 'store_vat_number' );
 	}
 
+	public function store_vat_number_gb(): string {
+		return (string) $this->value( 'store_vat_number_gb' );
+	}
+
+	/**
+	 * The number the store quotes to a customer of this country: the UK
+	 * number for a UK customer, the EU number for everyone else. A store with
+	 * only one of the two quotes it to all.
+	 */
+	public function store_vat_number_for( string $country ): string {
+		$eu = $this->store_vat_number();
+		$gb = $this->store_vat_number_gb();
+		if ( 'GB' === strtoupper( $country ) ) {
+			return '' !== $gb ? $gb : $eu;
+		}
+		return '' !== $eu ? $eu : $gb;
+	}
+
+	/**
+	 * The store's numbers as parsed VAT numbers, EU first, for registries to
+	 * take as the requester.
+	 *
+	 * @return VatNumber[]
+	 */
+	public function store_requesters(): array {
+		$numbers = array();
+		foreach ( array( $this->store_vat_number(), $this->store_vat_number_gb() ) as $raw ) {
+			$parsed = VatNumber::parse( $raw, '' );
+			if ( null !== $parsed ) {
+				$numbers[] = $parsed;
+			}
+		}
+		return $numbers;
+	}
+
 	public function outage_policy(): string {
 		$policy = (string) $this->value( 'outage_policy' );
 		return in_array( $policy, array( 'charge', 'exempt_pending', 'reject' ), true ) ? $policy : 'charge';
@@ -68,6 +108,14 @@ class Settings {
 
 	public function oss_registered(): bool {
 		return (bool) $this->value( 'oss_registered' );
+	}
+
+	public function threshold_warning(): bool {
+		return (bool) $this->value( 'threshold_warning' );
+	}
+
+	public function threshold_warning_percent(): int {
+		return max( 1, min( 99, (int) $this->value( 'threshold_warning_percent' ) ) );
 	}
 
 	public function self_certification(): bool {
@@ -109,11 +157,12 @@ class Settings {
 
 	/**
 	 * The seller details a receipt or invoice prints: company, address lines
-	 * as one line each, email, in that order, empty parts left out.
+	 * as one line each, email, in that order, empty parts left out. The VAT
+	 * number is the one for the customer's country, when it is given.
 	 *
 	 * @return array<string,string> Label key => value.
 	 */
-	public function seller_details(): array {
+	public function seller_details( string $country = '' ): array {
 		$address = array_filter(
 			array(
 				(string) $this->value( 'seller_address_1' ),
@@ -130,7 +179,7 @@ class Settings {
 				'company' => (string) $this->value( 'seller_company' ),
 				'address' => implode( ', ', $address ),
 				'email'   => (string) $this->value( 'seller_email' ),
-				'vat'     => $this->store_vat_number(),
+				'vat'     => $this->store_vat_number_for( $country ),
 			),
 			static function ( string $part ): bool {
 				return '' !== $part;

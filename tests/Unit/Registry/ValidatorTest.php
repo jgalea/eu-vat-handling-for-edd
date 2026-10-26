@@ -23,17 +23,25 @@ class ValidatorTest extends TestCase {
 		return $number;
 	}
 
-	private function settings( string $store_vat_number ): Settings {
-		return new class( $store_vat_number ) extends Settings {
+	private function settings( string $store_vat_number, string $store_vat_number_gb = '' ): Settings {
+		return new class( $store_vat_number, $store_vat_number_gb ) extends Settings {
 			/** @var string */
 			private $store;
 
-			public function __construct( string $store ) {
-				$this->store = $store;
+			/** @var string */
+			private $store_gb;
+
+			public function __construct( string $store, string $store_gb ) {
+				$this->store    = $store;
+				$this->store_gb = $store_gb;
 			}
 
 			public function store_vat_number(): string {
 				return $this->store;
+			}
+
+			public function store_vat_number_gb(): string {
+				return $this->store_gb;
 			}
 		};
 	}
@@ -165,6 +173,43 @@ class ValidatorTest extends TestCase {
 		$validator->validate( $this->number( 'GB980780684' ), true );
 
 		$this->assertNull( $registry->requesters[0] );
+	}
+
+	public function test_each_registry_gets_the_store_number_it_can_use(): void {
+		$vies      = $this->registry( 'EU' );
+		$hmrc      = $this->registry( 'GB' );
+		$validator = new Validator( new Router( $vies, $hmrc ), $this->cache(), $this->settings( 'MT20000010', 'GB333289454' ) );
+
+		$validator->validate( $this->number( 'DE123475223' ), true );
+		$validator->validate( $this->number( 'GB980780684' ), true );
+
+		$this->assertNotNull( $vies->requesters[0] );
+		$this->assertSame( 'MT20000010', $vies->requesters[0]->canonical(), 'VIES gets the EU number.' );
+		$this->assertNotNull( $hmrc->requesters[0] );
+		$this->assertSame( 'GB333289454', $hmrc->requesters[0]->canonical(), 'HMRC gets the GB number.' );
+	}
+
+	public function test_a_uk_number_alone_is_not_sent_to_vies(): void {
+		$vies      = $this->registry( 'EU' );
+		$hmrc      = $this->registry( 'GB' );
+		$validator = new Validator( new Router( $vies, $hmrc ), $this->cache(), $this->settings( '', 'GB333289454' ) );
+
+		$validator->validate( $this->number( 'DE123475223' ), true );
+		$validator->validate( $this->number( 'GB980780684' ), true );
+
+		$this->assertNull( $vies->requesters[0] );
+		$this->assertNotNull( $hmrc->requesters[0] );
+		$this->assertSame( 'GB333289454', $hmrc->requesters[0]->canonical() );
+	}
+
+	public function test_a_gb_number_in_the_eu_field_still_serves_hmrc_when_no_uk_number_is_set(): void {
+		$hmrc      = $this->registry( 'GB' );
+		$validator = new Validator( new Router( $hmrc ), $this->cache(), $this->settings( 'GB333289454' ) );
+
+		$validator->validate( $this->number( 'GB980780684' ), true );
+
+		$this->assertNotNull( $hmrc->requesters[0] );
+		$this->assertSame( 'GB333289454', $hmrc->requesters[0]->canonical() );
 	}
 
 	public function test_requester_rejected_retries_without_requester(): void {

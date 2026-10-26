@@ -147,6 +147,7 @@ class LedgerWriter {
 		$years = $this->purge( "order_id = %d AND entry_type = 'sale'", array( (int) $order->id ) );
 		$this->insert_rows( $order, $decision, $buckets, 'sale', null, $supply_at, $period, $period, $source );
 		ThresholdTracker::flush( ...array_merge( $years, array( (int) substr( $period, 0, 4 ) ) ) );
+		do_action( 'vatright_edd_sale_recorded', (int) $order->id, (int) substr( $period, 0, 4 ) );
 		return true;
 	}
 

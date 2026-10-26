@@ -64,6 +64,7 @@ class SettingsSection {
 			<tbody>
 				<?php
 				$this->text_row( 'store_vat_number', __( 'Store VAT number', 'eu-vat-handling-for-edd' ), $s->store_vat_number(), __( 'Sent to VIES as the requester, which returns a consultation number as proof of each check.', 'eu-vat-handling-for-edd' ) );
+				$this->text_row( 'store_vat_number_gb', __( 'UK store VAT number', 'eu-vat-handling-for-edd' ), $s->store_vat_number_gb(), __( 'Optional. Printed on receipts and invoices for UK customers instead of the number above, and sent to HMRC as the requester. Leave it empty to use one number everywhere.', 'eu-vat-handling-for-edd' ) );
 				$this->select_row(
 					'ip_country_source',
 					__( 'IP country source', 'eu-vat-handling-for-edd' ),
@@ -92,6 +93,8 @@ class SettingsSection {
 				$this->checkbox_row( 'allow_domestic_exemption', __( 'Domestic B2B', 'eu-vat-handling-for-edd' ), __( 'Allow VAT exemption for valid numbers from the store country', 'eu-vat-handling-for-edd' ), $s->allow_domestic_exemption() );
 				$this->checkbox_row( 'notify_admin_on_revalidation', __( 'Revalidation emails', 'eu-vat-handling-for-edd' ), __( 'Email the admin when a number validates after the order was placed', 'eu-vat-handling-for-edd' ), $s->notify_admin_on_revalidation() );
 				$this->checkbox_row( 'oss_registered', __( 'OSS', 'eu-vat-handling-for-edd' ), __( 'I am registered for the One Stop Shop (always charge destination VAT)', 'eu-vat-handling-for-edd' ), $s->oss_registered() );
+				$this->checkbox_row( 'threshold_warning', __( 'Threshold warning', 'eu-vat-handling-for-edd' ), __( 'Email the admin when EU sales near and pass the EUR 10,000 OSS threshold', 'eu-vat-handling-for-edd' ), $s->threshold_warning() );
+				$this->number_row( 'threshold_warning_percent', __( 'Warn at (% of the threshold)', 'eu-vat-handling-for-edd' ), $s->threshold_warning_percent(), 1, 99 );
 				$this->text_row( 'hmrc_client_id', __( 'HMRC client ID (optional)', 'eu-vat-handling-for-edd' ), $s->hmrc_client_id(), __( 'From your own HMRC Developer Hub application. Without it GB numbers are format-checked only.', 'eu-vat-handling-for-edd' ) );
 				$this->secret_row( 'hmrc_client_secret', __( 'HMRC client secret', 'eu-vat-handling-for-edd' ), '' !== $s->hmrc_client_secret() );
 				$this->checkbox_row( 'receipt_vat_details', __( 'Receipts', 'eu-vat-handling-for-edd' ), __( 'Print the seller details and the VAT wording on receipts and invoices', 'eu-vat-handling-for-edd' ), $s->receipt_vat_details() );
@@ -220,10 +223,13 @@ class SettingsSection {
 
 		return array(
 			'store_vat_number'             => $this->sanitize_store_vat_number( $text( 'store_vat_number' ), $current->store_vat_number() ),
+			'store_vat_number_gb'          => $this->sanitize_uk_store_vat_number( $text( 'store_vat_number_gb' ), $current->store_vat_number_gb() ),
 			'outage_policy'                => $policy,
 			'cache_ttl_valid_days'         => $number( 'cache_ttl_valid_days', 1, 90 ),
 			'allow_domestic_exemption'     => ! empty( $posted['allow_domestic_exemption'] ),
 			'oss_registered'               => ! empty( $posted['oss_registered'] ),
+			'threshold_warning'            => ! empty( $posted['threshold_warning'] ),
+			'threshold_warning_percent'    => $number( 'threshold_warning_percent', 1, 99 ),
 			'self_certification'           => ! empty( $posted['self_certification'] ),
 			'notify_admin_on_revalidation' => ! empty( $posted['notify_admin_on_revalidation'] ),
 			'retention_years'              => $number( 'retention_years', 1, 30 ),
@@ -250,6 +256,18 @@ class SettingsSection {
 		$parsed = VatNumber::parse( $raw, edd_get_shop_country() );
 		if ( null === $parsed || ! FormatCheck::is_plausible( $parsed ) ) {
 			add_settings_error( 'vatright-edd', 'store_vat_number', __( 'The store VAT number does not look valid, so it was not saved.', 'eu-vat-handling-for-edd' ), 'error' );
+			return $kept;
+		}
+		return $parsed->canonical();
+	}
+
+	private function sanitize_uk_store_vat_number( string $raw, string $kept ): string {
+		if ( '' === $raw ) {
+			return '';
+		}
+		$parsed = VatNumber::parse( $raw, 'GB' );
+		if ( null === $parsed || 'GB' !== $parsed->prefix() || ! FormatCheck::is_plausible( $parsed ) ) {
+			add_settings_error( 'vatright-edd', 'store_vat_number_gb', __( 'The UK store VAT number does not look like a GB number, so it was not saved.', 'eu-vat-handling-for-edd' ), 'error' );
 			return $kept;
 		}
 		return $parsed->canonical();

@@ -75,6 +75,57 @@ class InvoiceTextTest extends OrdersTestCase {
 		$this->assertStringNotContainsString( '<b>Ltd', $html );
 	}
 
+	public function test_a_uk_customer_gets_the_uk_store_number_and_everyone_else_the_eu_one(): void {
+		$this->settings(
+			array(
+				'store_vat_number'    => 'MT20000010',
+				'store_vat_number_gb' => 'GB333289454',
+			)
+		);
+
+		$this->buy( $this->download(), 'GB' );
+		$uk = $this->receipt( $this->place_order( 'GB' ) );
+		$this->assertStringContainsString( 'GB333289454', $uk );
+		$this->assertStringNotContainsString( 'MT20000010', $uk );
+
+		edd_empty_cart();
+		$this->buy( $this->download(), 'FR' );
+		$fr = $this->receipt( $this->place_order( 'FR' ) );
+		$this->assertStringContainsString( 'MT20000010', $fr );
+		$this->assertStringNotContainsString( 'GB333289454', $fr );
+	}
+
+	public function test_with_only_the_eu_number_set_a_uk_receipt_prints_it_as_before(): void {
+		$this->settings( array( 'store_vat_number' => 'MT20000010' ) );
+
+		$this->buy( $this->download(), 'GB' );
+
+		$this->assertStringContainsString( 'MT20000010', $this->receipt( $this->place_order( 'GB' ) ) );
+	}
+
+	public function test_with_only_the_uk_number_set_every_receipt_prints_it(): void {
+		$this->settings( array( 'store_vat_number_gb' => 'GB333289454' ) );
+
+		$this->buy( $this->download(), 'FR' );
+
+		$this->assertStringContainsString( 'GB333289454', $this->receipt( $this->place_order( 'FR' ) ) );
+	}
+
+	public function test_a_reverse_charged_german_order_still_gets_the_eu_number(): void {
+		$this->settings(
+			array(
+				'store_vat_number'    => 'MT20000010',
+				'store_vat_number_gb' => 'GB333289454',
+			)
+		);
+
+		$html = $this->receipt( $this->reverse_charged() );
+
+		$this->assertStringContainsString( 'MT20000010', $html );
+		$this->assertStringContainsString( self::VALID_DE, $html );
+		$this->assertStringNotContainsString( 'GB333289454', $html );
+	}
+
 	public function test_the_registry_name_is_escaped_in_the_company_tag(): void {
 		$order  = $this->reverse_charged();
 		$record = DecisionStore::get( (int) $order->id )->to_array();

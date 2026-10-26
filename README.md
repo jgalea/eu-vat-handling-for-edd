@@ -24,6 +24,9 @@ The decision is applied through EDD's own tax calculation.
 - EDD Recurring renewals are decided as new sales and flagged when the treatment changed since signup.
 - Outage policy: by default an unavailable registry means the order is accepted, VAT is charged and the number is re-checked later.
 - OSS return and EC Sales List reports with CSV export, plus REST endpoints.
+- Reports for a quarter, a month or any date range, on screen, as CSV and over REST.
+- Threshold warning email at a configurable share of the EUR 10,000 OSS threshold (80% by default) and again at 100%, once a year per level.
+- Separate EU and UK store VAT numbers, chosen per order for receipts and invoices, with the right one sent to VIES and HMRC.
 - An importer for Barn2's EDD EU VAT that copies settings and order history, with a dry run.
 - Personal data exporters, erasers and a retention setting.
 

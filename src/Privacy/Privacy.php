@@ -168,7 +168,7 @@ class Privacy {
 		$removed  = false;
 		$retained = false;
 		$messages = array();
-		$store    = VatNumber::parse( Settings::get()->store_vat_number(), '' );
+		$stores   = Settings::get()->store_requesters();
 		$customer = 1 === $page ? edd_get_customer_by( 'email', $email ) : false;
 
 		// The customer's copy is not a VAT record (each order keeps its own), so it goes regardless of retention.
@@ -176,7 +176,9 @@ class Privacy {
 			$number = VatNumber::parse( $this->saved_number( (int) $customer->id ), '' );
 			if ( null !== $number ) {
 				$this->cache->forget( $number, null );
-				$this->cache->forget( $number, $store );
+				foreach ( $stores as $store ) {
+					$this->cache->forget( $number, $store );
+				}
 			}
 			edd_delete_customer_meta( (int) $customer->id, OrderFinaliser::CUSTOMER_NUMBER_META );
 			edd_delete_customer_meta( (int) $customer->id, OrderFinaliser::CUSTOMER_VALIDATED_META );
@@ -191,7 +193,9 @@ class Privacy {
 			$number = VatNumber::parse( (string) edd_get_order_meta( (int) $order->id, DecisionStore::NUMBER_META, true ), '' );
 			if ( null !== $number ) {
 				$this->cache->forget( $number, null );
-				$this->cache->forget( $number, $store );
+				foreach ( $stores as $store ) {
+					$this->cache->forget( $number, $store );
+				}
 			}
 
 			if ( Retention::is_retained( $order ) ) {

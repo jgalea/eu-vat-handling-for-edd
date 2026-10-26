@@ -3,6 +3,8 @@
 namespace VatrightEdd\Tests\Integration\Privacy;
 
 use EDD\Orders\Order;
+use VatrightEdd\Domain\ValidationResult;
+use VatrightEdd\Domain\VatNumber;
 use VatrightEdd\Orders\DecisionStore;
 use VatrightEdd\Orders\OrderFinaliser;
 use VatrightEdd\Privacy\Privacy;
@@ -125,6 +127,36 @@ class PrivacyTest extends LedgerTestCase {
 		$this->assertTrue( $result['items_removed'] );
 		$this->assertSame( '', (string) edd_get_customer_meta( (int) $order->customer_id, OrderFinaliser::CUSTOMER_NUMBER_META, true ) );
 		$this->assertSame( '', (string) edd_get_customer_meta( (int) $order->customer_id, OrderFinaliser::CUSTOMER_VALIDATED_META, true ) );
+	}
+
+	public function test_cached_answers_for_the_saved_number_go_whichever_store_number_asked(): void {
+		update_option(
+			Settings::OPTION,
+			array(
+				'store_vat_number'    => 'MT20000010',
+				'store_vat_number_gb' => 'GB333289454',
+			)
+		);
+		Settings::reset();
+		$order = $this->reverse_charged_order( '2030-03-10 10:00:00' );
+		edd_update_customer_meta( (int) $order->customer_id, OrderFinaliser::CUSTOMER_NUMBER_META, 'GB980780684' );
+
+		$cache  = new ValidationCache( Settings::get() );
+		$number = VatNumber::parse( 'GB980780684', 'GB' );
+		$eu     = VatNumber::parse( 'MT20000010', 'MT' );
+		$uk     = VatNumber::parse( 'GB333289454', 'GB' );
+		$result = new ValidationResult( ValidationResult::VALID, 'hmrc', '2030-03-10T10:00:00Z', 'Example Ltd' );
+		$this->assertNotNull( $number );
+		foreach ( array( null, $eu, $uk ) as $requester ) {
+			$cache->put( $number, $requester, $result );
+			$this->assertNotNull( $cache->get( $number, $requester ), 'The control: the answer is cached before the erasure.' );
+		}
+
+		( new Privacy( $cache ) )->erase( self::EMAIL );
+
+		foreach ( array( null, $eu, $uk ) as $requester ) {
+			$this->assertNull( $cache->get( $number, $requester ) );
+		}
 	}
 
 	public function test_other_plugins_copies_of_the_number_go_with_the_scrub(): void {
