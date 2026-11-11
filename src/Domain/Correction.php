@@ -31,7 +31,7 @@ final class Correction {
 	 * Flags that describe how the original decision was reached and no longer
 	 * hold once a person has decided.
 	 */
-	const SUPERSEDED_FLAGS = array( 'validation_pending', 'prefix_mismatch', 'evidence_conflict_self_certified', 'single_evidence' );
+	const SUPERSEDED_FLAGS = array( 'validation_pending', 'prefix_mismatch', 'evidence_conflict_self_certified', 'evidence_conflict', 'single_evidence', 'territory_by_postcode' );
 
 	/**
 	 * The treatment a scheme stands for, or an empty string for the ones an

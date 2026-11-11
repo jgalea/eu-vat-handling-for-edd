@@ -32,6 +32,7 @@ class SettingsSection {
 	public function register(): void {
 		add_filter( 'edd_settings_sections_taxes', array( $this, 'add_section' ) );
 		add_action( 'admin_notices', array( $this, 'setup_notice' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue' ) );
 		add_action( 'edd_settings_tab_top_taxes_' . self::SECTION, array( $this, 'render' ) );
 		add_filter( 'edd_settings_taxes-' . self::SECTION . '_sanitize', array( $this, 'save' ) );
 	}
@@ -46,7 +47,7 @@ class SettingsSection {
 	 */
 	public function add_section( $sections ): array {
 		$sections                  = is_array( $sections ) ? $sections : array();
-		$sections[ self::SECTION ] = __( 'EU VAT', 'eu-vat-handling-for-edd' );
+		$sections[ self::SECTION ] = __( 'EU VAT', 'vat-right-for-edd' );
 		return $sections;
 	}
 
@@ -57,80 +58,88 @@ class SettingsSection {
 		$s = Settings::get();
 		$this->render_issues( $this->issues() );
 		if ( 'none' === $s->ip_country_source() && IpCountry::cdn_header_present() ) {
-			echo '<div class="notice notice-info inline"><p>' . esc_html__( 'This request carries a country header from a CDN. If your site is behind Cloudflare or CloudFront, choose it under "IP country source" so the visitor\'s location counts as evidence.', 'eu-vat-handling-for-edd' ) . '</p></div>';
+			echo '<div class="notice notice-info inline"><p>' . esc_html__( 'This request carries a country header from a CDN. If your site is behind Cloudflare or CloudFront, choose it under "IP country source" so the visitor\'s location counts as evidence.', 'vat-right-for-edd' ) . '</p></div>';
 		}
 		?>
 		<input type="hidden" name="<?php echo esc_attr( self::PRESENT ); ?>" value="1" />
 		<table class="form-table" role="presentation">
 			<tbody>
 				<?php
-				$this->text_row( 'store_vat_number', __( 'Store VAT number', 'eu-vat-handling-for-edd' ), $s->store_vat_number(), __( 'Sent to VIES as the requester, which returns a consultation number as proof of each check.', 'eu-vat-handling-for-edd' ) );
-				$this->text_row( 'store_vat_number_gb', __( 'UK store VAT number', 'eu-vat-handling-for-edd' ), $s->store_vat_number_gb(), __( 'Optional. Printed on receipts and invoices for UK customers instead of the number above, and sent to HMRC as the requester. Leave it empty to use one number everywhere.', 'eu-vat-handling-for-edd' ) );
+				$this->text_row( 'store_vat_number', __( 'Store VAT number', 'vat-right-for-edd' ), $s->store_vat_number(), __( 'Sent to VIES as the requester, which returns a consultation number as proof of each check.', 'vat-right-for-edd' ) );
+				$this->text_row( 'store_vat_number_gb', __( 'UK store VAT number', 'vat-right-for-edd' ), $s->store_vat_number_gb(), __( 'Optional. Printed on receipts and invoices for UK customers instead of the number above, and sent to HMRC as the requester. Leave it empty to use one number everywhere.', 'vat-right-for-edd' ) );
 				$this->select_row(
 					'ip_country_source',
-					__( 'IP country source', 'eu-vat-handling-for-edd' ),
+					__( 'IP country source', 'vat-right-for-edd' ),
 					$s->ip_country_source(),
 					array(
-						'none'       => __( 'None, billing country and self-certification only', 'eu-vat-handling-for-edd' ),
-						'cloudflare' => __( 'Cloudflare (CF-IPCountry header)', 'eu-vat-handling-for-edd' ),
-						'cloudfront' => __( 'Amazon CloudFront (CloudFront-Viewer-Country header)', 'eu-vat-handling-for-edd' ),
+						'none'       => __( 'None, billing country and self-certification only', 'vat-right-for-edd' ),
+						'cloudflare' => __( 'Cloudflare (CF-IPCountry header)', 'vat-right-for-edd' ),
+						'cloudfront' => __( 'Amazon CloudFront (CloudFront-Viewer-Country header)', 'vat-right-for-edd' ),
 					),
-					__( 'Only pick a CDN your site is really behind. Without one, visitors could send the header themselves.', 'eu-vat-handling-for-edd' )
+					__( 'Only pick a CDN your site is really behind. Without one, visitors could send the header themselves.', 'vat-right-for-edd' )
 				);
-				$this->select_row( 'report_currency', __( 'Report currency', 'eu-vat-handling-for-edd' ), $s->report_currency(), $this->currency_options() );
+				$this->select_row( 'report_currency', __( 'Report currency', 'vat-right-for-edd' ), $s->report_currency(), $this->currency_options() );
 				$this->select_row(
 					'outage_policy',
-					__( 'When a registry is unavailable', 'eu-vat-handling-for-edd' ),
+					__( 'When a registry is unavailable', 'vat-right-for-edd' ),
 					$s->outage_policy(),
 					array(
-						'charge'         => __( 'Accept the order, charge VAT and flag it', 'eu-vat-handling-for-edd' ),
-						'exempt_pending' => __( 'Accept the order, exempt VAT and re-check later', 'eu-vat-handling-for-edd' ),
-						'reject'         => __( 'Do not accept the order', 'eu-vat-handling-for-edd' ),
+						'charge'         => __( 'Accept the order, charge VAT and flag it', 'vat-right-for-edd' ),
+						'exempt_pending' => __( 'Accept the order, exempt VAT for any number and re-check later', 'vat-right-for-edd' ),
+						'reject'         => __( 'Do not accept the order', 'vat-right-for-edd' ),
 					),
-					__( 'Charging VAT and flagging the order is the safe choice: you can refund the VAT once the number validates. Exempting while a registry is down lets anyone enter a made-up number for that country, and the VAT is yours to recover if the re-check fails.', 'eu-vat-handling-for-edd' )
+					__( 'Charging VAT and flagging the order is the safe choice: you can refund the VAT once the number validates. Exempting while a registry is down lets anyone enter a made-up number for that country, and the VAT is yours to recover if the re-check fails.', 'vat-right-for-edd' )
 				);
 				$this->select_row(
 					'b2b_only',
-					__( 'Sell to businesses only', 'eu-vat-handling-for-edd' ),
+					__( 'Sell to businesses only', 'vat-right-for-edd' ),
 					$s->b2b_only(),
 					array(
-						B2bScope::OFF        => __( 'Off: a VAT number is optional', 'eu-vat-handling-for-edd' ),
-						B2bScope::EVERYWHERE => __( 'Require a valid VAT number from every customer', 'eu-vat-handling-for-edd' ),
-						B2bScope::EU         => __( 'Require a valid VAT number from customers billing in the EU', 'eu-vat-handling-for-edd' ),
-						B2bScope::COUNTRIES  => __( 'Require a valid VAT number from customers billing in the countries chosen below', 'eu-vat-handling-for-edd' ),
+						B2bScope::OFF        => __( 'Off: a VAT number is optional', 'vat-right-for-edd' ),
+						B2bScope::EVERYWHERE => __( 'Require a valid VAT number from every customer', 'vat-right-for-edd' ),
+						B2bScope::EU         => __( 'Require a valid VAT number from customers billing in the EU', 'vat-right-for-edd' ),
+						B2bScope::COUNTRIES  => __( 'Require a valid VAT number from customers billing in the countries chosen below', 'vat-right-for-edd' ),
 					),
-					__( 'The customer has to enter a VAT number that its registry confirms before the order is accepted. A registry outage follows "When a registry is unavailable" above: "Do not accept the order" refuses the order, while the two other choices accept it with VAT charged or exempted and flagged for a re-check. A number the registry has not checked, because no registry covers its country or the lookup was turned away for load, is never accepted unchecked. Orders that skip the checkout checks, such as Buy Now and wallet payments, cannot be refused: they are recorded and flagged on the order.', 'eu-vat-handling-for-edd' )
+					__( 'The customer has to enter a VAT number that its registry confirms before the order is accepted. A registry outage follows "When a registry is unavailable" above: "Do not accept the order" refuses the order, while the two other choices accept it with VAT charged or exempted and flagged for a re-check. A number the registry has not checked, because no registry covers its country or the lookup was turned away for load, is never accepted unchecked. Orders that skip the checkout checks, such as Buy Now and wallet payments, cannot be refused: they are recorded and flagged on the order.', 'vat-right-for-edd' )
 				);
-				$this->multiselect_row( 'b2b_only_countries', __( 'Business-only countries', 'eu-vat-handling-for-edd' ), $s->b2b_only_countries(), edd_get_country_list(), __( 'Used when the setting above is "chosen countries". The country is the customer\'s billing country.', 'eu-vat-handling-for-edd' ) );
-				$this->number_row( 'cache_ttl_valid_days', __( 'Keep valid results for (days)', 'eu-vat-handling-for-edd' ), $s->cache_ttl_valid_days(), 1, 90 );
-				$this->checkbox_row( 'self_certification', __( 'Self-certification', 'eu-vat-handling-for-edd' ), __( 'Ask digital customers to confirm their country when the evidence conflicts', 'eu-vat-handling-for-edd' ), $s->self_certification() );
-				$this->checkbox_row( 'allow_domestic_exemption', __( 'Domestic B2B', 'eu-vat-handling-for-edd' ), __( 'Allow VAT exemption for valid numbers from the store country', 'eu-vat-handling-for-edd' ), $s->allow_domestic_exemption() );
-				$this->multiselect_row( 'exempt_roles', __( 'VAT-exempt roles', 'eu-vat-handling-for-edd' ), $s->exempt_roles(), self::role_options(), __( 'Orders from customers with these roles are VAT-exempt. A user role is not a basis for VAT exemption under EU VAT law on its own, so you are responsible for making sure each exemption is correct, for example that these accounts are checked VAT-registered businesses. The role is recorded on every order it exempts. A confirmed VAT number still takes precedence. Leave empty to exempt nobody.', 'eu-vat-handling-for-edd' ) );
-				$this->checkbox_row( 'notify_admin_on_revalidation', __( 'Revalidation emails', 'eu-vat-handling-for-edd' ), __( 'Email the admin when a number validates after the order was placed', 'eu-vat-handling-for-edd' ), $s->notify_admin_on_revalidation() );
-				$this->checkbox_row( 'auto_refund_on_validation', __( 'Automatic VAT refund', 'eu-vat-handling-for-edd' ), __( 'Refund the VAT automatically when a number validates after the order', 'eu-vat-handling-for-edd' ), $s->auto_refund_on_validation(), __( 'Off by default. Refunds exactly the VAT charged, once, through EDD, and only when EDD can refund the order and the gateway is one that supports it. Otherwise the order is flagged for you to handle.', 'eu-vat-handling-for-edd' ) );
-				$this->checkbox_row( 'oss_registered', __( 'OSS', 'eu-vat-handling-for-edd' ), __( 'I am registered for the One Stop Shop (always charge destination VAT)', 'eu-vat-handling-for-edd' ), $s->oss_registered() );
-				$this->checkbox_row( 'threshold_warning', __( 'Threshold warning', 'eu-vat-handling-for-edd' ), __( 'Email the admin when EU sales near and pass the EUR 10,000 OSS threshold', 'eu-vat-handling-for-edd' ), $s->threshold_warning() );
-				$this->number_row( 'threshold_warning_percent', __( 'Warn at (% of the threshold)', 'eu-vat-handling-for-edd' ), $s->threshold_warning_percent(), 1, 99 );
-				$this->text_row( 'hmrc_client_id', __( 'HMRC client ID (optional)', 'eu-vat-handling-for-edd' ), $s->hmrc_client_id(), __( 'From your own HMRC Developer Hub application. Without it GB numbers are format-checked only.', 'eu-vat-handling-for-edd' ) );
-				$this->secret_row( 'hmrc_client_secret', __( 'HMRC client secret', 'eu-vat-handling-for-edd' ), '' !== $s->hmrc_client_secret() );
-				$this->checkbox_row( 'receipt_vat_details', __( 'Receipts', 'eu-vat-handling-for-edd' ), __( 'Print the seller details and the VAT wording on receipts and invoices', 'eu-vat-handling-for-edd' ), $s->receipt_vat_details() );
-				$this->text_row( 'seller_company', __( 'Company name', 'eu-vat-handling-for-edd' ), $s->text( 'seller_company' ) );
-				$this->text_row( 'seller_email', __( 'Company email', 'eu-vat-handling-for-edd' ), $s->text( 'seller_email' ) );
-				$this->text_row( 'seller_address_1', __( 'Address line 1', 'eu-vat-handling-for-edd' ), $s->text( 'seller_address_1' ) );
-				$this->text_row( 'seller_address_2', __( 'Address line 2', 'eu-vat-handling-for-edd' ), $s->text( 'seller_address_2' ) );
-				$this->text_row( 'seller_city', __( 'City', 'eu-vat-handling-for-edd' ), $s->text( 'seller_city' ) );
-				$this->text_row( 'seller_postcode', __( 'Postcode', 'eu-vat-handling-for-edd' ), $s->text( 'seller_postcode' ) );
-				$this->text_row( 'seller_country', __( 'Country', 'eu-vat-handling-for-edd' ), $s->text( 'seller_country' ) );
-				$this->number_row( 'retention_years', __( 'Keep VAT records for (years)', 'eu-vat-handling-for-edd' ), $s->retention_years(), 1, 30 );
-				$this->checkbox_row( 'delete_data_on_uninstall', __( 'Uninstall', 'eu-vat-handling-for-edd' ), __( 'Delete all plugin data when the plugin is deleted', 'eu-vat-handling-for-edd' ), $s->delete_data_on_uninstall() );
+				$this->multiselect_row( 'b2b_only_countries', __( 'Business-only countries', 'vat-right-for-edd' ), $s->b2b_only_countries(), edd_get_country_list(), __( 'Used when the setting above is "chosen countries". The country is the customer\'s billing country.', 'vat-right-for-edd' ) );
+				$this->number_row( 'cache_ttl_valid_days', __( 'Keep valid results for (days)', 'vat-right-for-edd' ), $s->cache_ttl_valid_days(), 1, 90 );
+				$this->checkbox_row( 'self_certification', __( 'Self-certification', 'vat-right-for-edd' ), __( 'Ask digital customers to confirm their country when the evidence conflicts', 'vat-right-for-edd' ), $s->self_certification() );
+				$this->checkbox_row( 'allow_domestic_exemption', __( 'Domestic B2B', 'vat-right-for-edd' ), __( 'Allow VAT exemption for valid numbers from the store country', 'vat-right-for-edd' ), $s->allow_domestic_exemption() );
+				$this->multiselect_row( 'exempt_roles', __( 'VAT-exempt roles', 'vat-right-for-edd' ), $s->exempt_roles(), self::role_options(), __( 'Orders from customers with these roles are VAT-exempt. A user role is not a basis for VAT exemption under EU VAT law on its own, so you are responsible for making sure each exemption is correct, for example that these accounts are checked VAT-registered businesses. The role is recorded on every order it exempts. A confirmed VAT number still takes precedence. Leave empty to exempt nobody. While registration is open, the role new sign-ups get can\'t be used here.', 'vat-right-for-edd' ) );
+				$this->checkbox_row( 'notify_admin_on_revalidation', __( 'Revalidation emails', 'vat-right-for-edd' ), __( 'Email the admin when a number validates after the order was placed', 'vat-right-for-edd' ), $s->notify_admin_on_revalidation() );
+				$this->checkbox_row( 'auto_refund_on_validation', __( 'Automatic VAT refund', 'vat-right-for-edd' ), __( 'Refund the VAT automatically when a number validates after the order', 'vat-right-for-edd' ), $s->auto_refund_on_validation(), __( 'Off by default. Refunds exactly the VAT charged, once, through EDD, and only when EDD can refund the order and the gateway is one that supports it. Otherwise the order is flagged for you to handle.', 'vat-right-for-edd' ) );
+				$this->checkbox_row( 'oss_registered', __( 'OSS', 'vat-right-for-edd' ), __( 'I am registered for the One Stop Shop (always charge destination VAT)', 'vat-right-for-edd' ), $s->oss_registered() );
+				$this->checkbox_row( 'threshold_warning', __( 'Threshold warning', 'vat-right-for-edd' ), __( 'Email the admin when EU sales near and pass the EUR 10,000 OSS threshold', 'vat-right-for-edd' ), $s->threshold_warning() );
+				$this->number_row( 'threshold_warning_percent', __( 'Warn at (% of the threshold)', 'vat-right-for-edd' ), $s->threshold_warning_percent(), 1, 99 );
+				$this->text_row( 'hmrc_client_id', __( 'HMRC client ID (optional)', 'vat-right-for-edd' ), $s->hmrc_client_id(), __( 'From your own HMRC Developer Hub application. Without it GB numbers are format-checked only.', 'vat-right-for-edd' ) );
+				$this->secret_row( 'hmrc_client_secret', __( 'HMRC client secret', 'vat-right-for-edd' ), '' !== $s->hmrc_client_secret() );
+				$this->checkbox_row( 'receipt_vat_details', __( 'Receipts', 'vat-right-for-edd' ), __( 'Print the seller details and the VAT wording on receipts and invoices', 'vat-right-for-edd' ), $s->receipt_vat_details() );
+				$this->text_row( 'seller_company', __( 'Company name', 'vat-right-for-edd' ), $s->text( 'seller_company' ) );
+				$this->text_row( 'seller_email', __( 'Company email', 'vat-right-for-edd' ), $s->text( 'seller_email' ) );
+				$this->text_row( 'seller_address_1', __( 'Address line 1', 'vat-right-for-edd' ), $s->text( 'seller_address_1' ) );
+				$this->text_row( 'seller_address_2', __( 'Address line 2', 'vat-right-for-edd' ), $s->text( 'seller_address_2' ) );
+				$this->text_row( 'seller_city', __( 'City', 'vat-right-for-edd' ), $s->text( 'seller_city' ) );
+				$this->text_row( 'seller_postcode', __( 'Postcode', 'vat-right-for-edd' ), $s->text( 'seller_postcode' ) );
+				$this->text_row( 'seller_country', __( 'Country', 'vat-right-for-edd' ), $s->text( 'seller_country' ) );
+				$this->number_row( 'retention_years', __( 'Keep VAT records for (years)', 'vat-right-for-edd' ), $s->retention_years(), 1, 30, $s->oss_registered() && $s->retention_years() < 10 ? __( 'OSS records have to be kept for 10 years. VAT numbers and location evidence are removed from older orders after this many years.', 'vat-right-for-edd' ) : __( 'VAT numbers and location evidence are removed from orders older than this. Keep at least 10 years if you use the One Stop Shop.', 'vat-right-for-edd' ) );
+				$this->checkbox_row( 'delete_data_on_uninstall', __( 'Uninstall', 'vat-right-for-edd' ), __( 'Delete all plugin data when the plugin is deleted', 'vat-right-for-edd' ), $s->delete_data_on_uninstall() );
 				?>
 				<tr>
-					<th scope="row"><?php esc_html_e( 'EU VAT rates', 'eu-vat-handling-for-edd' ); ?></th>
+					<th scope="row"><?php esc_html_e( 'EU VAT rates', 'vat-right-for-edd' ); ?></th>
 					<td><?php $this->rates_summary(); ?></td>
 				</tr>
 			</tbody>
 		</table>
 		<?php
+	}
+
+	public function enqueue(): void {
+		if ( ! current_user_can( self::CAPABILITY ) || ! $this->on_edd_settings() ) {
+			return;
+		}
+		$root = dirname( __DIR__, 2 );
+		wp_enqueue_style( 'vatright-edd-admin', plugins_url( 'assets/admin.css', $root . '/vat-right-for-edd.php' ), array(), (string) filemtime( $root . '/assets/admin.css' ) );
 	}
 
 	public function setup_notice(): void {
@@ -152,25 +161,38 @@ class SettingsSection {
 	}
 
 	/**
-	 * @return array<int,array{id:string,severity:string,message:string,fix_url:string}>
+	 * @return array<int,array{id:string,severity:string,message:string,fix_url:string,fix_label:string}>
 	 */
 	private function issues(): array {
 		return null === $this->setup_check ? array() : $this->setup_check->issues();
 	}
 
 	/**
-	 * @param array<int,array{id:string,severity:string,message:string,fix_url:string}> $issues
+	 * @param array<int,array{id:string,severity:string,message:string,fix_url:string,fix_label:string}> $issues
 	 */
 	private function render_issues( array $issues ): void {
+		if ( array() === $issues ) {
+			return;
+		}
+		$severities = array_column( $issues, 'severity' );
+		$level      = in_array( SetupCheck::ERROR, $severities, true ) ? 'error' : ( in_array( SetupCheck::WARNING, $severities, true ) ? 'warning' : 'info' );
+		$labels     = array(
+			SetupCheck::ERROR   => __( 'Required', 'vat-right-for-edd' ),
+			SetupCheck::WARNING => __( 'Recommended', 'vat-right-for-edd' ),
+			SetupCheck::INFO    => __( 'Optional', 'vat-right-for-edd' ),
+		);
+		echo '<div class="notice notice-' . esc_attr( $level ) . ' inline vatright-edd-setup"><p><strong>' . esc_html__( 'Setup checklist', 'vat-right-for-edd' ) . '</strong></p><ul>';
 		foreach ( $issues as $issue ) {
 			printf(
-				'<div class="notice notice-%1$s inline"><p>%2$s <a href="%3$s">%4$s</a></p></div>',
-				esc_attr( SetupCheck::ERROR === $issue['severity'] ? 'error' : $issue['severity'] ),
+				'<li><span class="vatright-edd-setup__tag vatright-edd-setup__tag--%1$s">%2$s</span> %3$s <a href="%4$s">%5$s</a></li>',
+				esc_attr( $issue['severity'] ),
+				esc_html( $labels[ $issue['severity'] ] ?? $issue['severity'] ),
 				esc_html( $issue['message'] ),
 				esc_url( $issue['fix_url'] ),
-				esc_html__( 'Fix', 'eu-vat-handling-for-edd' )
+				esc_html( $issue['fix_label'] )
 			);
 		}
+		echo '</ul></div>';
 	}
 
 	private function on_edd_settings(): bool {
@@ -197,7 +219,11 @@ class SettingsSection {
 			return $input;
 		}
 		$posted = isset( $_POST[ self::FIELD ] ) && is_array( $_POST[ self::FIELD ] ) ? wp_unslash( $_POST[ self::FIELD ] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- every key is sanitized in sanitize().
-		update_option( Settings::OPTION, $this->sanitize( $posted ) );
+		$clean  = $this->sanitize( $posted );
+		$secret = $clean['hmrc_client_secret'];
+		unset( $clean['hmrc_client_secret'] );
+		update_option( Settings::SECRET_OPTION, $secret, false );
+		update_option( Settings::OPTION, $clean );
 		Settings::reset();
 		return $input;
 	}
@@ -239,6 +265,10 @@ class SettingsSection {
 			$secret = '';
 		} elseif ( '' === $secret ) {
 			$secret = $current->hmrc_client_secret();
+		}
+
+		if ( ! empty( $posted['oss_registered'] ) && $number( 'retention_years', 1, 30 ) < 10 ) {
+			add_settings_error( 'edd-notices', 'retention_years', __( 'You\'re registered for OSS, which requires keeping records for 10 years. Records older than the number of years you set will have their VAT numbers and evidence removed.', 'vat-right-for-edd' ), 'warning' );
 		}
 
 		return array(
@@ -294,12 +324,25 @@ class SettingsSection {
 	 * @return string[]
 	 */
 	private function sanitize_roles( $posted ): array {
-		$roles = array();
+		$roles   = array();
+		$default = (string) get_option( 'default_role', '' );
+		$signup  = Settings::signup_open();
 		foreach ( is_array( $posted ) ? $posted : array() as $role ) {
 			$role = is_scalar( $role ) ? sanitize_key( (string) $role ) : '';
-			if ( '' !== $role && wp_roles()->is_role( $role ) ) {
-				$roles[ $role ] = $role;
+			if ( '' === $role || ! wp_roles()->is_role( $role ) ) {
+				continue;
 			}
+			if ( $signup && $role === $default ) {
+				add_settings_error(
+					'edd-notices',
+					'exempt_role_signup',
+					/* translators: %s: role name. */
+					sprintf( __( 'The "%s" role is what new sign-ups get, so it can\'t be VAT-exempt: anyone could register and skip VAT. Give your business customers their own role instead.', 'vat-right-for-edd' ), translate_user_role( wp_roles()->get_names()[ $role ] ?? $role ) ),
+					'error'
+				);
+				continue;
+			}
+			$roles[ $role ] = $role;
 		}
 		return array_values( $roles );
 	}
@@ -321,7 +364,7 @@ class SettingsSection {
 		}
 		$parsed = VatNumber::parse( $raw, edd_get_shop_country() );
 		if ( null === $parsed || ! FormatCheck::is_plausible( $parsed ) ) {
-			add_settings_error( 'vatright-edd', 'store_vat_number', __( 'The store VAT number does not look valid, so it was not saved.', 'eu-vat-handling-for-edd' ), 'error' );
+			add_settings_error( 'edd-notices', 'store_vat_number', __( 'The store VAT number does not look valid, so it was not saved.', 'vat-right-for-edd' ), 'error' );
 			return $kept;
 		}
 		return $parsed->canonical();
@@ -333,7 +376,7 @@ class SettingsSection {
 		}
 		$parsed = VatNumber::parse( $raw, 'GB' );
 		if ( null === $parsed || 'GB' !== $parsed->prefix() || ! FormatCheck::is_plausible( $parsed ) ) {
-			add_settings_error( 'vatright-edd', 'store_vat_number_gb', __( 'The UK store VAT number does not look like a GB number, so it was not saved.', 'eu-vat-handling-for-edd' ), 'error' );
+			add_settings_error( 'edd-notices', 'store_vat_number_gb', __( 'The UK store VAT number does not look like a GB number, so it was not saved.', 'vat-right-for-edd' ), 'error' );
 			return $kept;
 		}
 		return $parsed->canonical();
@@ -353,11 +396,11 @@ class SettingsSection {
 			esc_html(
 				$pending > 0
 					/* translators: %d: number of rate changes. */
-					? sprintf( _n( '%d rate change is waiting for review.', '%d rate changes are waiting for review.', $pending, 'eu-vat-handling-for-edd' ), $pending )
-					: __( 'Your tax rates match the latest EU rates.', 'eu-vat-handling-for-edd' )
+					? sprintf( _n( '%d rate change is waiting for review.', '%d rate changes are waiting for review.', $pending, 'vat-right-for-edd' ), $pending )
+					: __( 'Your tax rates match the latest EU rates.', 'vat-right-for-edd' )
 			),
 			esc_url( RatesScreen::url() ),
-			esc_html__( 'Open the rates screen', 'eu-vat-handling-for-edd' )
+			esc_html__( 'Open the rates screen', 'vat-right-for-edd' )
 		);
 	}
 
@@ -382,20 +425,21 @@ class SettingsSection {
 			esc_attr( self::FIELD . '_' . $key ),
 			esc_html( $title ),
 			esc_attr( $this->name( $key ) ),
-			esc_attr( $saved ? __( 'Saved. Leave empty to keep it.', 'eu-vat-handling-for-edd' ) : '' ),
-			esc_html__( 'The saved secret is never shown. Clear the client ID to remove it.', 'eu-vat-handling-for-edd' )
+			esc_attr( $saved ? __( 'Saved. Leave empty to keep it.', 'vat-right-for-edd' ) : '' ),
+			esc_html__( 'The saved secret is never shown. Clear the client ID to remove it.', 'vat-right-for-edd' )
 		);
 	}
 
-	private function number_row( string $key, string $title, int $value, int $min, int $max ): void {
+	private function number_row( string $key, string $title, int $value, int $min, int $max, string $description = '' ): void {
 		printf(
-			'<tr><th scope="row"><label for="%1$s">%2$s</label></th><td><input type="number" class="small-text" id="%1$s" name="%3$s" value="%4$d" min="%5$d" max="%6$d" /></td></tr>',
+			'<tr><th scope="row"><label for="%1$s">%2$s</label></th><td><input type="number" class="small-text" id="%1$s" name="%3$s" value="%4$d" min="%5$d" max="%6$d" />%7$s</td></tr>',
 			esc_attr( self::FIELD . '_' . $key ),
 			esc_html( $title ),
 			esc_attr( $this->name( $key ) ),
 			absint( $value ),
 			absint( $min ),
-			absint( $max )
+			absint( $max ),
+			'' === $description ? '' : '<p class="description">' . esc_html( $description ) . '</p>'
 		);
 	}
 
@@ -423,7 +467,7 @@ class SettingsSection {
 			$html .= sprintf( '<option value="%1$s"%2$s>%3$s</option>', esc_attr( (string) $option ), selected( in_array( (string) $option, $selected, true ), true, false ), esc_html( $label ) );
 		}
 		printf(
-			'<tr><th scope="row"><label for="%1$s">%2$s</label></th><td><select id="%1$s" name="%3$s[]" multiple="multiple" size="8" style="min-width:350px">%4$s</select>%5$s</td></tr>',
+			'<tr><th scope="row"><label for="%1$s">%2$s</label></th><td><select id="%1$s" name="%3$s[]" multiple="multiple" size="8" class="vatright-edd-multiselect">%4$s</select>%5$s</td></tr>',
 			esc_attr( self::FIELD . '_' . $key ),
 			esc_html( $title ),
 			esc_attr( $this->name( $key ) ),

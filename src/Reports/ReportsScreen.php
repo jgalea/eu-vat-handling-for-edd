@@ -16,9 +16,13 @@ class ReportsScreen {
 	/** @var EcSalesList */
 	private $esl;
 
-	public function __construct( OssReport $oss, EcSalesList $esl ) {
-		$this->oss = $oss;
-		$this->esl = $esl;
+	/** @var TransactionExport */
+	private $transactions;
+
+	public function __construct( OssReport $oss, EcSalesList $esl, TransactionExport $transactions ) {
+		$this->oss          = $oss;
+		$this->esl          = $esl;
+		$this->transactions = $transactions;
 	}
 
 	public function register(): void {
@@ -26,6 +30,7 @@ class ReportsScreen {
 		add_filter( 'edd_settings_page_title', array( $this, 'page_title' ), 10, 2 );
 		add_action( 'admin_post_vatright_edd_export_oss', array( $this, 'export_oss' ) );
 		add_action( 'admin_post_vatright_edd_export_esl', array( $this, 'export_esl' ) );
+		add_action( 'admin_post_vatright_edd_export_transactions', array( $this, 'export_transactions' ) );
 	}
 
 	public static function order_url( int $order_id ): string {
@@ -35,8 +40,8 @@ class ReportsScreen {
 	public function add_menu(): void {
 		add_submenu_page(
 			'edit.php?post_type=download',
-			__( 'EU VAT reports', 'eu-vat-handling-for-edd' ),
-			__( 'EU VAT reports', 'eu-vat-handling-for-edd' ),
+			__( 'EU VAT reports', 'vat-right-for-edd' ),
+			__( 'EU VAT reports', 'vat-right-for-edd' ),
 			self::CAPABILITY,
 			self::SLUG,
 			array( $this, 'render' )
@@ -49,7 +54,7 @@ class ReportsScreen {
 	 * @return mixed
 	 */
 	public function page_title( $title, $current_page = '' ) {
-		return self::SLUG === $current_page ? __( 'EU VAT reports', 'eu-vat-handling-for-edd' ) : $title;
+		return self::SLUG === $current_page ? __( 'EU VAT reports', 'vat-right-for-edd' ) : $title;
 	}
 
 	public function render(): void {
@@ -69,14 +74,14 @@ class ReportsScreen {
 		$unknown = $this->esl->unknown_number_orders_for( $period );
 		?>
 		<div class="wrap">
-			<h1><?php esc_html_e( 'EU VAT reports', 'eu-vat-handling-for-edd' ); ?></h1>
+			<h1><?php esc_html_e( 'EU VAT reports', 'vat-right-for-edd' ); ?></h1>
 			<?php $this->period_form( $period ); ?>
 			<p class="description">
 				<?php
 				echo esc_html(
 					sprintf(
 						/* translators: 1: first day, 2: last day, both as Y-m-d. */
-						__( 'Sales made from %1$s to %2$s.', 'eu-vat-handling-for-edd' ),
+						__( 'Sales made from %1$s to %2$s.', 'vat-right-for-edd' ),
 						$period->start(),
 						$period->end()
 					)
@@ -84,23 +89,25 @@ class ReportsScreen {
 				?>
 			</p>
 
-			<h2><?php esc_html_e( 'OSS return', 'eu-vat-handling-for-edd' ); ?></h2>
+			<h2><?php esc_html_e( 'OSS return', 'vat-right-for-edd' ); ?></h2>
 			<?php if ( null === $oss ) : ?>
 				<div class="notice notice-error inline"><p><?php echo esc_html( $oss_error ); ?></p></div>
 			<?php else : ?>
-				<p><?php echo esc_html( sprintf( /* translators: %s: conversion rule. */ __( 'Non-euro orders are converted at the %s.', 'eu-vat-handling-for-edd' ), $oss['rate_rule'] ) ); ?></p>
+				<p><?php echo esc_html( sprintf( /* translators: %s: conversion rule. */ __( 'Non-euro orders are converted at the %s.', 'vat-right-for-edd' ), $oss['rate_rule'] ) ); ?></p>
 				<?php $this->oss_table( $oss ); ?>
-				<?php $this->export_form( 'vatright_edd_export_oss', $period, __( 'Download OSS CSV', 'eu-vat-handling-for-edd' ) ); ?>
+				<?php if ( array() !== $oss['rows'] || array() !== $oss['needs_correction'] ) : ?>
+					<?php $this->export_form( 'vatright_edd_export_oss', $period, __( 'Download OSS CSV', 'vat-right-for-edd' ) ); ?>
+				<?php endif; ?>
 			<?php endif; ?>
 
-			<h2><?php esc_html_e( 'EC Sales List', 'eu-vat-handling-for-edd' ); ?></h2>
+			<h2><?php esc_html_e( 'EC Sales List', 'vat-right-for-edd' ); ?></h2>
 			<?php if ( null === $esl ) : ?>
 				<div class="notice notice-error inline"><p>
 					<?php
 					echo esc_html(
 						sprintf(
 							/* translators: %s: order numbers. */
-							__( 'No ECB rate was available for these orders, so the list is not shown: %s', 'eu-vat-handling-for-edd' ),
+							__( 'No ECB rate was available for these orders, so the list is not shown: %s', 'vat-right-for-edd' ),
 							implode( ', ', $missing )
 						)
 					);
@@ -111,10 +118,10 @@ class ReportsScreen {
 				<table class="widefat striped">
 					<thead>
 						<tr>
-							<th><?php esc_html_e( 'VAT number', 'eu-vat-handling-for-edd' ); ?></th>
-							<th><?php esc_html_e( 'Country', 'eu-vat-handling-for-edd' ); ?></th>
-							<th><?php esc_html_e( 'Goods or services', 'eu-vat-handling-for-edd' ); ?></th>
-							<th><?php esc_html_e( 'Net amount (EUR)', 'eu-vat-handling-for-edd' ); ?></th>
+							<th><?php esc_html_e( 'VAT number', 'vat-right-for-edd' ); ?></th>
+							<th><?php esc_html_e( 'Country', 'vat-right-for-edd' ); ?></th>
+							<th><?php esc_html_e( 'Goods or services', 'vat-right-for-edd' ); ?></th>
+							<th><?php esc_html_e( 'Net amount (EUR)', 'vat-right-for-edd' ); ?></th>
 						</tr>
 					</thead>
 					<tbody>
@@ -127,14 +134,31 @@ class ReportsScreen {
 							</tr>
 						<?php endforeach; ?>
 						<?php if ( array() === $esl ) : ?>
-							<tr><td colspan="4"><?php esc_html_e( 'No intra-EU B2B sales in this period.', 'eu-vat-handling-for-edd' ); ?></td></tr>
+							<tr><td colspan="4"><?php esc_html_e( 'No intra-EU B2B sales in this period.', 'vat-right-for-edd' ); ?></td></tr>
 						<?php endif; ?>
 					</tbody>
 				</table>
-				<?php $this->export_form( 'vatright_edd_export_esl', $period, __( 'Download EC Sales List CSV', 'eu-vat-handling-for-edd' ) ); ?>
+				<?php if ( array() !== $esl || array() !== $unknown ) : ?>
+					<?php $this->export_form( 'vatright_edd_export_esl', $period, __( 'Download EC Sales List CSV', 'vat-right-for-edd' ) ); ?>
+				<?php endif; ?>
+			<?php endif; ?>
+
+			<h2><?php esc_html_e( 'VAT transactions', 'vat-right-for-edd' ); ?></h2>
+			<?php $count = $this->transactions->count_for( $period ); ?>
+			<?php if ( 0 === $count ) : ?>
+				<p><?php esc_html_e( 'No VAT entries in this period.', 'vat-right-for-edd' ); ?></p>
+			<?php else : ?>
+				<p><?php esc_html_e( 'One row per order entry with the location evidence, the VAT number and the registry answer, the treatment and the amounts, for audits.', 'vat-right-for-edd' ); ?></p>
+				<?php $this->export_form( 'vatright_edd_export_transactions', $period, __( 'Download VAT transactions CSV', 'vat-right-for-edd' ) ); ?>
 			<?php endif; ?>
 		</div>
 		<?php
+	}
+
+	public function export_transactions(): void {
+		$period = $this->authorised_selection();
+		$csv    = $this->transactions->build_for( $period );
+		Csv::send( sprintf( 'vat-transactions-%s.csv', $period->slug() ), $csv[0], $csv[1] );
 	}
 
 	public function export_oss(): void {
@@ -157,7 +181,7 @@ class ReportsScreen {
 				esc_html(
 					sprintf(
 						/* translators: %s: order numbers. */
-						__( 'The EC Sales List cannot be exported: no ECB rate was available for orders %s.', 'eu-vat-handling-for-edd' ),
+						__( 'The EC Sales List cannot be exported: no ECB rate was available for orders %s.', 'vat-right-for-edd' ),
 						implode( ', ', $e->order_ids() )
 					)
 				)
@@ -182,7 +206,7 @@ class ReportsScreen {
 
 	private function authorised_selection(): ReportPeriod {
 		if ( ! current_user_can( self::CAPABILITY ) ) {
-			wp_die( esc_html__( 'You do not have permission to export these reports.', 'eu-vat-handling-for-edd' ), '', array( 'response' => 403 ) );
+			wp_die( esc_html__( 'You do not have permission to export these reports.', 'vat-right-for-edd' ), '', array( 'response' => 403 ) );
 		}
 		check_admin_referer( self::NONCE );
 		return $this->selection( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -229,22 +253,22 @@ class ReportsScreen {
 		$from      = ReportPeriod::RANGE === $period->kind() ? $period->start() : $today->format( 'Y-m-01' );
 		$to        = ReportPeriod::RANGE === $period->kind() ? $period->end() : $today->format( 'Y-m-d' );
 		$kinds     = array(
-			ReportPeriod::QUARTER => __( 'Quarter', 'eu-vat-handling-for-edd' ),
-			ReportPeriod::MONTH   => __( 'Month', 'eu-vat-handling-for-edd' ),
-			ReportPeriod::RANGE   => __( 'Custom range', 'eu-vat-handling-for-edd' ),
+			ReportPeriod::QUARTER => __( 'Quarter', 'vat-right-for-edd' ),
+			ReportPeriod::MONTH   => __( 'Month', 'vat-right-for-edd' ),
+			ReportPeriod::RANGE   => __( 'Custom range', 'vat-right-for-edd' ),
 		);
 		?>
 		<form method="get" action="<?php echo esc_url( admin_url( 'edit.php' ) ); ?>" class="vatright-edd-period">
 			<input type="hidden" name="post_type" value="download" />
 			<input type="hidden" name="page" value="<?php echo esc_attr( self::SLUG ); ?>" />
-			<label for="vatright-edd-period"><?php esc_html_e( 'Period', 'eu-vat-handling-for-edd' ); ?></label>
+			<label for="vatright-edd-period"><?php esc_html_e( 'Period', 'vat-right-for-edd' ); ?></label>
 			<select name="period" id="vatright-edd-period">
 				<?php foreach ( $kinds as $value => $label ) : ?>
 					<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $value, $period->kind() ); ?>><?php echo esc_html( $label ); ?></option>
 				<?php endforeach; ?>
 			</select>
 			<span data-period-kinds="quarter month">
-				<label class="screen-reader-text" for="vatright-edd-year"><?php esc_html_e( 'Year', 'eu-vat-handling-for-edd' ); ?></label>
+				<label class="screen-reader-text" for="vatright-edd-year"><?php esc_html_e( 'Year', 'vat-right-for-edd' ); ?></label>
 				<select name="year" id="vatright-edd-year">
 					<?php for ( $y = $this_year; $y >= $this_year - 5; $y-- ) : ?>
 						<option value="<?php echo esc_attr( (string) $y ); ?>" <?php selected( $y, $period->year() ); ?>><?php echo esc_html( (string) $y ); ?></option>
@@ -252,7 +276,7 @@ class ReportsScreen {
 				</select>
 			</span>
 			<span data-period-kinds="quarter">
-				<label class="screen-reader-text" for="vatright-edd-quarter"><?php esc_html_e( 'Quarter', 'eu-vat-handling-for-edd' ); ?></label>
+				<label class="screen-reader-text" for="vatright-edd-quarter"><?php esc_html_e( 'Quarter', 'vat-right-for-edd' ); ?></label>
 				<select name="quarter" id="vatright-edd-quarter">
 					<?php for ( $q = 1; $q <= 4; $q++ ) : ?>
 						<option value="<?php echo esc_attr( (string) $q ); ?>" <?php selected( $q, $quarter ); ?>><?php echo esc_html( 'Q' . $q ); ?></option>
@@ -260,7 +284,7 @@ class ReportsScreen {
 				</select>
 			</span>
 			<span data-period-kinds="month">
-				<label class="screen-reader-text" for="vatright-edd-month"><?php esc_html_e( 'Month', 'eu-vat-handling-for-edd' ); ?></label>
+				<label class="screen-reader-text" for="vatright-edd-month"><?php esc_html_e( 'Month', 'vat-right-for-edd' ); ?></label>
 				<select name="month" id="vatright-edd-month">
 					<?php for ( $m = 1; $m <= 12; $m++ ) : ?>
 						<option value="<?php echo esc_attr( (string) $m ); ?>" <?php selected( $m, $month ); ?>><?php echo esc_html( $wp_locale->get_month( $m ) ); ?></option>
@@ -268,12 +292,12 @@ class ReportsScreen {
 				</select>
 			</span>
 			<span data-period-kinds="range">
-				<label for="vatright-edd-from"><?php esc_html_e( 'From', 'eu-vat-handling-for-edd' ); ?></label>
+				<label for="vatright-edd-from"><?php esc_html_e( 'From', 'vat-right-for-edd' ); ?></label>
 				<input type="date" name="from" id="vatright-edd-from" value="<?php echo esc_attr( $from ); ?>" />
-				<label for="vatright-edd-to"><?php esc_html_e( 'To', 'eu-vat-handling-for-edd' ); ?></label>
+				<label for="vatright-edd-to"><?php esc_html_e( 'To', 'vat-right-for-edd' ); ?></label>
 				<input type="date" name="to" id="vatright-edd-to" value="<?php echo esc_attr( $to ); ?>" />
 			</span>
-			<button type="submit" class="button"><?php esc_html_e( 'Show', 'eu-vat-handling-for-edd' ); ?></button>
+			<button type="submit" class="button"><?php esc_html_e( 'Show', 'vat-right-for-edd' ); ?></button>
 		</form>
 		<?php
 		wp_print_inline_script_tag(
@@ -311,7 +335,7 @@ class ReportsScreen {
 							'%d order is left out of this list because its VAT number was not recorded. Add the number on the order, then run the report again.',
 							'%d orders are left out of this list because their VAT numbers were not recorded. Add the numbers on the orders, then run the report again.',
 							count( $unknown ),
-							'eu-vat-handling-for-edd'
+							'vat-right-for-edd'
 						),
 						count( $unknown )
 					)
@@ -335,11 +359,11 @@ class ReportsScreen {
 		<table class="widefat striped">
 			<thead>
 				<tr>
-					<th><?php esc_html_e( 'Member state', 'eu-vat-handling-for-edd' ); ?></th>
-					<th><?php esc_html_e( 'VAT rate %', 'eu-vat-handling-for-edd' ); ?></th>
-					<th><?php esc_html_e( 'Supply type', 'eu-vat-handling-for-edd' ); ?></th>
-					<th><?php echo esc_html( sprintf( /* translators: %s: currency code. */ __( 'Taxable amount (%s)', 'eu-vat-handling-for-edd' ), $oss['currency'] ) ); ?></th>
-					<th><?php echo esc_html( sprintf( /* translators: %s: currency code. */ __( 'VAT amount (%s)', 'eu-vat-handling-for-edd' ), $oss['currency'] ) ); ?></th>
+					<th><?php esc_html_e( 'Member state', 'vat-right-for-edd' ); ?></th>
+					<th><?php esc_html_e( 'VAT rate %', 'vat-right-for-edd' ); ?></th>
+					<th><?php esc_html_e( 'Supply type', 'vat-right-for-edd' ); ?></th>
+					<th><?php echo esc_html( sprintf( /* translators: %s: currency code. */ __( 'Taxable amount (%s)', 'vat-right-for-edd' ), $oss['currency'] ) ); ?></th>
+					<th><?php echo esc_html( sprintf( /* translators: %s: currency code. */ __( 'VAT amount (%s)', 'vat-right-for-edd' ), $oss['currency'] ) ); ?></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -353,7 +377,7 @@ class ReportsScreen {
 					</tr>
 				<?php endforeach; ?>
 				<?php if ( array() === $oss['rows'] ) : ?>
-					<tr><td colspan="5"><?php esc_html_e( 'No OSS sales in this period.', 'eu-vat-handling-for-edd' ); ?></td></tr>
+					<tr><td colspan="5"><?php esc_html_e( 'No OSS sales in this period.', 'vat-right-for-edd' ); ?></td></tr>
 				<?php endif; ?>
 			</tbody>
 		</table>
@@ -364,7 +388,7 @@ class ReportsScreen {
 					echo esc_html(
 						sprintf(
 							/* translators: 1: currency, 2: rate, 3: date, 4: period. */
-							__( '%1$s: %2$s per EUR on %3$s (%4$s).', 'eu-vat-handling-for-edd' ),
+							__( '%1$s: %2$s per EUR on %3$s (%4$s).', 'vat-right-for-edd' ),
 							$rate['currency'],
 							$rate['rate'],
 							$rate['rate_date'],
@@ -377,16 +401,16 @@ class ReportsScreen {
 		<?php endforeach; ?>
 		<?php if ( array() !== $oss['needs_correction'] ) : ?>
 			<h3><?php echo esc_html( OssReport::needs_correction_title() ); ?></h3>
-			<p><?php esc_html_e( 'Your tax rates had none for these destinations, so checkout charged your own country\'s rate. That VAT is not the destination VAT these sales owe, so they are left out of the figures above. Decide with your adviser how to declare each one, then add the missing rates.', 'eu-vat-handling-for-edd' ); ?></p>
+			<p><?php esc_html_e( 'Your tax rates had none for these destinations, so checkout charged your own country\'s rate. That VAT is not the destination VAT these sales owe, so they are left out of the figures above. Decide with your adviser how to declare each one, then add the missing rates.', 'vat-right-for-edd' ); ?></p>
 			<table class="widefat striped">
 				<thead>
 					<tr>
-						<th><?php esc_html_e( 'Order', 'eu-vat-handling-for-edd' ); ?></th>
-						<th><?php esc_html_e( 'Member state', 'eu-vat-handling-for-edd' ); ?></th>
-						<th><?php esc_html_e( 'Rate charged %', 'eu-vat-handling-for-edd' ); ?></th>
-						<th><?php esc_html_e( 'Supply type', 'eu-vat-handling-for-edd' ); ?></th>
-						<th><?php echo esc_html( sprintf( /* translators: %s: currency code. */ __( 'Taxable amount (%s)', 'eu-vat-handling-for-edd' ), $oss['currency'] ) ); ?></th>
-						<th><?php echo esc_html( sprintf( /* translators: %s: currency code. */ __( 'VAT charged (%s)', 'eu-vat-handling-for-edd' ), $oss['currency'] ) ); ?></th>
+						<th><?php esc_html_e( 'Order', 'vat-right-for-edd' ); ?></th>
+						<th><?php esc_html_e( 'Member state', 'vat-right-for-edd' ); ?></th>
+						<th><?php esc_html_e( 'Rate charged %', 'vat-right-for-edd' ); ?></th>
+						<th><?php esc_html_e( 'Supply type', 'vat-right-for-edd' ); ?></th>
+						<th><?php echo esc_html( sprintf( /* translators: %s: currency code. */ __( 'Taxable amount (%s)', 'vat-right-for-edd' ), $oss['currency'] ) ); ?></th>
+						<th><?php echo esc_html( sprintf( /* translators: %s: currency code. */ __( 'VAT charged (%s)', 'vat-right-for-edd' ), $oss['currency'] ) ); ?></th>
 					</tr>
 				</thead>
 				<tbody>
@@ -404,7 +428,7 @@ class ReportsScreen {
 			</table>
 		<?php endif; ?>
 		<?php if ( array() !== $oss['corrections'] ) : ?>
-			<p><?php esc_html_e( 'Refunds and revoked or reinstated orders booked in this period against earlier periods are listed in the CSV so those returns can be amended.', 'eu-vat-handling-for-edd' ); ?></p>
+			<p><?php esc_html_e( 'Refunds and revoked or reinstated orders booked in this period against earlier periods are listed in the CSV so those returns can be amended.', 'vat-right-for-edd' ); ?></p>
 		<?php endif; ?>
 		<?php
 	}

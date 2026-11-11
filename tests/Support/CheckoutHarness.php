@@ -66,7 +66,7 @@ class CheckoutHarness {
 		$harness->field->register();
 		( new TaxApplier( $harness->decider, $rates ) )->register();
 		$harness->errors->register();
-		$harness->finaliser = new OrderFinaliser( $gatherer, new Rules(), $harness->state, $harness->decider );
+		$harness->finaliser = new OrderFinaliser( $gatherer, new Rules(), $harness->state, $harness->decider, $rates );
 		$harness->finaliser->register();
 
 		edd_empty_cart();

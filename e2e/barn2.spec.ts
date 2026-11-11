@@ -6,11 +6,11 @@ const SECRETS = [ 'e2e-secret-7f3a91c0d2b84e56', 'e2e-client-id-5d1e88a4c7f2', '
 const IMPORT_PAGE = '/wp-admin/edit.php?post_type=download&page=vatright-edd-import';
 
 function seed() {
-	expect( wp( 'eval-file', 'wp-content/plugins/eu-vat-handling-for-edd/e2e/barn2-seed.php' ) ).toContain( '@@1@@' );
+	expect( wp( 'eval-file', 'wp-content/plugins/vat-right-for-edd/e2e/barn2-seed.php' ) ).toContain( '@@1@@' );
 }
 
 function reset() {
-	expect( wp( 'eval-file', 'wp-content/plugins/eu-vat-handling-for-edd/e2e/barn2-reset.php' ) ).toContain( '@@1@@' );
+	expect( wp( 'eval-file', 'wp-content/plugins/vat-right-for-edd/e2e/barn2-reset.php' ) ).toContain( '@@1@@' );
 }
 
 function ledgerRows(): number {
@@ -22,7 +22,7 @@ function ledgerRows(): number {
  * are run the way a real request's cron spawn would.
  */
 function runQueue() {
-	expect( wp( 'eval-file', 'wp-content/plugins/eu-vat-handling-for-edd/e2e/run-queue.php' ) ).toContain( '@@1@@' );
+	expect( wp( 'eval-file', 'wp-content/plugins/vat-right-for-edd/e2e/run-queue.php' ) ).toContain( '@@1@@' );
 }
 
 async function login( page: Page ) {
@@ -37,25 +37,25 @@ test.describe( 'Barn2 import', () => {
 
 	test( 'the CLI dry run and run report the same counts, and a second run writes nothing', () => {
 		seed();
-		const dry = wp( 'eu-vat-handling-for-edd', 'import-barn2', '--history-only', '--dry-run', '--since=2025-01-01' );
+		const dry = wp( 'vat-right-for-edd', 'import-barn2', '--history-only', '--dry-run', '--since=2025-01-01' );
 		const wouldWrite = dry.match( /(\d+) orders \((\d+) with Barn2 data, (\d+) without\) would write (\d+) ledger rows/ );
 		expect( wouldWrite, dry ).not.toBeNull();
 		expect( ledgerRows() ).toBe( 0 );
 		expect( wouldWrite![ 1 ] ).toBe( '4' );
 		expect( wouldWrite![ 2 ] ).toBe( '3' );
 
-		const run = wp( 'eu-vat-handling-for-edd', 'import-barn2', '--history-only', '--since=2025-01-01' );
+		const run = wp( 'vat-right-for-edd', 'import-barn2', '--history-only', '--since=2025-01-01' );
 		expect( run ).toContain( `Imported ${ wouldWrite![ 1 ] } orders and ${ wouldWrite![ 4 ] } ledger rows; 0 failed.` );
 		expect( ledgerRows() ).toBe( Number( wouldWrite![ 4 ] ) );
 
-		const again = wp( 'eu-vat-handling-for-edd', 'import-barn2', '--history-only', '--since=2025-01-01' );
+		const again = wp( 'vat-right-for-edd', 'import-barn2', '--history-only', '--since=2025-01-01' );
 		expect( again ).toContain( 'Imported 0 orders and 0 ledger rows; 0 failed.' );
 		expect( ledgerRows() ).toBe( Number( wouldWrite![ 4 ] ) );
 	} );
 
 	test( 'the CLI settings import names fields and never prints a value', () => {
 		seed();
-		const out = wp( 'eu-vat-handling-for-edd', 'import-barn2', '--settings-only' );
+		const out = wp( 'vat-right-for-edd', 'import-barn2', '--settings-only' );
 		expect( out ).toContain( 'edd_vat_hmrc_client_secret: imported' );
 		expect( out ).toContain( 'edd_vat_vatsense_api_key: skipped' );
 		for ( const secret of SECRETS ) {

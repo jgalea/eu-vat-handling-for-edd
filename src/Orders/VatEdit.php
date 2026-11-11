@@ -7,6 +7,7 @@ use VatrightEdd\Domain\Decision;
 use VatrightEdd\Domain\FormatCheck;
 use VatrightEdd\Domain\VatNumber;
 use VatrightEdd\Ledger\LedgerWriter;
+use VatrightEdd\Rates\RateResolver;
 use WP_Error;
 
 /**
@@ -22,8 +23,12 @@ final class VatEdit {
 	/** @var LedgerWriter */
 	private $ledger;
 
-	public function __construct( LedgerWriter $ledger ) {
+	/** @var RateResolver */
+	private $rates;
+
+	public function __construct( LedgerWriter $ledger, RateResolver $rates ) {
 		$this->ledger = $ledger;
+		$this->rates  = $rates;
 	}
 
 	/**
@@ -32,31 +37,31 @@ final class VatEdit {
 	public function apply( int $order_id, string $raw_number, string $country, string $treatment, string $reason, int $actor ) {
 		$reason = trim( mb_substr( $reason, 0, self::REASON_MAX ) );
 		if ( '' === $reason ) {
-			return new WP_Error( 'reason_required', __( 'Give a reason for the change.', 'eu-vat-handling-for-edd' ) );
+			return new WP_Error( 'reason_required', __( 'Give a reason for the change.', 'vat-right-for-edd' ) );
 		}
 		$order = $order_id > 0 ? edd_get_order( $order_id ) : false;
 		if ( ! $order instanceof \EDD\Orders\Order || 'sale' !== $order->type ) {
-			return new WP_Error( 'no_order', __( 'This order cannot carry a VAT decision.', 'eu-vat-handling-for-edd' ) );
+			return new WP_Error( 'no_order', __( 'This order cannot carry a VAT decision.', 'vat-right-for-edd' ) );
 		}
 		$before = DecisionStore::get( $order_id );
 		if ( null === $before ) {
-			return new WP_Error( 'no_decision', __( 'No VAT decision is recorded for this order.', 'eu-vat-handling-for-edd' ) );
+			return new WP_Error( 'no_decision', __( 'No VAT decision is recorded for this order.', 'vat-right-for-edd' ) );
 		}
 
 		$country = strtoupper( trim( $country ) );
 		if ( ! array_key_exists( $country, edd_get_country_list() ) ) {
-			return new WP_Error( 'bad_country', __( 'Choose a country.', 'eu-vat-handling-for-edd' ) );
+			return new WP_Error( 'bad_country', __( 'Choose a country.', 'vat-right-for-edd' ) );
 		}
 		if ( ! in_array( $treatment, Correction::TREATMENTS, true ) ) {
-			return new WP_Error( 'bad_treatment', __( 'Choose a treatment.', 'eu-vat-handling-for-edd' ) );
+			return new WP_Error( 'bad_treatment', __( 'Choose a treatment.', 'vat-right-for-edd' ) );
 		}
 		$raw_number = trim( $raw_number );
 		$number     = '' === $raw_number ? null : VatNumber::parse( $raw_number, $country );
 		if ( '' !== $raw_number && ( null === $number || ! FormatCheck::is_plausible( $number ) ) ) {
-			return new WP_Error( 'bad_number', __( 'That does not look like a VAT number.', 'eu-vat-handling-for-edd' ) );
+			return new WP_Error( 'bad_number', __( 'That does not look like a VAT number.', 'vat-right-for-edd' ) );
 		}
 		if ( Correction::REVERSE_CHARGE === $treatment && null === $number ) {
-			return new WP_Error( 'number_required', __( 'A reverse charge needs the customer VAT number.', 'eu-vat-handling-for-edd' ) );
+			return new WP_Error( 'number_required', __( 'A reverse charge needs the customer VAT number.', 'vat-right-for-edd' ) );
 		}
 
 		$after = Correction::apply( $before, $treatment, $country, $number, wp_generate_uuid4(), gmdate( 'Y-m-d\TH:i:s\Z' ) );
@@ -64,7 +69,7 @@ final class VatEdit {
 
 		$changes = self::changes( $before, $after );
 		if ( array() === $changes ) {
-			return new WP_Error( 'unchanged', __( 'Nothing was changed.', 'eu-vat-handling-for-edd' ) );
+			return new WP_Error( 'unchanged', __( 'Nothing was changed.', 'vat-right-for-edd' ) );
 		}
 
 		DecisionStore::apply(
@@ -84,8 +89,8 @@ final class VatEdit {
 			$order_id,
 			sprintf(
 				/* translators: 1: user name, 2: reason given. */
-				__( 'EU VAT record corrected by %1$s. Reason: %2$s', 'eu-vat-handling-for-edd' ),
-				$user ? $user->display_name : __( 'an admin', 'eu-vat-handling-for-edd' ),
+				__( 'EU VAT record corrected by %1$s. Reason: %2$s', 'vat-right-for-edd' ),
+				$user ? $user->display_name : __( 'an admin', 'vat-right-for-edd' ),
 				$reason
 			)
 		);
@@ -100,7 +105,7 @@ final class VatEdit {
 		$record          = $decision->to_array();
 		$record['flags'] = array_values( array_diff( $record['flags'], array( OrderFinaliser::TAX_DIFFERS_FLAG ) ) );
 		$clean           = Decision::from_array( $record );
-		return OrderFinaliser::tax_fits( $order, $clean ) ? $clean : $clean->with_flag( OrderFinaliser::TAX_DIFFERS_FLAG );
+		return OrderFinaliser::tax_fits( $order, $clean, $this->rates ) ? $clean : $clean->with_flag( OrderFinaliser::TAX_DIFFERS_FLAG );
 	}
 
 	/**

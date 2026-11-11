@@ -122,7 +122,7 @@ test( 'the order screen shows the decision and a re-check records a new entry', 
 } );
 
 test( 'a returning customer sees their last VAT number checked on load', async ( { browser } ) => {
-	expect( wp( 'eval-file', 'wp-content/plugins/eu-vat-handling-for-edd/e2e/returning-customer.php' ) ).toMatch( /@@[1-9]\d*@@/ );
+	expect( wp( 'eval-file', 'wp-content/plugins/vat-right-for-edd/e2e/returning-customer.php' ) ).toMatch( /@@[1-9]\d*@@/ );
 
 	const context = await browser.newContext( { baseURL: BASE_URL } );
 	const page = await context.newPage();

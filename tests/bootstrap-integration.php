@@ -24,7 +24,7 @@ tests_add_filter(
 		if ( file_exists( $edd ) ) {
 			require $edd;
 		}
-		require dirname( __DIR__ ) . '/eu-vat-handling-for-edd.php';
+		require dirname( __DIR__ ) . '/vat-right-for-edd.php';
 	}
 );
 

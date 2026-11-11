@@ -179,7 +179,7 @@ class Recurring {
 				$args['tax'] = $tax;
 			}
 		} catch ( Throwable $e ) {
-			edd_debug_log( 'EU VAT Handling: could not work out the renewal VAT, leaving it to EDD Recurring: ' . $e->getMessage() );
+			edd_debug_log( 'VAT Right: could not work out the renewal VAT, leaving it to EDD Recurring: ' . $e->getMessage() );
 		}
 		return $args;
 	}
@@ -195,7 +195,7 @@ class Recurring {
 		try {
 			$this->record( $order, $subscription );
 		} catch ( Throwable $e ) {
-			edd_debug_log( 'EU VAT Handling: could not record the VAT decision for renewal ' . (int) $order->id . ': ' . $e->getMessage() );
+			edd_debug_log( 'VAT Right: could not record the VAT decision for renewal ' . (int) $order->id . ': ' . $e->getMessage() );
 		}
 	}
 

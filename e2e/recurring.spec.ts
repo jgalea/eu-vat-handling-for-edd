@@ -3,7 +3,7 @@ import { execFileSync } from 'node:child_process';
 import { BASE_URL } from './base-url';
 import { NUMBERS, chooseCountry, downloadId, enterVat, latestOrder, openCheckout, purchase, wp } from './helpers';
 
-const PLUGIN_DIR = process.env.E2E_PLUGIN_DIR || 'eu-vat-handling-for-edd';
+const PLUGIN_DIR = process.env.E2E_PLUGIN_DIR || 'vat-right-for-edd';
 
 test.use( { baseURL: BASE_URL } );
 

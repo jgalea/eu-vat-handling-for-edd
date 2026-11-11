@@ -97,7 +97,7 @@ class LedgerWriter {
 		try {
 			$this->record_refund( (int) $order_id, (int) $refund_id );
 		} catch ( Throwable $e ) {
-			edd_debug_log( 'EU VAT Handling: could not write the refund ledger rows for order ' . (int) $order_id . ': ' . $e->getMessage() );
+			edd_debug_log( 'VAT Right: could not write the refund ledger rows for order ' . (int) $order_id . ': ' . $e->getMessage() );
 		}
 	}
 
@@ -349,7 +349,7 @@ class LedgerWriter {
 				$work( $order );
 			}
 		} catch ( Throwable $e ) {
-			edd_debug_log( 'EU VAT Handling: could not write the ledger rows for order ' . $order_id . ': ' . $e->getMessage() );
+			edd_debug_log( 'VAT Right: could not write the ledger rows for order ' . $order_id . ': ' . $e->getMessage() );
 		}
 	}
 

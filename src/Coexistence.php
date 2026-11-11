@@ -41,10 +41,10 @@ class Coexistence {
 	}
 
 	public static function notice(): void {
-		echo '<div class="notice notice-warning"><p>' . esc_html__( 'EU VAT Handling for EDD is inactive because Barn2 EDD EU VAT is active. Deactivate one of them: running both would apply VAT twice.', 'eu-vat-handling-for-edd' ) . '</p></div>';
+		echo '<div class="notice notice-warning"><p>' . esc_html__( 'VAT Right for Easy Digital Downloads is inactive because Barn2 EDD EU VAT is active. Deactivate one of them: running both would apply VAT twice.', 'vat-right-for-edd' ) . '</p></div>';
 	}
 
 	public static function edd_vat_notice(): void {
-		echo '<div class="notice notice-warning"><p>' . esc_html__( 'EU VAT Handling for EDD is inactive because the EU VAT feature of Easy Digital Downloads (Pro) is turned on. Turn it off under Downloads > Settings > Taxes to use EU VAT Handling instead: running both would apply VAT twice.', 'eu-vat-handling-for-edd' ) . '</p></div>';
+		echo '<div class="notice notice-warning"><p>' . esc_html__( 'VAT Right for Easy Digital Downloads is inactive because the EU VAT feature of Easy Digital Downloads (Pro) is turned on. Turn it off under Downloads > Settings > Taxes to use VAT Right instead: running both would apply VAT twice.', 'vat-right-for-edd' ) . '</p></div>';
 	}
 }

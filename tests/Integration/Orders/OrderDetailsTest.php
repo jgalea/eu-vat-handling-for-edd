@@ -19,7 +19,7 @@ class OrderDetailsTest extends LedgerTestCase {
 
 	public function set_up() {
 		parent::set_up();
-		$this->details = new OrderDetails( $this->h->finaliser, new VatEdit( $this->ledger ) );
+		$this->details = new OrderDetails( $this->h->finaliser, new VatEdit( $this->ledger, $this->rates ) );
 		$this->details->register();
 		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
 		add_filter( 'wp_doing_ajax', '__return_true' );

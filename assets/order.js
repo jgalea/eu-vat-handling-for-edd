@@ -16,7 +16,7 @@ jQuery( function ( $ ) {
 			} )
 			.fail( function ( xhr ) {
 				const data = xhr.responseJSON && xhr.responseJSON.data;
-				$result.text( data && data.message ? data.message : 'The check failed.' );
+				$result.text( data && data.message ? data.message : vatrightEddOrder.checkFailed );
 				$button.prop( 'disabled', false );
 			} );
 	} );
@@ -44,7 +44,7 @@ jQuery( function ( $ ) {
 			} )
 			.fail( function ( xhr ) {
 				const data = xhr.responseJSON && xhr.responseJSON.data;
-				$result.text( data && data.message ? data.message : 'The correction failed.' );
+				$result.text( data && data.message ? data.message : vatrightEddOrder.correctionFailed );
 				$button.prop( 'disabled', false );
 			} );
 	} );

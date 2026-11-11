@@ -58,13 +58,13 @@ class ErrorChecks {
 		}
 		switch ( $code ) {
 			case 'invalid_vat_number':
-				return __( 'This VAT number is not valid. Correct it, or leave the field empty to pay with VAT.', 'eu-vat-handling-for-edd' );
+				return __( 'This VAT number is not valid. Correct it, or leave the field empty to pay with VAT.', 'vat-right-for-edd' );
 			case 'registry_unavailable':
-				return __( 'We could not check your VAT number with the tax authority just now. Try again in a few minutes, or leave the field empty to pay with VAT.', 'eu-vat-handling-for-edd' );
+				return __( 'We could not check your VAT number with the tax authority just now. Try again in a few minutes, or leave the field empty to pay with VAT.', 'vat-right-for-edd' );
 			case 'self_certification_required':
-				return __( 'Your billing country and your location do not match. Confirm the country you are located in to continue.', 'eu-vat-handling-for-edd' );
+				return __( 'Your billing country and your location do not match. Confirm the country you are located in to continue.', 'vat-right-for-edd' );
 			default:
-				return __( 'Your VAT details could not be accepted.', 'eu-vat-handling-for-edd' );
+				return __( 'Your VAT details could not be accepted.', 'vat-right-for-edd' );
 		}
 	}
 }

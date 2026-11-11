@@ -36,6 +36,8 @@ class OrdersColumn {
 		OrderFinaliser::TAX_DIFFERS_FLAG,
 		TaxApplier::MISSING_FLAG,
 		OrderFinaliser::NO_ADDRESS_FLAG,
+		OrderFinaliser::UNKNOWN_COUNTRY_FLAG,
+		'territory_by_postcode',
 		OrderFinaliser::B2B_ONLY_FLAG,
 		VatRefund::FLAG_SKIPPED,
 		VatRefund::FLAG_FAILED,
@@ -61,12 +63,12 @@ class OrdersColumn {
 		$result  = array();
 		foreach ( $columns as $key => $label ) {
 			if ( 'amount' === $key ) {
-				$result[ self::KEY ] = __( 'VAT', 'eu-vat-handling-for-edd' );
+				$result[ self::KEY ] = __( 'VAT', 'vat-right-for-edd' );
 			}
 			$result[ $key ] = $label;
 		}
 		if ( ! isset( $result[ self::KEY ] ) ) {
-			$result[ self::KEY ] = __( 'VAT', 'eu-vat-handling-for-edd' );
+			$result[ self::KEY ] = __( 'VAT', 'vat-right-for-edd' );
 		}
 		return $result;
 	}
@@ -97,18 +99,18 @@ class OrdersColumn {
 		$actionable = array_values( array_diff( array_intersect( $flags, self::ACTION_FLAGS ), array( 'validation_pending' ) ) );
 		if ( array() !== $actionable && ! in_array( 'validation_pending', $flags, true ) ) {
 			$titles = implode( ' ', array_map( array( OrderDetails::class, 'flag_text' ), $actionable ) );
-			$html  .= ' <abbr class="vatright-edd-vat-flagged" title="' . esc_attr( $titles ) . '">' . esc_html__( 'Flagged', 'eu-vat-handling-for-edd' ) . '</abbr>';
+			$html  .= ' <abbr class="vatright-edd-vat-flagged" title="' . esc_attr( $titles ) . '">' . esc_html__( 'Flagged', 'vat-right-for-edd' ) . '</abbr>';
 		}
 		return $html . '</div>';
 	}
 
 	public function render_dropdown(): void {
 		$current = $this->selected_filter();
-		echo '<label for="' . esc_attr( self::FILTER ) . '" class="screen-reader-text">' . esc_html__( 'VAT status', 'eu-vat-handling-for-edd' ) . '</label>';
+		echo '<label for="' . esc_attr( self::FILTER ) . '" class="screen-reader-text">' . esc_html__( 'VAT status', 'vat-right-for-edd' ) . '</label>';
 		echo '<select id="' . esc_attr( self::FILTER ) . '" name="' . esc_attr( self::FILTER ) . '">';
-		echo '<option value="">' . esc_html__( 'All VAT statuses', 'eu-vat-handling-for-edd' ) . '</option>';
-		echo '<option value="' . esc_attr( self::PENDING ) . '" ' . selected( $current, self::PENDING, false ) . '>' . esc_html__( 'VAT pending validation', 'eu-vat-handling-for-edd' ) . '</option>';
-		echo '<option value="' . esc_attr( self::FLAGGED ) . '" ' . selected( $current, self::FLAGGED, false ) . '>' . esc_html__( 'VAT flagged', 'eu-vat-handling-for-edd' ) . '</option>';
+		echo '<option value="">' . esc_html__( 'All VAT statuses', 'vat-right-for-edd' ) . '</option>';
+		echo '<option value="' . esc_attr( self::PENDING ) . '" ' . selected( $current, self::PENDING, false ) . '>' . esc_html__( 'VAT pending validation', 'vat-right-for-edd' ) . '</option>';
+		echo '<option value="' . esc_attr( self::FLAGGED ) . '" ' . selected( $current, self::FLAGGED, false ) . '>' . esc_html__( 'VAT flagged', 'vat-right-for-edd' ) . '</option>';
 		echo '</select>';
 	}
 
@@ -129,40 +131,40 @@ class OrdersColumn {
 		switch ( $rule ) {
 			case Rule::RC_GOODS_ART138:
 			case Rule::RC_SERVICES_ART196:
-				return __( 'Reverse charge', 'eu-vat-handling-for-edd' );
+				return __( 'Reverse charge', 'vat-right-for-edd' );
 			case Rule::B2C_DESTINATION:
-				return __( 'OSS destination', 'eu-vat-handling-for-edd' );
+				return __( 'OSS destination', 'vat-right-for-edd' );
 			case Rule::B2C_ORIGIN_BELOW_THRESHOLD:
 			case Rule::B2C_SERVICE_ORIGIN:
-				return __( 'Origin', 'eu-vat-handling-for-edd' );
+				return __( 'Origin', 'vat-right-for-edd' );
 			case Rule::DOMESTIC:
 			case Rule::DOMESTIC_B2B_GUARD:
 			case Rule::DOMESTIC_B2B_ALLOWED:
 			case Rule::LOCAL_PICKUP_DOMESTIC:
-				return __( 'Domestic', 'eu-vat-handling-for-edd' );
+				return __( 'Domestic', 'vat-right-for-edd' );
 			case Rule::EXPORT_NON_EU:
 			case Rule::OUTSIDE_TERRITORY:
 			case Rule::NON_EU_NUMBER_RECORDED:
-				return __( 'No EU VAT', 'eu-vat-handling-for-edd' );
+				return __( 'No EU VAT', 'vat-right-for-edd' );
 			case Rule::PENDING_EXEMPT:
-				return __( 'Exempt', 'eu-vat-handling-for-edd' );
+				return __( 'Exempt', 'vat-right-for-edd' );
 			case Rule::ROLE_EXEMPT:
-				return __( 'Exempt by role', 'eu-vat-handling-for-edd' );
+				return __( 'Exempt by role', 'vat-right-for-edd' );
 			case Rule::PENDING_CHARGED:
 			case Rule::INVALID_NUMBER:
 			case Rule::PREFIX_MISMATCH_CHARGED:
-				return __( 'VAT charged', 'eu-vat-handling-for-edd' );
+				return __( 'VAT charged', 'vat-right-for-edd' );
 		}
 		switch ( $scheme ) {
 			case Scheme::OSS_DESTINATION:
-				return __( 'OSS destination', 'eu-vat-handling-for-edd' );
+				return __( 'OSS destination', 'vat-right-for-edd' );
 			case Scheme::ORIGIN:
-				return __( 'Origin', 'eu-vat-handling-for-edd' );
+				return __( 'Origin', 'vat-right-for-edd' );
 			case Scheme::DOMESTIC:
-				return __( 'Domestic', 'eu-vat-handling-for-edd' );
+				return __( 'Domestic', 'vat-right-for-edd' );
 			case Scheme::REVERSE_CHARGE_SERVICES:
 			case Scheme::INTRA_EU_GOODS:
-				return __( 'Reverse charge', 'eu-vat-handling-for-edd' );
+				return __( 'Reverse charge', 'vat-right-for-edd' );
 		}
 		return $rule;
 	}
@@ -173,16 +175,16 @@ class OrdersColumn {
 	 */
 	private function status( array $record, array $flags ): string {
 		if ( in_array( 'validation_pending', $flags, true ) ) {
-			return __( 'Pending validation', 'eu-vat-handling-for-edd' );
+			return __( 'Pending validation', 'vat-right-for-edd' );
 		}
 		switch ( (string) ( $record['validation']['status'] ?? '' ) ) {
 			case ValidationResult::VALID:
-				return __( 'Valid', 'eu-vat-handling-for-edd' );
+				return __( 'Valid', 'vat-right-for-edd' );
 			case ValidationResult::INVALID:
 			case ValidationResult::FORMAT_INVALID:
-				return __( 'Invalid', 'eu-vat-handling-for-edd' );
+				return __( 'Invalid', 'vat-right-for-edd' );
 		}
-		return __( 'Not checked', 'eu-vat-handling-for-edd' );
+		return __( 'Not checked', 'vat-right-for-edd' );
 	}
 
 	private function selected_filter(): string {
@@ -191,8 +193,6 @@ class OrdersColumn {
 	}
 
 	/**
-	 * Matches the JSON the decision is stored as; each flag is a quoted string in a list.
-	 *
 	 * @return array<int,array<int|string,mixed>>
 	 */
 	private function meta_query(): array {
@@ -200,6 +200,17 @@ class OrdersColumn {
 		if ( '' === $filter ) {
 			return array();
 		}
+		if ( DecisionStore::backfill_attention() ) {
+			return array(
+				array(
+					'key'     => DecisionStore::ATTENTION_META,
+					'value'   => self::PENDING === $filter ? array( 'pending' ) : array( 'pending', 'flagged' ),
+					'compare' => 'IN',
+				),
+			);
+		}
+
+		// Until every older order has the attention key, match the JSON the decision is stored as; each flag is a quoted string in a list.
 		$flags   = self::PENDING === $filter ? array( 'validation_pending' ) : self::ACTION_FLAGS;
 		$clauses = array( 'relation' => 'OR' );
 		foreach ( $flags as $flag ) {

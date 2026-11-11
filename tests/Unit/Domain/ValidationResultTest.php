@@ -58,4 +58,12 @@ class ValidationResultTest extends TestCase {
 		$this->assertTrue( $cached->from_cache() );
 		$this->assertSame( 'ACME GmbH', $cached->name() );
 	}
+
+	public function test_with_detail_returns_a_copy(): void {
+		$original = $this->full();
+		$changed  = $original->with_detail( 'name_mismatch' );
+		$this->assertSame( 'detail', $original->detail() );
+		$this->assertSame( 'name_mismatch', $changed->detail() );
+		$this->assertSame( 'ACME GmbH', $changed->name() );
+	}
 }

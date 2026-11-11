@@ -85,7 +85,7 @@ class Barn2SettingsTest extends LedgerTestCase {
 		$this->assertSame( 'MT12345678', $ours['store_vat_number'] );
 		$this->assertTrue( $ours['allow_domestic_exemption'] );
 		$this->assertSame( self::CLIENT, $ours['hmrc_client_id'] );
-		$this->assertSame( self::SECRET, $ours['hmrc_client_secret'] );
+		$this->assertArrayNotHasKey( 'hmrc_client_secret', $ours );
 		$this->assertSame( 'Example Ltd', $ours['seller_company'] );
 		$this->assertSame( 'accounts@example.com', $ours['seller_email'] );
 		$this->assertSame( '1 High Street', $ours['seller_address_1'] );

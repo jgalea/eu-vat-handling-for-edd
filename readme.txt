@@ -1,11 +1,11 @@
-=== EU VAT Handling for EDD ===
+=== VAT Right for Easy Digital Downloads ===
 Contributors: jeangalea
 Tags: vat, easy digital downloads, eu vat, oss, reverse charge
 Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 7.4
 Requires Plugins: easy-digital-downloads
-Stable tag: 0.1.5
+Stable tag: 0.1.6
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -51,13 +51,13 @@ It needs Easy Digital Downloads 3.1 or later with taxes turned on.
 
 **Moving from Barn2's EDD EU VAT**
 
-Downloads > Import from Barn2, which appears while Barn2's plugin is active or its settings are still in the database, copies Barn2's settings across and imports your order history into the OSS and EC Sales List reports, so the threshold and past quarters are right from the first day. Run the dry run first: it counts what would be imported per quarter and scheme and writes nothing. The same import runs from WP-CLI with `wp eu-vat-handling-for-edd import-barn2`. Settings are copied on the server and never shown on screen or in logs. Barn2's VATSense key isn't copied, because this plugin checks GB numbers with HMRC instead.
+Downloads > Import from Barn2, which appears while Barn2's plugin is active or its settings are still in the database, copies Barn2's settings across and imports your order history into the OSS and EC Sales List reports, so the threshold and past quarters are right from the first day. Run the dry run first: it counts what would be imported per quarter and scheme and writes nothing. The same import runs from WP-CLI with `wp vat-right-for-edd import-barn2`. Settings are copied on the server and never shown on screen or in logs. Barn2's VATSense key isn't copied, because this plugin checks GB numbers with HMRC instead.
 
 While Barn2's plugin is active, this plugin only offers the import and doesn't touch checkout or orders. Deactivate Barn2's plugin once the import is done.
 
 == Installation ==
 
-1. Make sure Easy Digital Downloads is active, then install and activate EU VAT Handling for EDD.
+1. Make sure Easy Digital Downloads is active, then install and activate VAT Right for Easy Digital Downloads.
 2. Go to Downloads > Settings > Taxes and turn on taxes. EDD only shows the billing address fields, which the plugin needs, when taxes are on.
 3. Go to Downloads > Settings > Taxes > EU VAT and read the setup check.
 4. Enter your store VAT number so VIES can return a consultation number for each check.
@@ -134,7 +134,7 @@ The plugin doesn't use an IP geolocation service. The IP country comes from your
 
 == Disclaimer ==
 
-EU VAT Handling for EDD is a tool, not tax advice. You, the store owner, are responsible for your VAT treatment and your filings. VAT rates and registry results come from third parties and can be wrong or out of date, so check them with an accountant. The plugin is provided without warranty and without liability, under the GPL.
+VAT Right for Easy Digital Downloads is a tool, not tax advice. You, the store owner, are responsible for your VAT treatment and your filings. VAT rates and registry results come from third parties and can be wrong or out of date, so check them with an accountant. The plugin is provided without warranty and without liability, under the GPL.
 
 == Screenshots ==
 
@@ -145,6 +145,9 @@ EU VAT Handling for EDD is a tool, not tax advice. You, the store owner, are res
 5. The EU VAT reports: OSS return and EC Sales List.
 
 == Changelog ==
+
+= 0.1.6 =
+* Renamed to VAT Right for Easy Digital Downloads, slug vat-right-for-edd.
 
 = 0.1.5 =
 * Business-only mode: require a valid VAT number to order, everywhere, in the EU or in chosen countries. Buy Now and wallet orders that miss it are flagged.

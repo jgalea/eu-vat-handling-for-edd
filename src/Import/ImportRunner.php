@@ -26,7 +26,7 @@ class ImportRunner {
 	}
 
 	public function add_command(): void {
-		\WP_CLI::add_command( 'eu-vat-handling-for-edd', new ImportCommand( $this ) );
+		\WP_CLI::add_command( 'vat-right-for-edd', new ImportCommand( $this ) );
 	}
 
 	/**

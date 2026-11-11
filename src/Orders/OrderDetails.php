@@ -52,7 +52,7 @@ class OrderDetails {
 		}
 		$sections[] = array(
 			'id'       => self::SECTION,
-			'label'    => __( 'EU VAT', 'eu-vat-handling-for-edd' ),
+			'label'    => __( 'EU VAT', 'vat-right-for-edd' ),
 			'icon'     => 'money-alt',
 			'callback' => array( $this, 'render' ),
 		);
@@ -66,7 +66,15 @@ class OrderDetails {
 			return;
 		}
 		$root = dirname( __DIR__, 2 );
-		wp_enqueue_script( 'vatright-edd-order', plugins_url( 'assets/order.js', $root . '/eu-vat-handling-for-edd.php' ), array( 'jquery' ), (string) filemtime( $root . '/assets/order.js' ), true );
+		wp_enqueue_script( 'vatright-edd-order', plugins_url( 'assets/order.js', $root . '/vat-right-for-edd.php' ), array( 'jquery' ), (string) filemtime( $root . '/assets/order.js' ), true );
+		wp_localize_script(
+			'vatright-edd-order',
+			'vatrightEddOrder',
+			array(
+				'checkFailed'      => __( 'The check failed.', 'vat-right-for-edd' ),
+				'correctionFailed' => __( 'The correction failed.', 'vat-right-for-edd' ),
+			)
+		);
 	}
 
 	/**
@@ -76,7 +84,7 @@ class OrderDetails {
 		$order_id = (int) $order->id;
 		$decision = DecisionStore::get( $order_id );
 		if ( null === $decision ) {
-			echo '<p>' . esc_html__( 'No VAT decision is recorded for this order.', 'eu-vat-handling-for-edd' ) . '</p>';
+			echo '<p>' . esc_html__( 'No VAT decision is recorded for this order.', 'vat-right-for-edd' ) . '</p>';
 			return;
 		}
 		$record = $decision->to_array();
@@ -92,14 +100,14 @@ class OrderDetails {
 	public function ajax_recheck(): void {
 		check_ajax_referer( self::ACTION, 'nonce' );
 		if ( ! current_user_can( self::CAPABILITY ) ) {
-			wp_send_json_error( array( 'message' => __( 'You are not allowed to do this.', 'eu-vat-handling-for-edd' ) ), 403 );
+			wp_send_json_error( array( 'message' => __( 'You are not allowed to do this.', 'vat-right-for-edd' ) ), 403 );
 		}
 		$order_id = isset( $_POST['order_id'] ) ? absint( $_POST['order_id'] ) : 0;
 		$number   = isset( $_POST['vat_number'] ) ? sanitize_text_field( wp_unslash( $_POST['vat_number'] ) ) : '';
 
 		$decision = $this->finaliser->recheck( $order_id, $number, get_current_user_id() );
 		if ( null === $decision ) {
-			wp_send_json_error( array( 'message' => __( 'This order cannot carry a VAT decision.', 'eu-vat-handling-for-edd' ) ), 404 );
+			wp_send_json_error( array( 'message' => __( 'This order cannot carry a VAT decision.', 'vat-right-for-edd' ) ), 404 );
 		}
 		wp_send_json_success( array( 'headline' => self::headline( $decision->to_array() ) ) );
 	}
@@ -107,10 +115,10 @@ class OrderDetails {
 	public function ajax_edit(): void {
 		check_ajax_referer( self::EDIT_ACTION, 'nonce' );
 		if ( ! current_user_can( self::CAPABILITY ) ) {
-			wp_send_json_error( array( 'message' => __( 'You are not allowed to do this.', 'eu-vat-handling-for-edd' ) ), 403 );
+			wp_send_json_error( array( 'message' => __( 'You are not allowed to do this.', 'vat-right-for-edd' ) ), 403 );
 		}
 		if ( null === $this->edit ) {
-			wp_send_json_error( array( 'message' => __( 'Editing is not available.', 'eu-vat-handling-for-edd' ) ), 404 );
+			wp_send_json_error( array( 'message' => __( 'Editing is not available.', 'vat-right-for-edd' ) ), 404 );
 		}
 
 		$result = $this->edit->apply(
@@ -156,17 +164,17 @@ class OrderDetails {
 		$customer   = (array) $record['customer'];
 
 		$rows = array(
-			__( 'Billing country', 'eu-vat-handling-for-edd' ) => trim( $customer['billing']['country'] . ' ' . $customer['billing']['postcode'] ),
-			__( 'Exempt customer roles', 'eu-vat-handling-for-edd' ) => implode( ', ', (array) ( $customer['exempt_roles'] ?? array() ) ),
-			__( 'VAT number as typed', 'eu-vat-handling-for-edd' ) => (string) ( $record['vat_number']['raw'] ?? '' ),
-			__( 'VAT number', 'eu-vat-handling-for-edd' ) => (string) ( $record['vat_number']['canonical'] ?? '' ),
-			__( 'Registry answer', 'eu-vat-handling-for-edd' ) => (string) ( $validation['status'] ?? '' ),
-			__( 'Registry', 'eu-vat-handling-for-edd' )   => (string) ( $validation['registry'] ?? '' ),
-			__( 'Registered name', 'eu-vat-handling-for-edd' ) => (string) ( $validation['name'] ?? '' ),
-			__( 'Registered address', 'eu-vat-handling-for-edd' ) => (string) ( $validation['address'] ?? '' ),
-			__( 'Consultation reference', 'eu-vat-handling-for-edd' ) => (string) ( $validation['consultation'] ?? '' ),
-			__( 'Checked at', 'eu-vat-handling-for-edd' ) => (string) ( $validation['checked_at'] ?? '' ),
-			__( 'Location evidence', 'eu-vat-handling-for-edd' ) => implode(
+			__( 'Billing country', 'vat-right-for-edd' )   => trim( $customer['billing']['country'] . ' ' . $customer['billing']['postcode'] ),
+			__( 'Exempt customer roles', 'vat-right-for-edd' ) => implode( ', ', (array) ( $customer['exempt_roles'] ?? array() ) ),
+			__( 'VAT number as typed', 'vat-right-for-edd' ) => (string) ( $record['vat_number']['raw'] ?? '' ),
+			__( 'VAT number', 'vat-right-for-edd' )        => (string) ( $record['vat_number']['canonical'] ?? '' ),
+			__( 'Registry answer', 'vat-right-for-edd' )   => (string) ( $validation['status'] ?? '' ),
+			__( 'Registry', 'vat-right-for-edd' )          => (string) ( $validation['registry'] ?? '' ),
+			__( 'Registered name', 'vat-right-for-edd' )   => (string) ( $validation['name'] ?? '' ),
+			__( 'Registered address', 'vat-right-for-edd' ) => (string) ( $validation['address'] ?? '' ),
+			__( 'Consultation reference', 'vat-right-for-edd' ) => (string) ( $validation['consultation'] ?? '' ),
+			__( 'Checked at', 'vat-right-for-edd' )        => (string) ( $validation['checked_at'] ?? '' ),
+			__( 'Location evidence', 'vat-right-for-edd' ) => implode(
 				', ',
 				array_filter(
 					array(
@@ -176,7 +184,7 @@ class OrderDetails {
 					)
 				)
 			),
-			__( 'Decided at', 'eu-vat-handling-for-edd' ) => (string) $record['at'],
+			__( 'Decided at', 'vat-right-for-edd' )        => (string) $record['at'],
 		);
 
 		echo '<table class="widefat striped"><tbody>';
@@ -186,10 +194,10 @@ class OrderDetails {
 			}
 		}
 		foreach ( (array) $record['lines'] as $line ) {
-			echo '<tr><th scope="row">' . esc_html__( 'Line', 'eu-vat-handling-for-edd' ) . '</th><td>' . esc_html(
+			echo '<tr><th scope="row">' . esc_html__( 'Line', 'vat-right-for-edd' ) . '</th><td>' . esc_html(
 				sprintf(
 					/* translators: 1: place of supply country, 2: country whose VAT rate applies, 3: scheme */
-					__( 'Supplied in %1$s, VAT of %2$s, %3$s', 'eu-vat-handling-for-edd' ),
+					__( 'Supplied in %1$s, VAT of %2$s, %3$s', 'vat-right-for-edd' ),
 					$line['place_of_supply'],
 					$line['tax_country'],
 					$line['scheme']
@@ -205,12 +213,12 @@ class OrderDetails {
 		}
 		?>
 		<p class="vatright-edd-recheck" data-order="<?php echo esc_attr( (string) $order_id ); ?>" data-nonce="<?php echo esc_attr( wp_create_nonce( self::ACTION ) ); ?>" data-ajax-url="<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>">
-			<label for="vatright-edd-recheck-number"><?php esc_html_e( 'VAT number', 'eu-vat-handling-for-edd' ); ?></label>
+			<label for="vatright-edd-recheck-number"><?php esc_html_e( 'VAT number', 'vat-right-for-edd' ); ?></label>
 			<input type="text" id="vatright-edd-recheck-number" class="regular-text" value="<?php echo esc_attr( $number ); ?>" autocomplete="off" />
-			<button type="button" class="button" id="vatright-edd-recheck"><?php esc_html_e( 'Check again', 'eu-vat-handling-for-edd' ); ?></button>
+			<button type="button" class="button" id="vatright-edd-recheck"><?php esc_html_e( 'Check again', 'vat-right-for-edd' ); ?></button>
 			<span class="vatright-edd-recheck__result" aria-live="polite"></span>
 		</p>
-		<p class="description"><?php esc_html_e( 'Asks the tax registry now and records the answer. The amounts on the order do not change: refund through EDD if VAT should come back.', 'eu-vat-handling-for-edd' ); ?></p>
+		<p class="description"><?php esc_html_e( 'Asks the tax registry now and records the answer. The amounts on the order do not change: refund through EDD if VAT should come back.', 'vat-right-for-edd' ); ?></p>
 		<?php
 	}
 
@@ -224,24 +232,24 @@ class OrderDetails {
 		$treatment = Correction::treatment_of( (string) $record['scheme'] );
 		$country   = (string) ( $record['evidence']['resolved'] ?? '' );
 		$options   = array(
-			Correction::REVERSE_CHARGE  => __( 'Reverse charge (customer accounts for the VAT)', 'eu-vat-handling-for-edd' ),
-			Correction::DOMESTIC        => __( 'Domestic (VAT of the store country)', 'eu-vat-handling-for-edd' ),
-			Correction::OSS_DESTINATION => __( 'OSS, VAT of the destination country', 'eu-vat-handling-for-edd' ),
-			Correction::ORIGIN          => __( 'Origin (VAT of the store country on an EU sale)', 'eu-vat-handling-for-edd' ),
-			Correction::EXPORT          => __( 'Export (outside the EU VAT area)', 'eu-vat-handling-for-edd' ),
+			Correction::REVERSE_CHARGE  => __( 'Reverse charge (customer accounts for the VAT)', 'vat-right-for-edd' ),
+			Correction::DOMESTIC        => __( 'Domestic (VAT of the store country)', 'vat-right-for-edd' ),
+			Correction::OSS_DESTINATION => __( 'OSS, VAT of the destination country', 'vat-right-for-edd' ),
+			Correction::ORIGIN          => __( 'Origin (VAT of the store country on an EU sale)', 'vat-right-for-edd' ),
+			Correction::EXPORT          => __( 'Export (outside the EU VAT area)', 'vat-right-for-edd' ),
 		);
 		?>
 		<div class="vatright-edd-edit" data-order="<?php echo esc_attr( (string) $order_id ); ?>" data-nonce="<?php echo esc_attr( wp_create_nonce( self::EDIT_ACTION ) ); ?>" data-ajax-url="<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>">
-			<h4><?php esc_html_e( 'Correct the VAT record', 'eu-vat-handling-for-edd' ); ?></h4>
-			<p class="description"><?php esc_html_e( 'This changes the record and the VAT reports only. It does not change the amounts charged and it does not refund anything: refund through EDD if VAT should come back. Every correction is logged below with your name and the reason.', 'eu-vat-handling-for-edd' ); ?></p>
+			<h4><?php esc_html_e( 'Correct the VAT record', 'vat-right-for-edd' ); ?></h4>
+			<p class="description"><?php esc_html_e( 'This changes the record and the VAT reports only. It does not change the amounts charged and it does not refund anything: refund through EDD if VAT should come back. Every correction is logged below with your name and the reason.', 'vat-right-for-edd' ); ?></p>
 			<p>
-				<label for="vatright-edd-edit-number"><?php esc_html_e( 'Customer VAT number', 'eu-vat-handling-for-edd' ); ?></label><br />
+				<label for="vatright-edd-edit-number"><?php esc_html_e( 'Customer VAT number', 'vat-right-for-edd' ); ?></label><br />
 				<input type="text" id="vatright-edd-edit-number" class="regular-text" value="<?php echo esc_attr( (string) ( $record['vat_number']['canonical'] ?? '' ) ); ?>" autocomplete="off" />
 			</p>
 			<p>
-				<label for="vatright-edd-edit-country"><?php esc_html_e( 'Country of evidence', 'eu-vat-handling-for-edd' ); ?></label><br />
+				<label for="vatright-edd-edit-country"><?php esc_html_e( 'Country of evidence', 'vat-right-for-edd' ); ?></label><br />
 				<select id="vatright-edd-edit-country">
-					<option value=""><?php esc_html_e( 'Choose a country', 'eu-vat-handling-for-edd' ); ?></option>
+					<option value=""><?php esc_html_e( 'Choose a country', 'vat-right-for-edd' ); ?></option>
 					<?php foreach ( edd_get_country_list() as $code => $name ) : ?>
 						<?php if ( '' !== (string) $code ) : ?>
 							<option value="<?php echo esc_attr( (string) $code ); ?>"<?php selected( $country, (string) $code ); ?>><?php echo esc_html( $name ); ?></option>
@@ -250,27 +258,27 @@ class OrderDetails {
 				</select>
 			</p>
 			<p>
-				<label for="vatright-edd-edit-treatment"><?php esc_html_e( 'Treatment', 'eu-vat-handling-for-edd' ); ?></label><br />
+				<label for="vatright-edd-edit-treatment"><?php esc_html_e( 'Treatment', 'vat-right-for-edd' ); ?></label><br />
 				<select id="vatright-edd-edit-treatment">
-					<option value=""><?php esc_html_e( 'Choose a treatment', 'eu-vat-handling-for-edd' ); ?></option>
+					<option value=""><?php esc_html_e( 'Choose a treatment', 'vat-right-for-edd' ); ?></option>
 					<?php foreach ( $options as $value => $label ) : ?>
 						<option value="<?php echo esc_attr( $value ); ?>"<?php selected( $treatment, $value ); ?>><?php echo esc_html( $label ); ?></option>
 					<?php endforeach; ?>
 				</select>
 			</p>
 			<p>
-				<label for="vatright-edd-edit-reason"><?php esc_html_e( 'Reason (required)', 'eu-vat-handling-for-edd' ); ?></label><br />
+				<label for="vatright-edd-edit-reason"><?php esc_html_e( 'Reason (required)', 'vat-right-for-edd' ); ?></label><br />
 				<input type="text" id="vatright-edd-edit-reason" class="large-text" maxlength="<?php echo esc_attr( (string) VatEdit::REASON_MAX ); ?>" autocomplete="off" />
 			</p>
 			<p>
-				<button type="button" class="button" id="vatright-edd-edit-save"><?php esc_html_e( 'Save correction', 'eu-vat-handling-for-edd' ); ?></button>
+				<button type="button" class="button" id="vatright-edd-edit-save"><?php esc_html_e( 'Save correction', 'vat-right-for-edd' ); ?></button>
 				<span class="vatright-edd-edit__result" role="status" aria-live="polite"></span>
 			</p>
 		</div>
 		<?php
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- only shows a message after the redirect.
 		if ( isset( $_GET['vatright_edited'] ) ) {
-			echo '<div class="notice notice-success inline"><p>' . esc_html__( 'The VAT record was corrected and the reports follow it. The amounts charged were not changed.', 'eu-vat-handling-for-edd' ) . '</p></div>';
+			echo '<div class="notice notice-success inline"><p>' . esc_html__( 'The VAT record was corrected and the reports follow it. The amounts charged were not changed.', 'vat-right-for-edd' ) . '</p></div>';
 		}
 	}
 
@@ -281,9 +289,9 @@ class OrderDetails {
 		if ( array() === $log ) {
 			return;
 		}
-		echo '<h4>' . esc_html__( 'Decision log', 'eu-vat-handling-for-edd' ) . '</h4>';
+		echo '<h4>' . esc_html__( 'Decision log', 'vat-right-for-edd' ) . '</h4>';
 		echo '<table class="widefat striped"><thead><tr>';
-		foreach ( array( __( 'When (UTC)', 'eu-vat-handling-for-edd' ), __( 'Trigger', 'eu-vat-handling-for-edd' ), __( 'User', 'eu-vat-handling-for-edd' ), __( 'Rule', 'eu-vat-handling-for-edd' ), __( 'Flags', 'eu-vat-handling-for-edd' ), __( 'Details', 'eu-vat-handling-for-edd' ) ) as $heading ) {
+		foreach ( array( __( 'When (UTC)', 'vat-right-for-edd' ), __( 'Trigger', 'vat-right-for-edd' ), __( 'User', 'vat-right-for-edd' ), __( 'Rule', 'vat-right-for-edd' ), __( 'Flags', 'vat-right-for-edd' ), __( 'Details', 'vat-right-for-edd' ) ) as $heading ) {
 			echo '<th>' . esc_html( $heading ) . '</th>';
 		}
 		echo '</tr></thead><tbody>';
@@ -301,30 +309,30 @@ class OrderDetails {
 		$lines = array();
 		if ( ! empty( $detail['reason'] ) && is_string( $detail['reason'] ) ) {
 			/* translators: %s: the reason an admin gave. */
-			$lines[] = sprintf( __( 'Reason: %s', 'eu-vat-handling-for-edd' ), $detail['reason'] );
+			$lines[] = sprintf( __( 'Reason: %s', 'vat-right-for-edd' ), $detail['reason'] );
 		}
 		$labels = array(
-			'vat_number' => __( 'VAT number', 'eu-vat-handling-for-edd' ),
-			'country'    => __( 'Country of evidence', 'eu-vat-handling-for-edd' ),
-			'treatment'  => __( 'Treatment', 'eu-vat-handling-for-edd' ),
+			'vat_number' => __( 'VAT number', 'vat-right-for-edd' ),
+			'country'    => __( 'Country of evidence', 'vat-right-for-edd' ),
+			'treatment'  => __( 'Treatment', 'vat-right-for-edd' ),
 		);
 		foreach ( (array) ( $detail['changes'] ?? array() ) as $field => $pair ) {
 			if ( isset( $labels[ $field ] ) && is_array( $pair ) ) {
 				/* translators: 1: field name, 2: old value, 3: new value. */
-				$lines[] = sprintf( __( '%1$s: %2$s to %3$s', 'eu-vat-handling-for-edd' ), $labels[ $field ], self::shown( $pair[0] ?? null ), self::shown( $pair[1] ?? null ) );
+				$lines[] = sprintf( __( '%1$s: %2$s to %3$s', 'vat-right-for-edd' ), $labels[ $field ], self::shown( $pair[0] ?? null ), self::shown( $pair[1] ?? null ) );
 			}
 		}
 		if ( ! empty( $detail['refund_id'] ) ) {
 			/* translators: 1: refund order number, 2: amount with currency. */
-			$lines[] = sprintf( __( 'Refund %1$s of %2$s', 'eu-vat-handling-for-edd' ), (string) (int) $detail['refund_id'], edd_currency_filter( edd_format_amount( (float) ( $detail['amount'] ?? 0 ) ), (string) ( $detail['currency'] ?? '' ) ) );
+			$lines[] = sprintf( __( 'Refund %1$s of %2$s', 'vat-right-for-edd' ), (string) (int) $detail['refund_id'], edd_currency_filter( edd_format_amount( (float) ( $detail['amount'] ?? 0 ) ), (string) ( $detail['currency'] ?? '' ) ) );
 		}
 		if ( ! empty( $detail['skipped'] ) && is_string( $detail['skipped'] ) ) {
 			/* translators: %s: reason in words. */
-			$lines[] = sprintf( __( 'Not refunded: %s', 'eu-vat-handling-for-edd' ), VatRefund::reason_text( $detail['skipped'] ) );
+			$lines[] = sprintf( __( 'Not refunded: %s', 'vat-right-for-edd' ), VatRefund::reason_text( $detail['skipped'] ) );
 		}
 		if ( ! empty( $detail['message'] ) && is_string( $detail['message'] ) ) {
 			/* translators: %s: error message. */
-			$lines[] = sprintf( __( 'Refund failed: %s', 'eu-vat-handling-for-edd' ), $detail['message'] );
+			$lines[] = sprintf( __( 'Refund failed: %s', 'vat-right-for-edd' ), $detail['message'] );
 		}
 		return implode( "\n", $lines );
 	}
@@ -333,45 +341,45 @@ class OrderDetails {
 	 * @param mixed $value
 	 */
 	private static function shown( $value ): string {
-		return is_scalar( $value ) && '' !== (string) $value ? (string) $value : __( '(none)', 'eu-vat-handling-for-edd' );
+		return is_scalar( $value ) && '' !== (string) $value ? (string) $value : __( '(none)', 'vat-right-for-edd' );
 	}
 
 	public static function rule_text( string $rule ): string {
 		switch ( $rule ) {
 			case Rule::EXPORT_NON_EU:
-				return __( 'Customer outside the EU: no EU VAT.', 'eu-vat-handling-for-edd' );
+				return __( 'Customer outside the EU: no EU VAT.', 'vat-right-for-edd' );
 			case Rule::OUTSIDE_TERRITORY:
-				return __( 'Customer in a territory outside the EU VAT area: no EU VAT.', 'eu-vat-handling-for-edd' );
+				return __( 'Customer in a territory outside the EU VAT area: no EU VAT.', 'vat-right-for-edd' );
 			case Rule::DOMESTIC:
-				return __( 'Domestic sale: VAT of the store country.', 'eu-vat-handling-for-edd' );
+				return __( 'Domestic sale: VAT of the store country.', 'vat-right-for-edd' );
 			case Rule::DOMESTIC_B2B_GUARD:
-				return __( 'Domestic business customer: VAT charged, a number from the store country never exempts.', 'eu-vat-handling-for-edd' );
+				return __( 'Domestic business customer: VAT charged, a number from the store country never exempts.', 'vat-right-for-edd' );
 			case Rule::DOMESTIC_B2B_ALLOWED:
-				return __( 'Domestic business customer with a valid VAT number: exempt, as allowed in the settings.', 'eu-vat-handling-for-edd' );
+				return __( 'Domestic business customer with a valid VAT number: exempt, as allowed in the settings.', 'vat-right-for-edd' );
 			case Rule::RC_GOODS_ART138:
-				return __( 'Goods to a business in another EU country with a valid VAT number: exempt intra-Community supply (Article 138).', 'eu-vat-handling-for-edd' );
+				return __( 'Goods to a business in another EU country with a valid VAT number: exempt intra-Community supply (Article 138).', 'vat-right-for-edd' );
 			case Rule::RC_SERVICES_ART196:
-				return __( 'Digital sale to a business in another EU country with a valid VAT number: reverse charge (Article 196).', 'eu-vat-handling-for-edd' );
+				return __( 'Digital sale to a business in another EU country with a valid VAT number: reverse charge (Article 196).', 'vat-right-for-edd' );
 			case Rule::B2C_ORIGIN_BELOW_THRESHOLD:
-				return __( 'Consumer in another EU country, below the distance-selling threshold: VAT of the store country.', 'eu-vat-handling-for-edd' );
+				return __( 'Consumer in another EU country, below the distance-selling threshold: VAT of the store country.', 'vat-right-for-edd' );
 			case Rule::B2C_DESTINATION:
-				return __( 'Consumer in another EU country: VAT of the destination country.', 'eu-vat-handling-for-edd' );
+				return __( 'Consumer in another EU country: VAT of the destination country.', 'vat-right-for-edd' );
 			case Rule::B2C_SERVICE_ORIGIN:
-				return __( 'Sale to a consumer: VAT of the store country.', 'eu-vat-handling-for-edd' );
+				return __( 'Sale to a consumer: VAT of the store country.', 'vat-right-for-edd' );
 			case Rule::PREFIX_MISMATCH_CHARGED:
-				return __( 'The VAT number belongs to a different country than the billing address: VAT charged.', 'eu-vat-handling-for-edd' );
+				return __( 'The VAT number belongs to a different country than the billing address: VAT charged.', 'vat-right-for-edd' );
 			case Rule::PENDING_CHARGED:
-				return __( 'The VAT number could not be checked: VAT charged until it is.', 'eu-vat-handling-for-edd' );
+				return __( 'The VAT number could not be checked: VAT charged until it is.', 'vat-right-for-edd' );
 			case Rule::PENDING_EXEMPT:
-				return __( 'The VAT number could not be checked: exempt until it is.', 'eu-vat-handling-for-edd' );
+				return __( 'The VAT number could not be checked: exempt until it is.', 'vat-right-for-edd' );
 			case Rule::PENDING_REJECTED:
-				return __( 'The VAT number could not be checked: the order was refused.', 'eu-vat-handling-for-edd' );
+				return __( 'The VAT number could not be checked: the order was refused.', 'vat-right-for-edd' );
 			case Rule::INVALID_NUMBER:
-				return __( 'The VAT number is not valid: VAT charged.', 'eu-vat-handling-for-edd' );
+				return __( 'The VAT number is not valid: VAT charged.', 'vat-right-for-edd' );
 			case Rule::ROLE_EXEMPT:
-				return __( 'VAT-exempt because of the customer role, as set in the EU VAT settings. The legal basis is the merchant\'s responsibility.', 'eu-vat-handling-for-edd' );
+				return __( 'VAT-exempt because of the customer role, as set in the EU VAT settings. The legal basis is the merchant\'s responsibility.', 'vat-right-for-edd' );
 			case Rule::NON_EU_NUMBER_RECORDED:
-				return __( 'Non-EU VAT number recorded: no EU VAT.', 'eu-vat-handling-for-edd' );
+				return __( 'Non-EU VAT number recorded: no EU VAT.', 'vat-right-for-edd' );
 			default:
 				return $rule;
 		}
@@ -391,8 +399,8 @@ class OrderDetails {
 		}
 		if ( ValidationResult::VALID === $status ) {
 			return Rule::PENDING_CHARGED === $rule
-				? __( 'The VAT number was checked later and is valid. VAT was charged at checkout.', 'eu-vat-handling-for-edd' )
-				: __( 'The VAT number was checked later and is valid: exempt.', 'eu-vat-handling-for-edd' );
+				? __( 'The VAT number was checked later and is valid. VAT was charged at checkout.', 'vat-right-for-edd' )
+				: __( 'The VAT number was checked later and is valid: exempt.', 'vat-right-for-edd' );
 		}
 		return self::rule_text( $rule );
 	}
@@ -400,35 +408,41 @@ class OrderDetails {
 	public static function flag_text( string $flag ): string {
 		switch ( $flag ) {
 			case 'validation_pending':
-				return __( 'Validation pending: the VAT number is checked again later.', 'eu-vat-handling-for-edd' );
+				return __( 'Validation pending: the VAT number is checked again later.', 'vat-right-for-edd' );
 			case 'validated_after_outage':
-				return __( 'The VAT number was valid when checked later. VAT was charged at checkout, so a refund may be due.', 'eu-vat-handling-for-edd' );
+				return __( 'The VAT number was valid when checked later. VAT was charged at checkout, so a refund may be due.', 'vat-right-for-edd' );
 			case 'invalid_after_exemption':
-				return __( 'The VAT number was reported invalid when checked later. No VAT was charged, so VAT may be due.', 'eu-vat-handling-for-edd' );
+				return __( 'The VAT number was reported invalid when checked later. No VAT was charged, so VAT may be due.', 'vat-right-for-edd' );
 			case 'evidence_conflict_self_certified':
-				return __( 'The location evidence conflicted and the customer self-certified their country.', 'eu-vat-handling-for-edd' );
+				return __( 'The location evidence conflicted and the customer self-certified their country.', 'vat-right-for-edd' );
+			case 'evidence_conflict':
+				return __( 'The location evidence conflicted and no country was confirmed by the customer.', 'vat-right-for-edd' );
 			case 'single_evidence':
-				return __( 'Only one piece of location evidence was available.', 'eu-vat-handling-for-edd' );
+				return __( 'Only one piece of location evidence was available.', 'vat-right-for-edd' );
 			case 'prefix_mismatch':
-				return __( 'The VAT number prefix does not match the billing country.', 'eu-vat-handling-for-edd' );
+				return __( 'The VAT number prefix does not match the billing country.', 'vat-right-for-edd' );
 			case 'rate_missing':
-				return __( 'No tax rate was set for the destination, the store rate was charged.', 'eu-vat-handling-for-edd' );
+				return __( 'No tax rate was set for the destination, the store rate was charged.', 'vat-right-for-edd' );
 			case OrderFinaliser::TAX_DIFFERS_FLAG:
-				return __( 'The tax charged on this order does not match the VAT decision. Check whether VAT should be refunded or collected.', 'eu-vat-handling-for-edd' );
+				return __( 'The tax charged on this order does not match the VAT decision. Check whether VAT should be refunded or collected.', 'vat-right-for-edd' );
 			case OrderFinaliser::B2B_ONLY_FLAG:
-				return __( 'This shop sells to businesses only, but the order was placed without a VAT number the registry confirmed. It came through a payment route that skips the checkout checks, such as Buy Now or a wallet.', 'eu-vat-handling-for-edd' );
+				return __( 'This shop sells to businesses only, but the order was placed without a VAT number the registry confirmed. It came through a payment route that skips the checkout checks, such as Buy Now or a wallet.', 'vat-right-for-edd' );
 			case OrderFinaliser::NO_ADDRESS_FLAG:
-				return __( 'The order has no billing country, so the decision rests on the store country.', 'eu-vat-handling-for-edd' );
+				return __( 'The order has no billing country, so the decision rests on the store country.', 'vat-right-for-edd' );
+			case 'territory_by_postcode':
+				return __( 'The customer\'s postcode is in a part of the EU outside the VAT area, so no VAT was charged. Check that the postcode is right.', 'vat-right-for-edd' );
+			case OrderFinaliser::UNKNOWN_COUNTRY_FLAG:
+				return __( 'The billing country is not a country EDD knows, so the decision rests on the store country and VAT was charged.', 'vat-right-for-edd' );
 			case VatRefund::FLAG_REFUNDED:
-				return __( 'The VAT was refunded automatically after the number validated.', 'eu-vat-handling-for-edd' );
+				return __( 'The VAT was refunded automatically after the number validated.', 'vat-right-for-edd' );
 			case VatRefund::FLAG_SKIPPED:
-				return __( 'The VAT was not refunded automatically. Check the order notes for why, and refund it by hand if it is due.', 'eu-vat-handling-for-edd' );
+				return __( 'The VAT was not refunded automatically. Check the order notes for why, and refund it by hand if it is due.', 'vat-right-for-edd' );
 			case VatRefund::FLAG_FAILED:
-				return __( 'The automatic VAT refund failed. Nothing was refunded: check the order notes.', 'eu-vat-handling-for-edd' );
+				return __( 'The automatic VAT refund failed. Nothing was refunded: check the order notes.', 'vat-right-for-edd' );
 			case Correction::FLAG:
-				return __( 'An admin corrected this VAT record by hand. See the decision log for who and why.', 'eu-vat-handling-for-edd' );
+				return __( 'An admin corrected this VAT record by hand. See the decision log for who and why.', 'vat-right-for-edd' );
 			case OrderFinaliser::MANUAL:
-				return __( 'Added by hand: the tax was set by the person who created the order.', 'eu-vat-handling-for-edd' );
+				return __( 'Added by hand: the tax was set by the person who created the order.', 'vat-right-for-edd' );
 			default:
 				return $flag;
 		}

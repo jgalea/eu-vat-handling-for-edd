@@ -70,7 +70,7 @@ class VatField {
 	}
 
 	public static function disclosure(): string {
-		return __( 'Your VAT number is sent to the official tax registry for its country, such as the EU\'s VIES service, to confirm it before VAT is removed.', 'eu-vat-handling-for-edd' );
+		return __( 'Your VAT number is sent to the official tax registry for its country, such as the EU\'s VIES service, to confirm it before VAT is removed.', 'vat-right-for-edd' );
 	}
 
 	public function render(): void {
@@ -88,7 +88,7 @@ class VatField {
 		?>
 		<div id="vatright-edd-vat" class="vatright-edd-vat"<?php echo $prefilled ? ' data-prefilled="1"' : ''; ?> data-ajax-url="<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>" data-nonce="<?php echo esc_attr( wp_create_nonce( self::NONCE ) ); ?>">
 			<p id="vatright-edd-vat-number-wrap">
-				<label class="edd-label" for="vatright-edd-vat-number"><?php echo $required ? esc_html__( 'VAT number', 'eu-vat-handling-for-edd' ) . '<span class="edd-required-indicator" aria-hidden="true">*</span><span class="screen-reader-text">' . esc_html( self::required_text() ) . '</span>' : esc_html__( 'VAT number (optional)', 'eu-vat-handling-for-edd' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts. ?></label>
+				<label class="edd-label" for="vatright-edd-vat-number"><?php echo $required ? esc_html__( 'VAT number', 'vat-right-for-edd' ) . '<span class="edd-required-indicator" aria-hidden="true">*</span><span class="screen-reader-text">' . esc_html( self::required_text() ) . '</span>' : esc_html__( 'VAT number (optional)', 'vat-right-for-edd' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts. ?></label>
 				<span class="edd-description" id="vatright-edd-disclosure"><?php echo esc_html( self::disclosure() ); ?></span>
 				<input class="edd-input" type="text" id="vatright-edd-vat-number" name="<?php echo esc_attr( self::NUMBER_FIELD ); ?>" value="<?php echo esc_attr( $value ); ?>" autocomplete="off" aria-describedby="vatright-edd-disclosure"<?php echo $required ? ' aria-required="true"' : ''; ?> />
 			</p>
@@ -197,8 +197,8 @@ class VatField {
 			'mode'          => $settings->b2b_only(),
 			'countries'     => $settings->b2b_only_countries(),
 			'eu'            => Territory::EU,
-			'optional'      => __( 'VAT number (optional)', 'eu-vat-handling-for-edd' ),
-			'required'      => __( 'VAT number', 'eu-vat-handling-for-edd' ),
+			'optional'      => __( 'VAT number (optional)', 'vat-right-for-edd' ),
+			'required'      => __( 'VAT number', 'vat-right-for-edd' ),
 			'required_text' => self::required_text(),
 		);
 	}
@@ -278,7 +278,7 @@ class VatField {
 	public static function self_certification_label( string $country ): string {
 		$names = edd_get_country_list();
 		/* translators: %s: country name */
-		return sprintf( __( 'I confirm I am located in %s.', 'eu-vat-handling-for-edd' ), $names[ $country ] ?? $country );
+		return sprintf( __( 'I confirm I am located in %s.', 'vat-right-for-edd' ), $names[ $country ] ?? $country );
 	}
 
 	/**
@@ -290,38 +290,38 @@ class VatField {
 			return array( 'invalid_vat_number' === $code ? 'invalid' : 'pending', ErrorChecks::message( $code ) );
 		}
 		if ( Rule::ROLE_EXEMPT === $decision->rule() ) {
-			return array( 'verified', __( 'No VAT is charged on this order.', 'eu-vat-handling-for-edd' ) );
+			return array( 'verified', __( 'No VAT is charged on this order.', 'vat-right-for-edd' ) );
 		}
 		if ( $decision->is_vat_exempt() ) {
 			if ( ValidationResult::VALID === $validation ) {
-				return array( 'verified', __( 'VAT number verified. Reverse charge applies.', 'eu-vat-handling-for-edd' ) );
+				return array( 'verified', __( 'VAT number verified. Reverse charge applies.', 'vat-right-for-edd' ) );
 			}
-			return array( 'pending', __( 'Your VAT number could not be checked just now. No VAT is charged for now and the number will be checked again.', 'eu-vat-handling-for-edd' ) );
+			return array( 'pending', __( 'Your VAT number could not be checked just now. No VAT is charged for now and the number will be checked again.', 'vat-right-for-edd' ) );
 		}
 		if ( Rule::DOMESTIC_B2B_GUARD === $decision->rule() ) {
-			return array( 'domestic', __( 'VAT is charged on sales to businesses in the shop\'s own country.', 'eu-vat-handling-for-edd' ) );
+			return array( 'domestic', __( 'VAT is charged on sales to businesses in the shop\'s own country.', 'vat-right-for-edd' ) );
 		}
 		if ( Rule::PREFIX_MISMATCH_CHARGED === $decision->rule() ) {
-			return array( 'mismatch', __( 'This VAT number does not match your billing country, so VAT is charged.', 'eu-vat-handling-for-edd' ) );
+			return array( 'mismatch', __( 'This VAT number does not match your billing country, so VAT is charged.', 'vat-right-for-edd' ) );
 		}
 		if ( ValidationResult::VALID === $validation ) {
 			foreach ( $decision->lines() as $line ) {
 				if ( in_array( $line->scheme(), array( Scheme::REVERSE_CHARGE_SERVICES, Scheme::INTRA_EU_GOODS ), true ) ) {
-					return array( 'verified', __( 'VAT number verified. Reverse charge applies to part of this order.', 'eu-vat-handling-for-edd' ) );
+					return array( 'verified', __( 'VAT number verified. Reverse charge applies to part of this order.', 'vat-right-for-edd' ) );
 				}
 			}
-			return array( 'verified', __( 'VAT number verified. VAT is charged on this order.', 'eu-vat-handling-for-edd' ) );
+			return array( 'verified', __( 'VAT number verified. VAT is charged on this order.', 'vat-right-for-edd' ) );
 		}
 		if ( in_array( $validation, array( ValidationResult::INVALID, ValidationResult::FORMAT_INVALID ), true ) ) {
 			return array( 'invalid', ErrorChecks::message( 'invalid_vat_number' ) );
 		}
 		if ( ValidationResult::UNAVAILABLE === $validation ) {
-			return array( 'pending', __( 'Your VAT number could not be checked just now, so VAT is charged on this order.', 'eu-vat-handling-for-edd' ) );
+			return array( 'pending', __( 'Your VAT number could not be checked just now, so VAT is charged on this order.', 'vat-right-for-edd' ) );
 		}
 		if ( in_array( $detail, array( 'cache_miss', 'throttled' ), true ) ) {
-			return array( 'pending', __( 'Your VAT number has not been checked yet. VAT is charged until it is.', 'eu-vat-handling-for-edd' ) );
+			return array( 'pending', __( 'Your VAT number has not been checked yet. VAT is charged until it is.', 'vat-right-for-edd' ) );
 		}
-		return array( 'unchecked', __( 'This VAT number cannot be checked automatically, so VAT is charged.', 'eu-vat-handling-for-edd' ) );
+		return array( 'unchecked', __( 'This VAT number cannot be checked automatically, so VAT is charged.', 'vat-right-for-edd' ) );
 	}
 
 	/**
@@ -330,7 +330,7 @@ class VatField {
 	private static function asset( string $path ): array {
 		$root = dirname( __DIR__, 2 );
 		return array(
-			'url'     => plugins_url( $path, $root . '/eu-vat-handling-for-edd.php' ),
+			'url'     => plugins_url( $path, $root . '/vat-right-for-edd.php' ),
 			'version' => (string) filemtime( $root . '/' . $path ),
 		);
 	}

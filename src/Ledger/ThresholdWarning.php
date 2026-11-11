@@ -73,7 +73,7 @@ class ThresholdWarning {
 				}
 			}
 		} catch ( Throwable $e ) {
-			edd_debug_log( 'EU VAT Handling: could not send the threshold warning: ' . $e->getMessage() );
+			edd_debug_log( 'VAT Right: could not send the threshold warning: ' . $e->getMessage() );
 		}
 	}
 

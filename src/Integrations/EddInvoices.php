@@ -25,7 +25,13 @@ class EddInvoices {
 	public function customer_number( $order ): void {
 		$id    = self::order_id( $order );
 		$facts = 0 < $id ? InvoiceText::facts( $id ) : null;
-		if ( null === $facts || '' === $facts['number'] ) {
+		if ( null === $facts ) {
+			return;
+		}
+		if ( array() !== $facts['registered'] ) {
+			echo '<div class="customer-registered">' . implode( '<br />', array_map( 'esc_html', $facts['registered'] ) ) . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- each line is escaped.
+		}
+		if ( '' === $facts['number'] ) {
 			return;
 		}
 		// The add-on prints its own Tax/VAT line when the customer gave one at its invoice form.
@@ -33,7 +39,7 @@ class EddInvoices {
 		if ( '' !== $theirs && strtoupper( (string) preg_replace( '/[^A-Za-z0-9]/', '', $theirs ) ) === $facts['number'] ) {
 			return;
 		}
-		echo '<div class="customer-vat"><span class="invoice-label">' . esc_html__( 'Customer VAT number:', 'eu-vat-handling-for-edd' ) . '</span> ' . esc_html( $facts['number'] ) . '</div>';
+		echo '<div class="customer-vat"><span class="invoice-label">' . esc_html__( 'Customer VAT number:', 'vat-right-for-edd' ) . '</span> ' . esc_html( $facts['number'] ) . '</div>';
 	}
 
 	/**
@@ -67,7 +73,7 @@ class EddInvoices {
 		if ( '' === $number || '' !== (string) edd_get_option( 'edd-invoices-tax', '' ) ) {
 			return;
 		}
-		echo '<div class="storefront__vat"><span class="invoice-label">' . esc_html__( 'VAT number:', 'eu-vat-handling-for-edd' ) . '</span> ' . esc_html( $number ) . '</div>';
+		echo '<div class="storefront__vat"><span class="invoice-label">' . esc_html__( 'VAT number:', 'vat-right-for-edd' ) . '</span> ' . esc_html( $number ) . '</div>';
 	}
 
 	/**
@@ -79,7 +85,7 @@ class EddInvoices {
 		if ( null === $facts || array() === $facts['wording'] ) {
 			return;
 		}
-		echo '<div class="information"><header>' . esc_html__( 'VAT:', 'eu-vat-handling-for-edd' ) . '</header><article>';
+		echo '<div class="information"><header>' . esc_html__( 'VAT:', 'vat-right-for-edd' ) . '</header><article>';
 		foreach ( $facts['wording'] as $text ) {
 			echo '<div class="vat-notice">' . esc_html( $text ) . '</div>';
 		}

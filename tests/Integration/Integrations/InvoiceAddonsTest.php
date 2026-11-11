@@ -115,7 +115,7 @@ class InvoiceAddonsTest extends OrdersTestCase {
 
 		$pdf = InvoiceAddonStandIns::pdf_invoice( edd_get_payment( $order->id ) );
 
-		$this->assertSame( array( 'Customer VAT number: ' . self::VALID_DE, self::WORDING ), $pdf->texts() );
+		$this->assertSame( array( 'Example GmbH', 'Example Strasse 1', 'Customer VAT number: ' . self::VALID_DE, self::WORDING ), $pdf->texts() );
 		foreach ( $pdf->cells as $cell ) {
 			$this->assertSame( 2, $cell['ln'], 'Each line goes below and leaves the cursor where the template put it.' );
 			$this->assertSame( 61.0, $cell['x'] );

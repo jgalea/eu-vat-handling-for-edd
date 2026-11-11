@@ -41,6 +41,18 @@ class InvoiceTextTest extends OrdersTestCase {
 		$this->assertSame( 1, substr_count( $html, self::WORDING ) );
 	}
 
+	public function test_the_receipt_names_the_customer_as_the_registry_has_it(): void {
+		$order  = $this->reverse_charged();
+		$record = DecisionStore::get( (int) $order->id )->to_array();
+
+		$record['validation']['name']    = 'Example GmbH';
+		$record['validation']['address'] = "Musterstr. 1\n10115 Berlin <b>x</b>";
+		DecisionStore::apply( (int) $order->id, Decision::from_array( $record ), 'test' );
+		$html = $this->receipt( $order );
+
+		$this->assertStringContainsString( 'Example GmbH<br />Musterstr. 1<br />10115 Berlin x', $html );
+	}
+
 	public function test_a_charged_receipt_carries_neither(): void {
 		$this->buy( $this->download(), 'FR' );
 		$order = $this->place_order( 'FR' );
@@ -126,7 +138,7 @@ class InvoiceTextTest extends OrdersTestCase {
 		$this->assertStringNotContainsString( 'GB333289454', $html );
 	}
 
-	public function test_the_registry_name_is_escaped_in_the_company_tag(): void {
+	public function test_the_registry_name_loses_its_markup_in_the_company_tag(): void {
 		$order  = $this->reverse_charged();
 		$record = DecisionStore::get( (int) $order->id )->to_array();
 
@@ -135,7 +147,7 @@ class InvoiceTextTest extends OrdersTestCase {
 
 		$this->text->add_email_tags();
 		$out = edd_do_email_tags( '{vat_company}', $order->id );
-		$this->assertSame( 'A &amp; B &lt;script&gt;x&lt;/script&gt;', $out );
+		$this->assertSame( 'A & B', $out );
 	}
 
 	public function test_email_tags_fill_for_a_reverse_charged_order_and_stay_empty_otherwise(): void {

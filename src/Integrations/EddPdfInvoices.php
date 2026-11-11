@@ -30,9 +30,9 @@ class EddPdfInvoices {
 			return;
 		}
 
-		$lines = array();
+		$lines = $facts['registered'];
 		if ( '' !== $facts['number'] ) {
-			$lines[] = __( 'Customer VAT number:', 'eu-vat-handling-for-edd' ) . ' ' . $facts['number'];
+			$lines[] = __( 'Customer VAT number:', 'vat-right-for-edd' ) . ' ' . $facts['number'];
 		}
 		foreach ( $facts['wording'] as $text ) {
 			$lines[] = $text;

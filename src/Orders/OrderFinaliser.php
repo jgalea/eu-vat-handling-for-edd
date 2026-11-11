@@ -4,6 +4,7 @@ namespace VatrightEdd\Orders;
 
 use EDD\Orders\Order;
 use Throwable;
+use VatrightEdd\Admin\DownloadVatCategory;
 use VatrightEdd\Checkout\B2bOnly;
 use VatrightEdd\Checkout\CartState;
 use VatrightEdd\Checkout\Decider;
@@ -14,6 +15,7 @@ use VatrightEdd\Domain\Decision;
 use VatrightEdd\Domain\Rules;
 use VatrightEdd\Domain\ValidationResult;
 use VatrightEdd\Geo\IpCountry;
+use VatrightEdd\Rates\RateResolver;
 
 /**
  * Records the VAT decision on every order once EDD has built it, whichever
@@ -34,6 +36,8 @@ class OrderFinaliser {
 	const TAX_DIFFERS_FLAG = 'order_tax_differs';
 
 	const NO_ADDRESS_FLAG = 'no_billing_address';
+
+	const UNKNOWN_COUNTRY_FLAG = 'unknown_billing_country';
 
 	const B2B_ONLY_FLAG = 'b2b_only_unmet';
 
@@ -59,11 +63,15 @@ class OrderFinaliser {
 	/** @var Decider */
 	private $decider;
 
-	public function __construct( InputGatherer $gatherer, Rules $rules, CartState $state, Decider $decider ) {
+	/** @var RateResolver */
+	private $rates;
+
+	public function __construct( InputGatherer $gatherer, Rules $rules, CartState $state, Decider $decider, RateResolver $rates ) {
 		$this->gatherer = $gatherer;
 		$this->rules    = $rules;
 		$this->state    = $state;
 		$this->decider  = $decider;
+		$this->rates    = $rates;
 	}
 
 	public function register(): void {
@@ -127,7 +135,7 @@ class OrderFinaliser {
 				$this->decide( $order, $trigger, null, false, get_current_user_id() );
 			}
 		} catch ( Throwable $e ) {
-			edd_debug_log( 'EU VAT Handling: could not record the VAT decision for order ' . $order_id . ': ' . $e->getMessage() );
+			edd_debug_log( 'VAT Right: could not record the VAT decision for order ' . $order_id . ': ' . $e->getMessage() );
 		}
 	}
 
@@ -153,11 +161,13 @@ class OrderFinaliser {
 		$billing = $order->get_address();
 		if ( ! $billing || empty( $billing->country ) ) {
 			$decision = $decision->with_flag( self::NO_ADDRESS_FLAG );
+		} elseif ( '' === InputGatherer::known_country( (string) $billing->country ) ) {
+			$decision = $decision->with_flag( self::UNKNOWN_COUNTRY_FLAG );
 		}
 		if ( self::BUILT === $trigger && null !== B2bOnly::error( $decision ) ) {
 			$decision = $decision->with_flag( self::B2B_ONLY_FLAG );
 		}
-		$consistent = self::tax_fits( $order, $decision );
+		$consistent = self::tax_fits( $order, $decision, $this->rates );
 		if ( ! $consistent ) {
 			$decision = $decision->with_flag( self::TAX_DIFFERS_FLAG );
 		}
@@ -196,15 +206,18 @@ class OrderFinaliser {
 				$carry['self_certified'] = $this->state->self_certified();
 			}
 			$carry['ip'] = self::visitor_request() ? IpCountry::current() : null;
-			// Only the account the checkout is running as, and only when it is the order's own: the customer record may have been linked by email.
-			$user_id               = get_current_user_id();
-			$carry['exempt_roles'] = $user_id > 0 && $user_id === (int) $order->user_id ? InputGatherer::exempt_roles_for_user( $user_id ) : array();
-			$live                  = $this->decider->is_checkout() ? $this->decider->current() : null;
+			$live        = $this->decider->is_checkout() ? $this->decider->current() : null;
 			if ( null !== $live ) {
 				$record = $live->to_array();
+				// The roles the cart was decided with: an account made at checkout only gets its role after the cart was taxed.
+				$carry['exempt_roles'] = array_map( 'strval', (array) ( $record['customer']['exempt_roles'] ?? array() ) );
 				if ( ! empty( $record['validation'] ) && ( $record['vat_number']['raw'] ?? '' ) === $carry['number'] ) {
 					$carry['validation'] = ValidationResult::from_array( $record['validation'] );
 				}
+			} else {
+				// Only the account the checkout is running as, and only when it is the order's own: the customer record may have been linked by email.
+				$user_id               = get_current_user_id();
+				$carry['exempt_roles'] = $user_id > 0 && $user_id === (int) $order->user_id ? InputGatherer::exempt_roles_for_user( $user_id ) : array();
 			}
 			return $carry;
 		}
@@ -248,12 +261,36 @@ class OrderFinaliser {
 	 * no VAT (exempt, export, outside the territory) on an untaxed order,
 	 * charged decisions on a taxed one. Free orders fit either.
 	 */
-	public static function tax_fits( Order $order, Decision $decision ): bool {
+	public static function tax_fits( Order $order, Decision $decision, RateResolver $rates ): bool {
 		if ( (float) $order->subtotal - (float) $order->discount <= 0 ) {
 			return true;
 		}
 		$taxed = abs( (float) $order->tax ) > 0.0;
-		return null === TaxApplier::charged_line( $decision ) ? ! $taxed : $taxed;
+		$line  = TaxApplier::charged_line( $decision );
+		if ( null === $line ) {
+			return ! $taxed;
+		}
+		if ( ! $taxed ) {
+			return false;
+		}
+		foreach ( $order->get_items() as $item ) {
+			$expected = $rates->rate( $line->tax_country(), DownloadVatCategory::for_download( (int) $item->product_id ) );
+			if ( abs( (float) $item->tax ) > 0.0 && null !== $expected && ! self::rate_fits( (float) $item->total - (float) $item->tax, (float) $item->tax, $expected ) ) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Whether the VAT on a line is the expected rate, within the half point
+	 * the ledger allows or the cent EDD's rounding can move a small line by.
+	 */
+	public static function rate_fits( float $net, float $tax, float $expected_percent ): bool {
+		if ( abs( $net * $expected_percent / 100 - $tax ) <= 0.011 ) {
+			return true;
+		}
+		return $net > 0 && abs( $tax / $net * 100 - $expected_percent ) <= 0.5;
 	}
 
 	/**

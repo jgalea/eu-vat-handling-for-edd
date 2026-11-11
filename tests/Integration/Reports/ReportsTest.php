@@ -12,6 +12,7 @@ use VatrightEdd\Reports\OssReport;
 use VatrightEdd\Reports\ReportPeriod;
 use VatrightEdd\Reports\ReportsScreen;
 use VatrightEdd\Reports\RestController;
+use VatrightEdd\Reports\TransactionExport;
 use VatrightEdd\Tests\Support\LedgerTestCase;
 
 require_once dirname( __DIR__, 2 ) . '/Support/LedgerTestCase.php';
@@ -482,7 +483,7 @@ class ReportsTest extends LedgerTestCase {
 		);
 
 		ob_start();
-		( new ReportsScreen( $this->oss, $this->esl ) )->render();
+		( new ReportsScreen( $this->oss, $this->esl, new TransactionExport() ) )->render();
 		$html = (string) ob_get_clean();
 		$_GET = array();
 
