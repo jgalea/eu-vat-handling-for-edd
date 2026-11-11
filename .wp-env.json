@@ -13,7 +13,7 @@
     "SCRIPT_DEBUG": true
   },
   "mappings": {
-    "wp-content/plugins/eu-vat-handling-for-edd": ".",
+    "wp-content/plugins/vat-right-for-edd": ".",
     "wp-content/mu-plugins": "./e2e/mu-plugins"
   },
   "lifecycleScripts": {

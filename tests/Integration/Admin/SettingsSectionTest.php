@@ -247,7 +247,7 @@ class SettingsSectionTest extends IntegrationTestCase {
 		$this->submit();
 
 		$this->assertSame( 'MT12345634', $this->stored()->store_vat_number() );
-		$this->assertNotEmpty( get_settings_errors( 'vatright-edd' ) );
+		$this->assertNotEmpty( get_settings_errors( 'edd-notices' ) );
 	}
 
 	public function test_saving_without_the_wordpress_nonce_changes_nothing(): void {

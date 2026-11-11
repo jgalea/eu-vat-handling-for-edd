@@ -4,7 +4,7 @@
 
 global $wpdb;
 
-define( 'WP_UNINSTALL_PLUGIN', 'eu-vat-handling-for-edd/eu-vat-handling-for-edd.php' );
+define( 'WP_UNINSTALL_PLUGIN', 'vat-right-for-edd/vat-right-for-edd.php' );
 
 $tables = array( $wpdb->prefix . 'vatright_edd_ledger', $wpdb->prefix . 'vatright_edd_fx', $wpdb->prefix . 'vatright_edd_rate_rows' );
 $count  = static function () use ( $wpdb, $tables ): int {

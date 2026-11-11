@@ -62,13 +62,13 @@ final class B2bOnly {
 	public static function message( string $code, string $country ): string {
 		switch ( $code ) {
 			case 'b2b_only_required':
-				$message = __( 'This shop sells to businesses only. Enter a valid VAT number to place your order.', 'eu-vat-handling-for-edd' );
+				$message = __( 'This shop sells to businesses only. Enter a valid VAT number to place your order.', 'vat-right-for-edd' );
 				break;
 			case 'invalid_vat_number':
-				$message = __( 'This VAT number is not valid, and this shop sells to businesses only. Correct the number to place your order.', 'eu-vat-handling-for-edd' );
+				$message = __( 'This VAT number is not valid, and this shop sells to businesses only. Correct the number to place your order.', 'vat-right-for-edd' );
 				break;
 			default:
-				$message = __( 'This shop sells to businesses only, and we could not check your VAT number with the tax authority just now. Check the number or try again in a few minutes.', 'eu-vat-handling-for-edd' );
+				$message = __( 'This shop sells to businesses only, and we could not check your VAT number with the tax authority just now. Check the number or try again in a few minutes.', 'vat-right-for-edd' );
 		}
 		/**
 		 * Filters the message shown when business-only mode stops an order.

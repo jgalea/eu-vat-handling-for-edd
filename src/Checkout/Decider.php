@@ -56,7 +56,7 @@ class Decider {
 		try {
 			$decision = $this->rules->decide( $this->gatherer->from_cart( $this->checkout ? 'checkout' : 'cart', $this->checkout ) );
 		} catch ( Throwable $e ) {
-			edd_debug_log( 'EU VAT Handling: VAT decision failed, charging VAT: ' . $e->getMessage() );
+			edd_debug_log( 'VAT Right: VAT decision failed, charging VAT: ' . $e->getMessage() );
 			$decision = null;
 		}
 		$this->deciding = false;

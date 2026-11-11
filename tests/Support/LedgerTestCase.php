@@ -25,6 +25,9 @@ abstract class LedgerTestCase extends OrdersTestCase {
 	/** @var EcbFixtureTransport */
 	protected $ecb;
 
+	/** @var RateResolver */
+	protected $rates;
+
 	/** @var LedgerWriter */
 	protected $ledger;
 
@@ -35,6 +38,7 @@ abstract class LedgerTestCase extends OrdersTestCase {
 		parent::set_up();
 		$this->ecb      = new EcbFixtureTransport();
 		$rates          = new RateResolver( new RateSync( new Tedb( new FixtureTransport( sys_get_temp_dir() ) ) ) );
+		$this->rates    = $rates;
 		$this->ledger   = new LedgerWriter( new Fx( $this->ecb ), $rates );
 		$this->backfill = new Backfill( $this->ledger, $rates );
 		$this->ledger->register();

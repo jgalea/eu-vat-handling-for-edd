@@ -17,7 +17,7 @@ class SetupCheck {
 	const INFO = 'info';
 
 	/**
-	 * @return array<int,array{id:string,severity:string,message:string,fix_url:string}>
+	 * @return array<int,array{id:string,severity:string,message:string,fix_url:string,fix_label:string}>
 	 */
 	public function issues(): array {
 		$issues   = array();
@@ -26,17 +26,17 @@ class SetupCheck {
 		$store    = InputGatherer::store_country();
 
 		if ( ! edd_use_taxes() ) {
-			$issues[] = $this->issue( 'taxes_disabled', self::ERROR, __( 'Taxes are turned off in Easy Digital Downloads, so no VAT is calculated.', 'eu-vat-handling-for-edd' ), $taxes );
+			$issues[] = $this->issue( 'taxes_disabled', self::ERROR, __( 'Taxes are turned off in Easy Digital Downloads, so no VAT is calculated.', 'vat-right-for-edd' ), $taxes );
 		}
 
 		if ( '' === $store ) {
-			$issues[] = $this->issue( 'shop_country_missing', self::ERROR, __( 'The shop country is not set, so EU VAT Handling cannot tell domestic sales from cross-border ones.', 'eu-vat-handling-for-edd' ), $taxes );
+			$issues[] = $this->issue( 'shop_country_missing', self::ERROR, __( 'The shop country is not set, so VAT Right cannot tell domestic sales from cross-border ones.', 'vat-right-for-edd' ), $taxes );
 		} elseif ( ! Territory::is_eu_member( $store ) ) {
-			$issues[] = $this->issue( 'shop_country_outside_eu', self::WARNING, __( 'The shop country is outside the EU. This version is built for EU-established stores.', 'eu-vat-handling-for-edd' ), $taxes );
+			$issues[] = $this->issue( 'shop_country_outside_eu', self::WARNING, __( 'The shop country is outside the EU. This version is built for EU-established stores.', 'vat-right-for-edd' ), $taxes );
 		}
 
 		if ( '' === $settings->store_vat_number() ) {
-			$issues[] = $this->issue( 'store_vat_number_missing', self::WARNING, __( 'Your store VAT number is not set, so VIES cannot give you consultation numbers as proof of validation.', 'eu-vat-handling-for-edd' ), SettingsSection::url() );
+			$issues[] = $this->issue( 'store_vat_number_missing', self::WARNING, __( 'Your store VAT number is not set, so VIES cannot give you consultation numbers as proof of validation.', 'vat-right-for-edd' ), SettingsSection::url() );
 		}
 
 		$missing = $this->countries_without_standard_rate();
@@ -44,12 +44,13 @@ class SetupCheck {
 			$issues[] = $this->issue(
 				'standard_rates_missing',
 				self::WARNING,
-				sprintf(
+				count( $missing ) > 5
+					/* translators: %d: number of countries. */
+					? sprintf( _n( 'No standard VAT rate for %d EU country.', 'No standard VAT rate for %d EU countries.', count( $missing ), 'vat-right-for-edd' ), count( $missing ) )
 					/* translators: %s: comma-separated country codes. */
-					__( 'No standard VAT rate for: %s.', 'eu-vat-handling-for-edd' ),
-					implode( ', ', $missing )
-				),
-				RatesScreen::url()
+					: sprintf( __( 'No standard VAT rate for: %s.', 'vat-right-for-edd' ), implode( ', ', $missing ) ),
+				wp_nonce_url( admin_url( 'admin-post.php?action=vatright_edd_rates_apply_all' ), RatesScreen::NONCE ),
+				__( 'Apply the bundled rates', 'vat-right-for-edd' )
 			);
 		}
 
@@ -60,7 +61,7 @@ class SetupCheck {
 				self::ERROR,
 				sprintf(
 					/* translators: %s: comma-separated country codes. */
-					__( 'Orders needed a VAT rate your tax rates do not have, so your own country\'s rate was charged instead: %s. Add the missing rates.', 'eu-vat-handling-for-edd' ),
+					__( 'Orders needed a VAT rate your tax rates do not have, so your own country\'s rate was charged instead: %s. Add the missing rates.', 'vat-right-for-edd' ),
 					implode( ', ', $fallen_back )
 				),
 				RatesScreen::url()
@@ -68,25 +69,26 @@ class SetupCheck {
 		}
 
 		if ( 'none' === $settings->ip_country_source() ) {
-			$issues[] = $this->issue( 'ip_country_source_none', self::INFO, __( 'No IP country source is chosen, so digital sales have one piece of location evidence fewer. If the site is behind Cloudflare or CloudFront, choose it.', 'eu-vat-handling-for-edd' ), SettingsSection::url() );
+			$issues[] = $this->issue( 'ip_country_source_none', self::INFO, __( 'No IP country source is chosen, so digital sales have one piece of location evidence fewer. If the site is behind Cloudflare or CloudFront, choose it.', 'vat-right-for-edd' ), SettingsSection::url() );
 		}
 
 		if ( '' === $settings->hmrc_client_id() || '' === $settings->hmrc_client_secret() ) {
-			$issues[] = $this->issue( 'hmrc_credentials_missing', self::INFO, __( 'No HMRC credentials, so GB VAT numbers are format-checked only. This never changes the VAT charged.', 'eu-vat-handling-for-edd' ), SettingsSection::url() );
+			$issues[] = $this->issue( 'hmrc_credentials_missing', self::INFO, __( 'No HMRC credentials, so GB VAT numbers are format-checked only. This never changes the VAT charged.', 'vat-right-for-edd' ), SettingsSection::url() );
 		}
 
 		return $issues;
 	}
 
 	/**
-	 * @return array{id:string,severity:string,message:string,fix_url:string}
+	 * @return array{id:string,severity:string,message:string,fix_url:string,fix_label:string}
 	 */
-	private function issue( string $id, string $severity, string $message, string $fix_url ): array {
+	private function issue( string $id, string $severity, string $message, string $fix_url, string $fix_label = '' ): array {
 		return array(
-			'id'       => $id,
-			'severity' => $severity,
-			'message'  => $message,
-			'fix_url'  => $fix_url,
+			'id'        => $id,
+			'severity'  => $severity,
+			'message'   => $message,
+			'fix_url'   => $fix_url,
+			'fix_label' => '' === $fix_label ? __( 'Fix', 'vat-right-for-edd' ) : $fix_label,
 		);
 	}
 

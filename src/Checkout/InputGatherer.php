@@ -113,7 +113,7 @@ class InputGatherer {
 		}
 
 		$address = $order->get_address();
-		$billing = $address && ! empty( $address->country ) ? strtoupper( (string) $address->country ) : '';
+		$billing = $address && ! empty( $address->country ) ? self::known_country( (string) $address->country ) : '';
 		$zip     = $address && ! empty( $address->zip ) ? (string) $address->zip : '';
 
 		$raw    = trim( (string) ( $carry['number'] ?? '' ) );
@@ -231,7 +231,7 @@ class InputGatherer {
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- read only; EDD checks the nonce of each request that posts the address.
 		$posted = isset( $_POST['billing_country'] ) ? sanitize_text_field( wp_unslash( $_POST['billing_country'] ) ) : '';
 		if ( '' !== $posted ) {
-			return strtoupper( $posted );
+			return self::known_country( $posted );
 		}
 		if ( is_user_logged_in() ) {
 			$address = edd_get_customer_address();
@@ -240,6 +240,16 @@ class InputGatherer {
 			}
 		}
 		return '';
+	}
+
+	/**
+	 * EDD takes the posted billing country as it comes, so a code that isn't
+	 * in its list is treated as no country, which falls back to the store's
+	 * and charges VAT.
+	 */
+	public static function known_country( string $code ): string {
+		$code = strtoupper( $code );
+		return isset( edd_get_country_list()[ $code ] ) ? $code : '';
 	}
 
 	private static function billing_postcode(): string {

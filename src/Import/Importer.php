@@ -186,7 +186,7 @@ class Importer {
 				}
 			} catch ( Throwable $e ) {
 				++$state['failed'];
-				edd_debug_log( 'EU VAT Handling: could not import order ' . (int) $order->id . ' (' . get_class( $e ) . ').' );
+				edd_debug_log( 'VAT Right: could not import order ' . (int) $order->id . ' (' . get_class( $e ) . ').' );
 			}
 		}
 

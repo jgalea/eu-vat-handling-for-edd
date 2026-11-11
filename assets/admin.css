@@ -1,0 +1,36 @@
+.vatright-edd-multiselect {
+	min-inline-size: min(100%, 22rem);
+}
+
+.vatright-edd-setup ul {
+	margin-block: 0 0.5em;
+	padding-inline-start: 0;
+	list-style: none;
+}
+
+.vatright-edd-setup li {
+	margin-block: 0.4em;
+}
+
+.vatright-edd-setup__tag {
+	display: inline-block;
+	min-inline-size: 7.5em;
+	padding-inline: 0.5em;
+	border-radius: 3px;
+	background: #f0f0f1;
+	font-size: 11px;
+	font-weight: 600;
+	line-height: 2;
+	text-align: center;
+	text-transform: uppercase;
+}
+
+.vatright-edd-setup__tag--error {
+	background: #fcf0f1;
+	color: #8a2424;
+}
+
+.vatright-edd-setup__tag--warning {
+	background: #fcf9e8;
+	color: #6e4e00;
+}

@@ -51,6 +51,7 @@ use VatrightEdd\Registry\WpHttpTransport;
 use VatrightEdd\Reports\EcSalesList;
 use VatrightEdd\Reports\OssReport;
 use VatrightEdd\Reports\ReportsScreen;
+use VatrightEdd\Reports\TransactionExport;
 use VatrightEdd\Reports\RestController;
 
 class Plugin {
@@ -74,6 +75,7 @@ class Plugin {
 
 		Scheduler::register();
 		add_action( 'init', array( Schema::class, 'upgrade' ), 1 );
+		add_action( 'init', array( Settings::class, 'move_secret_out' ), 1 );
 
 		$transport = new WpHttpTransport();
 		$sync      = new RateSync( new Tedb( $transport ) );
@@ -110,7 +112,7 @@ class Plugin {
 		( new ThresholdWarning( new ThresholdTracker(), new ThresholdWarningEmail() ) )->register();
 		self::wire_import( $backfill, $ledger, new Fx( $transport ) );
 
-		$finaliser = new OrderFinaliser( $gatherer, new Rules(), $state, $decider );
+		$finaliser = new OrderFinaliser( $gatherer, new Rules(), $state, $decider, $rates );
 		$finaliser->register();
 		$revalidation = new Revalidation( $validator, null, new VatRefund( $finaliser ) );
 		$revalidation->register();
@@ -136,8 +138,8 @@ class Plugin {
 		( new RestController( $oss, $esl ) )->register();
 
 		if ( is_admin() ) {
-			( new ReportsScreen( $oss, $esl ) )->register();
-			( new OrderDetails( $finaliser, new VatEdit( $ledger ) ) )->register();
+			( new ReportsScreen( $oss, $esl, new TransactionExport() ) )->register();
+			( new OrderDetails( $finaliser, new VatEdit( $ledger, $rates ) ) )->register();
 			( new OrdersColumn() )->register();
 			( new RatesScreen( $sync ) )->register();
 			( new SettingsSection( new SetupCheck() ) )->register();
@@ -175,6 +177,6 @@ class Plugin {
 	}
 
 	public static function missing_edd_notice(): void {
-		echo '<div class="notice notice-error"><p>' . esc_html__( 'EU VAT Handling for EDD requires Easy Digital Downloads to be active.', 'eu-vat-handling-for-edd' ) . '</p></div>';
+		echo '<div class="notice notice-error"><p>' . esc_html__( 'VAT Right for Easy Digital Downloads requires Easy Digital Downloads to be active.', 'vat-right-for-edd' ) . '</p></div>';
 	}
 }

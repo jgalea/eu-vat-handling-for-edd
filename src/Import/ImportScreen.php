@@ -63,8 +63,8 @@ class ImportScreen {
 		}
 		add_submenu_page(
 			'edit.php?post_type=download',
-			__( 'Import from Barn2 EDD EU VAT', 'eu-vat-handling-for-edd' ),
-			__( 'Import from Barn2', 'eu-vat-handling-for-edd' ),
+			__( 'Import from Barn2 EDD EU VAT', 'vat-right-for-edd' ),
+			__( 'Import from Barn2', 'vat-right-for-edd' ),
 			self::CAPABILITY,
 			self::PAGE,
 			array( $this, 'render' )
@@ -77,7 +77,7 @@ class ImportScreen {
 	 * @return mixed
 	 */
 	public function page_title( $title, $current_page = '' ) {
-		return self::PAGE === $current_page ? __( 'Import from Barn2 EDD EU VAT', 'eu-vat-handling-for-edd' ) : $title;
+		return self::PAGE === $current_page ? __( 'Import from Barn2 EDD EU VAT', 'vat-right-for-edd' ) : $title;
 	}
 
 	public function refresh_while_running(): void {
@@ -95,13 +95,13 @@ class ImportScreen {
 			return;
 		}
 		if ( $this->imported() ) {
-			$text = __( 'The Barn2 import has finished. Deactivate Barn2 EDD EU VAT now so EU VAT Handling for EDD can take over.', 'eu-vat-handling-for-edd' );
+			$text = __( 'The Barn2 import has finished. Deactivate Barn2 EDD EU VAT now so VAT Right for Easy Digital Downloads can take over.', 'vat-right-for-edd' );
 			$link = admin_url( 'plugins.php' );
-			$more = __( 'Open Plugins', 'eu-vat-handling-for-edd' );
+			$more = __( 'Open Plugins', 'vat-right-for-edd' );
 		} else {
-			$text = __( 'Barn2 EDD EU VAT is active, so EU VAT Handling for EDD is waiting. You can import Barn2\'s settings and order history first.', 'eu-vat-handling-for-edd' );
+			$text = __( 'Barn2 EDD EU VAT is active, so VAT Right for Easy Digital Downloads is waiting. You can import Barn2\'s settings and order history first.', 'vat-right-for-edd' );
 			$link = self::url();
-			$more = __( 'Import from Barn2', 'eu-vat-handling-for-edd' );
+			$more = __( 'Import from Barn2', 'vat-right-for-edd' );
 		}
 		printf(
 			'<div class="notice notice-info"><p>%1$s <a href="%2$s">%3$s</a></p></div>',
@@ -118,8 +118,8 @@ class ImportScreen {
 		$state = Importer::state();
 		?>
 		<div class="wrap">
-		<h1><?php esc_html_e( 'Import from Barn2 EDD EU VAT', 'eu-vat-handling-for-edd' ); ?></h1>
-		<p><?php esc_html_e( 'Copies Barn2\'s settings and records each past order\'s VAT treatment from the data Barn2 saved on it. Settings that are already filled in here are kept unless you choose to overwrite them. Importing twice changes nothing the second time.', 'eu-vat-handling-for-edd' ); ?></p>
+		<h1><?php esc_html_e( 'Import from Barn2 EDD EU VAT', 'vat-right-for-edd' ); ?></h1>
+		<p><?php esc_html_e( 'Copies Barn2\'s settings and records each past order\'s VAT treatment from the data Barn2 saved on it. Settings that are already filled in here are kept unless you choose to overwrite them. Importing twice changes nothing the second time.', 'vat-right-for-edd' ); ?></p>
 		<?php
 		$this->render_progress( $state );
 		if ( $this->imported() ) {
@@ -131,9 +131,9 @@ class ImportScreen {
 		if ( Coexistence::barn2_active() && $this->imported() ) {
 			printf(
 				'<div class="notice notice-warning inline"><p>%1$s <a href="%2$s">%3$s</a></p></div>',
-				esc_html__( 'Deactivate Barn2 EDD EU VAT now so EU VAT Handling for EDD can take over. Until then it stays inactive.', 'eu-vat-handling-for-edd' ),
+				esc_html__( 'Deactivate Barn2 EDD EU VAT now so VAT Right for Easy Digital Downloads can take over. Until then it stays inactive.', 'vat-right-for-edd' ),
 				esc_url( admin_url( 'plugins.php' ) ),
-				esc_html__( 'Open Plugins', 'eu-vat-handling-for-edd' )
+				esc_html__( 'Open Plugins', 'vat-right-for-edd' )
 			);
 		}
 		echo '</div>';
@@ -174,7 +174,7 @@ class ImportScreen {
 
 	private function authorise(): void {
 		if ( ! current_user_can( self::CAPABILITY ) ) {
-			wp_die( esc_html__( 'You are not allowed to do this.', 'eu-vat-handling-for-edd' ), '', array( 'response' => 403 ) );
+			wp_die( esc_html__( 'You are not allowed to do this.', 'vat-right-for-edd' ), '', array( 'response' => 403 ) );
 		}
 		check_admin_referer( self::NONCE );
 	}
@@ -200,7 +200,7 @@ class ImportScreen {
 			$label = $start->format( 'Y' ) . '-Q' . (int) ceil( (int) $start->format( 'n' ) / 3 );
 			if ( 0 === $i ) {
 				/* translators: %s: quarter such as 2025-Q1. */
-				$label = sprintf( __( '%s (default: the previous year onwards)', 'eu-vat-handling-for-edd' ), $label );
+				$label = sprintf( __( '%s (default: the previous year onwards)', 'vat-right-for-edd' ), $label );
 			}
 			$options[ $start->format( 'Y-m-d' ) ] = $label;
 		}
@@ -224,32 +224,32 @@ class ImportScreen {
 			<table class="form-table" role="presentation">
 				<tbody>
 					<tr>
-						<th scope="row"><?php esc_html_e( 'What to import', 'eu-vat-handling-for-edd' ); ?></th>
+						<th scope="row"><?php esc_html_e( 'What to import', 'vat-right-for-edd' ); ?></th>
 						<td>
 							<fieldset>
-								<legend class="screen-reader-text"><?php esc_html_e( 'What to import', 'eu-vat-handling-for-edd' ); ?></legend>
-								<label><input type="checkbox" name="vatright_edd_settings" value="1" checked="checked" /> <?php esc_html_e( 'Settings', 'eu-vat-handling-for-edd' ); ?></label><br />
-								<label><input type="checkbox" name="vatright_edd_history" value="1" checked="checked" /> <?php esc_html_e( 'Order history', 'eu-vat-handling-for-edd' ); ?></label><br />
-								<label><input type="checkbox" name="vatright_edd_overwrite" value="1" /> <?php esc_html_e( 'Overwrite settings that are already filled in', 'eu-vat-handling-for-edd' ); ?></label>
+								<legend class="screen-reader-text"><?php esc_html_e( 'What to import', 'vat-right-for-edd' ); ?></legend>
+								<label><input type="checkbox" name="vatright_edd_settings" value="1" checked="checked" /> <?php esc_html_e( 'Settings', 'vat-right-for-edd' ); ?></label><br />
+								<label><input type="checkbox" name="vatright_edd_history" value="1" checked="checked" /> <?php esc_html_e( 'Order history', 'vat-right-for-edd' ); ?></label><br />
+								<label><input type="checkbox" name="vatright_edd_overwrite" value="1" /> <?php esc_html_e( 'Overwrite settings that are already filled in', 'vat-right-for-edd' ); ?></label>
 							</fieldset>
 						</td>
 					</tr>
 					<tr>
-						<th scope="row"><label for="vatright-edd-since"><?php esc_html_e( 'History from', 'eu-vat-handling-for-edd' ); ?></label></th>
+						<th scope="row"><label for="vatright-edd-since"><?php esc_html_e( 'History from', 'vat-right-for-edd' ); ?></label></th>
 						<td>
 							<select id="vatright-edd-since" name="vatright_edd_since">
 								<?php foreach ( $this->since_options() as $value => $label ) : ?>
 									<option value="<?php echo esc_attr( $value ); ?>"><?php echo esc_html( $label ); ?></option>
 								<?php endforeach; ?>
 							</select>
-							<p class="description"><?php esc_html_e( 'Pick an earlier quarter to correct OSS returns you already filed.', 'eu-vat-handling-for-edd' ); ?></p>
+							<p class="description"><?php esc_html_e( 'Pick an earlier quarter to correct OSS returns you already filed.', 'vat-right-for-edd' ); ?></p>
 						</td>
 					</tr>
 				</tbody>
 			</table>
 			<p>
-				<button type="submit" class="button" name="action" value="vatright_edd_import_dry"><?php esc_html_e( 'Dry run', 'eu-vat-handling-for-edd' ); ?></button>
-				<button type="submit" class="button button-primary" name="action" value="vatright_edd_import_run" <?php disabled( Importer::is_running() ); ?>><?php esc_html_e( 'Import', 'eu-vat-handling-for-edd' ); ?></button>
+				<button type="submit" class="button" name="action" value="vatright_edd_import_dry"><?php esc_html_e( 'Dry run', 'vat-right-for-edd' ); ?></button>
+				<button type="submit" class="button button-primary" name="action" value="vatright_edd_import_run" <?php disabled( Importer::is_running() ); ?>><?php esc_html_e( 'Import', 'vat-right-for-edd' ); ?></button>
 			</p>
 		</form>
 		<?php
@@ -270,8 +270,8 @@ class ImportScreen {
 				echo esc_html(
 					sprintf(
 						/* translators: 1: running or finished, 2: orders imported, 3: ledger rows written, 4: orders that failed, 5: first day imported. */
-						__( 'History import %1$s: %2$d orders imported, %3$d ledger rows written, %4$d failed (from %5$s).', 'eu-vat-handling-for-edd' ),
-						$running ? __( 'running', 'eu-vat-handling-for-edd' ) : __( 'finished', 'eu-vat-handling-for-edd' ),
+						__( 'History import %1$s: %2$d orders imported, %3$d ledger rows written, %4$d failed (from %5$s).', 'vat-right-for-edd' ),
+						$running ? __( 'running', 'vat-right-for-edd' ) : __( 'finished', 'vat-right-for-edd' ),
 						(int) ( $state['orders'] ?? 0 ),
 						(int) ( $state['rows'] ?? 0 ),
 						(int) ( $state['failed'] ?? 0 ),
@@ -289,8 +289,8 @@ class ImportScreen {
 		if ( ! is_array( $plan ) ) {
 			return;
 		}
-		echo '<h2>' . esc_html__( 'Dry run', 'eu-vat-handling-for-edd' ) . '</h2>';
-		echo '<p>' . esc_html__( 'Nothing was written.', 'eu-vat-handling-for-edd' ) . '</p>';
+		echo '<h2>' . esc_html__( 'Dry run', 'vat-right-for-edd' ) . '</h2>';
+		echo '<p>' . esc_html__( 'Nothing was written.', 'vat-right-for-edd' ) . '</p>';
 		$this->render_oss_notice( $plan['oss'] ?? null );
 		if ( is_array( $plan['settings'] ?? null ) ) {
 			$this->render_fields( $plan['settings'] );
@@ -302,7 +302,7 @@ class ImportScreen {
 		echo '<p>' . esc_html(
 			sprintf(
 				/* translators: 1: orders, 2: orders with Barn2 data, 3: orders without, 4: ledger rows, 5: first day. */
-				__( '%1$d orders from %5$s (%2$d with Barn2 data, %3$d without) would write %4$d ledger rows.', 'eu-vat-handling-for-edd' ),
+				__( '%1$d orders from %5$s (%2$d with Barn2 data, %3$d without) would write %4$d ledger rows.', 'vat-right-for-edd' ),
 				(int) $history['orders'],
 				(int) $history['barn2_orders'],
 				(int) $history['backfill_orders'],
@@ -314,10 +314,10 @@ class ImportScreen {
 		<table class="widefat striped">
 			<thead>
 				<tr>
-					<th><?php esc_html_e( 'Quarter', 'eu-vat-handling-for-edd' ); ?></th>
-					<th><?php esc_html_e( 'Orders', 'eu-vat-handling-for-edd' ); ?></th>
-					<th><?php esc_html_e( 'Rows', 'eu-vat-handling-for-edd' ); ?></th>
-					<th><?php esc_html_e( 'By scheme', 'eu-vat-handling-for-edd' ); ?></th>
+					<th><?php esc_html_e( 'Quarter', 'vat-right-for-edd' ); ?></th>
+					<th><?php esc_html_e( 'Orders', 'vat-right-for-edd' ); ?></th>
+					<th><?php esc_html_e( 'Rows', 'vat-right-for-edd' ); ?></th>
+					<th><?php esc_html_e( 'By scheme', 'vat-right-for-edd' ); ?></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -353,12 +353,12 @@ class ImportScreen {
 		}
 		?>
 		<div class="notice notice-warning inline">
-			<p><strong><?php esc_html_e( 'Recommended: turn on OSS registration.', 'eu-vat-handling-for-edd' ); ?></strong> <?php echo esc_html( OssAdvice::message( (string) $reason ) ); ?></p>
+			<p><strong><?php esc_html_e( 'Recommended: turn on OSS registration.', 'vat-right-for-edd' ); ?></strong> <?php echo esc_html( OssAdvice::message( (string) $reason ) ); ?></p>
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 				<?php wp_nonce_field( self::NONCE ); ?>
 				<p>
-					<button type="submit" class="button button-primary" name="action" value="vatright_edd_import_oss"><?php esc_html_e( 'Turn on OSS registration', 'eu-vat-handling-for-edd' ); ?></button>
-					<a href="<?php echo esc_url( SettingsSection::url() ); ?>"><?php esc_html_e( 'Open the setting', 'eu-vat-handling-for-edd' ); ?></a>
+					<button type="submit" class="button button-primary" name="action" value="vatright_edd_import_oss"><?php esc_html_e( 'Turn on OSS registration', 'vat-right-for-edd' ); ?></button>
+					<a href="<?php echo esc_url( SettingsSection::url() ); ?>"><?php esc_html_e( 'Open the setting', 'vat-right-for-edd' ); ?></a>
 				</p>
 			</form>
 		</div>
@@ -370,7 +370,7 @@ class ImportScreen {
 		if ( null === $report ) {
 			return;
 		}
-		echo '<h2>' . esc_html__( 'Settings import', 'eu-vat-handling-for-edd' ) . '</h2>';
+		echo '<h2>' . esc_html__( 'Settings import', 'vat-right-for-edd' ) . '</h2>';
 		$this->render_fields( $report );
 	}
 
@@ -381,7 +381,7 @@ class ImportScreen {
 	 */
 	private function render_fields( array $fields ): void {
 		if ( array() === $fields ) {
-			echo '<p>' . esc_html__( 'Barn2 has no settings saved.', 'eu-vat-handling-for-edd' ) . '</p>';
+			echo '<p>' . esc_html__( 'Barn2 has no settings saved.', 'vat-right-for-edd' ) . '</p>';
 			return;
 		}
 		echo '<table class="widefat striped"><tbody>';

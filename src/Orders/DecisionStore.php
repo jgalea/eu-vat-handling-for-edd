@@ -18,6 +18,13 @@ final class DecisionStore {
 	const NUMBER_META = '_vatright_edd_number';
 
 	/**
+	 * "pending" or "flagged" on orders that need a look, absent otherwise, so the orders list filters on an indexed key instead of searching the decision JSON.
+	 */
+	const ATTENTION_META = '_vatright_edd_attention';
+
+	const ATTENTION_BACKFILL = 'vatright_edd_attention_backfill';
+
+	/**
 	 * The key EDD Recurring reads to renew a reverse-charged order without tax.
 	 */
 	const REVERSE_CHARGED_META = '_edd_payment_vat_reverse_charged';
@@ -62,6 +69,8 @@ final class DecisionStore {
 			edd_delete_order_meta( $order_id, self::REVERSE_CHARGED_META );
 		}
 
+		self::store_attention( $order_id, $decision );
+
 		if ( array() === $detail && null !== $previous && self::signature( $previous ) === self::signature( $decision ) ) {
 			return;
 		}
@@ -79,6 +88,52 @@ final class DecisionStore {
 			$entry['detail'] = $detail;
 		}
 		edd_add_order_meta( $order_id, self::LOG_META, wp_slash( (string) wp_json_encode( $entry ) ) );
+	}
+
+	public static function store_attention( int $order_id, Decision $decision ): void {
+		$flags = $decision->flags();
+		if ( in_array( 'validation_pending', $flags, true ) ) {
+			edd_update_order_meta( $order_id, self::ATTENTION_META, 'pending' );
+		} elseif ( array() !== array_intersect( $flags, OrdersColumn::ACTION_FLAGS ) ) {
+			edd_update_order_meta( $order_id, self::ATTENTION_META, 'flagged' );
+		} else {
+			edd_delete_order_meta( $order_id, self::ATTENTION_META );
+		}
+	}
+
+	/**
+	 * Gives orders decided before the attention key existed one, a batch per
+	 * call. Returns whether every order has it.
+	 */
+	public static function backfill_attention( int $batch = 500 ): bool {
+		$offset = get_option( self::ATTENTION_BACKFILL, 0 );
+		if ( 'done' === $offset ) {
+			return true;
+		}
+		$orders = (array) edd_get_orders(
+			array(
+				'type'       => 'sale',
+				'number'     => $batch,
+				'offset'     => (int) $offset,
+				'orderby'    => 'id',
+				'order'      => 'ASC',
+				'meta_query' => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+					array(
+						'key'     => self::META,
+						'compare' => 'EXISTS',
+					),
+				),
+			)
+		);
+		foreach ( $orders as $order ) {
+			$decision = self::get( (int) $order->id );
+			if ( null !== $decision ) {
+				self::store_attention( (int) $order->id, $decision );
+			}
+		}
+		$done = count( $orders ) < $batch;
+		update_option( self::ATTENTION_BACKFILL, $done ? 'done' : (int) $offset + count( $orders ), false );
+		return $done;
 	}
 
 	/**

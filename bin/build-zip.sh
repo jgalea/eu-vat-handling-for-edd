@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Builds dist/eu-vat-handling-for-edd/ and dist/eu-vat-handling-for-edd.zip.
+# Builds dist/vat-right-for-edd/ and dist/vat-right-for-edd.zip.
 #
 # LICENSED_ZIPS must list the commercial EDD add-on zips (Recurring, Invoices,
 # PDF Invoices) the plugin integrates with, separated by spaces. The build
@@ -7,7 +7,7 @@
 
 set -euo pipefail
 
-slug=eu-vat-handling-for-edd
+slug=vat-right-for-edd
 root="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 dist="$root/dist"
 work="$( mktemp -d )"

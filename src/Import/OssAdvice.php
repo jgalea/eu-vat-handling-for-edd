@@ -51,20 +51,20 @@ class OssAdvice {
 
 	public static function message( string $reason ): string {
 		if ( self::SETTING === $reason ) {
-			$because = __( 'Barn2 EDD EU VAT has the EU MOSS number selected as your country of VAT registration, so you look to be registered for the One Stop Shop.', 'eu-vat-handling-for-edd' );
+			$because = __( 'Barn2 EDD EU VAT has the EU MOSS number selected as your country of VAT registration, so you look to be registered for the One Stop Shop.', 'vat-right-for-edd' );
 		} else {
-			$because = __( 'Barn2 EDD EU VAT charged your EU consumers the VAT rate of their own country.', 'eu-vat-handling-for-edd' );
+			$because = __( 'Barn2 EDD EU VAT charged your EU consumers the VAT rate of their own country.', 'vat-right-for-edd' );
 		}
 		return sprintf(
 			/* translators: 1: why the setting is recommended, 2: name of the setting. */
-			__( '%1$s If you are registered for the One Stop Shop, or your sales to EU consumers are above 10,000 EUR a year, turn on "%2$s". Left off, new orders and renewals are charged your own country\'s VAT while you are below that threshold. The import does not switch it on by itself.', 'eu-vat-handling-for-edd' ),
+			__( '%1$s If you are registered for the One Stop Shop, or your sales to EU consumers are above 10,000 EUR a year, turn on "%2$s". Left off, new orders and renewals are charged your own country\'s VAT while you are below that threshold. The import does not switch it on by itself.', 'vat-right-for-edd' ),
 			$because,
 			self::setting_label()
 		);
 	}
 
 	public static function setting_label(): string {
-		return __( 'I am registered for the One Stop Shop', 'eu-vat-handling-for-edd' );
+		return __( 'I am registered for the One Stop Shop', 'vat-right-for-edd' );
 	}
 
 	/**

@@ -9,6 +9,8 @@ class Settings {
 
 	const OPTION = 'vatright_edd_settings';
 
+	const SECRET_OPTION = 'vatright_edd_hmrc_secret';
+
 	/** @var Settings|null */
 	private static $instance = null;
 
@@ -17,6 +19,23 @@ class Settings {
 			self::$instance = new self();
 		}
 		return self::$instance;
+	}
+
+	/**
+	 * Installs from before the secret had its own option kept it inside the
+	 * autoloaded settings, where every page load reads it.
+	 */
+	public static function move_secret_out(): void {
+		$stored = get_option( self::OPTION, array() );
+		if ( ! is_array( $stored ) || ! array_key_exists( 'hmrc_client_secret', $stored ) ) {
+			return;
+		}
+		if ( '' !== (string) $stored['hmrc_client_secret'] && false === get_option( self::SECRET_OPTION, false ) ) {
+			update_option( self::SECRET_OPTION, (string) $stored['hmrc_client_secret'], false );
+		}
+		unset( $stored['hmrc_client_secret'] );
+		update_option( self::OPTION, $stored );
+		self::reset();
 	}
 
 	public static function reset(): void {
@@ -123,12 +142,27 @@ class Settings {
 	}
 
 	/**
-	 * @return string[] Slugs of existing roles whose orders are VAT-exempt.
+	 * Whether a visitor can end up with an account holding the default role:
+	 * WordPress sign-up, the EDD register form, EDD Auto Register or network
+	 * registration on multisite.
+	 */
+	public static function signup_open(): bool {
+		return (bool) get_option( 'users_can_register' )
+			|| in_array( edd_get_option( 'show_register_form', 'none' ), array( 'registration', 'both' ), true )
+			|| 'auto' === edd_get_option( 'logged_in_only', false )
+			|| ( is_multisite() && 'none' !== get_site_option( 'registration', 'none' ) );
+	}
+
+	/**
+	 * @return string[] Slugs of existing roles whose orders are VAT-exempt. The
+	 *                  role new sign-ups get is left out while sign-up is open,
+	 *                  whenever it was stored, since anyone could then hold it.
 	 */
 	public function exempt_roles(): array {
-		$roles = array();
+		$roles   = array();
+		$default = self::signup_open() ? (string) get_option( 'default_role', '' ) : '';
 		foreach ( (array) $this->value( 'exempt_roles' ) as $role ) {
-			if ( is_string( $role ) && wp_roles()->is_role( $role ) ) {
+			if ( is_string( $role ) && $role !== $default && wp_roles()->is_role( $role ) ) {
 				$roles[ $role ] = $role;
 			}
 		}
@@ -176,7 +210,8 @@ class Settings {
 	}
 
 	public function hmrc_client_secret(): string {
-		return (string) $this->value( 'hmrc_client_secret' );
+		$own = get_option( self::SECRET_OPTION, false );
+		return false !== $own ? (string) $own : (string) $this->value( 'hmrc_client_secret' );
 	}
 
 	public function report_currency(): string {

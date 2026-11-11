@@ -22,24 +22,24 @@ class DownloadVatCategory {
 	}
 
 	public function add_meta_box(): void {
-		add_meta_box( 'vatright_edd_category', __( 'EU VAT rate', 'eu-vat-handling-for-edd' ), array( $this, 'render' ), 'download', 'side' );
+		add_meta_box( 'vatright_edd_category', __( 'EU VAT rate', 'vat-right-for-edd' ), array( $this, 'render' ), 'download', 'side' );
 	}
 
 	public function render( WP_Post $post ): void {
 		$current = self::for_download( $post->ID );
 		$labels  = array(
-			RateResolver::STANDARD      => __( 'Standard rate', 'eu-vat-handling-for-edd' ),
-			RateResolver::REDUCED       => __( 'Reduced rate (for example e-books)', 'eu-vat-handling-for-edd' ),
-			RateResolver::SUPER_REDUCED => __( 'Super-reduced rate', 'eu-vat-handling-for-edd' ),
+			RateResolver::STANDARD      => __( 'Standard rate', 'vat-right-for-edd' ),
+			RateResolver::REDUCED       => __( 'Reduced rate (for example e-books)', 'vat-right-for-edd' ),
+			RateResolver::SUPER_REDUCED => __( 'Super-reduced rate', 'vat-right-for-edd' ),
 		);
 		wp_nonce_field( self::NONCE, self::NONCE );
-		echo '<p><label for="vatright_edd_category_field" class="screen-reader-text">' . esc_html__( 'EU VAT rate', 'eu-vat-handling-for-edd' ) . '</label>';
+		echo '<p><label for="vatright_edd_category_field" class="screen-reader-text">' . esc_html__( 'EU VAT rate', 'vat-right-for-edd' ) . '</label>';
 		echo '<select name="vatright_edd_category" id="vatright_edd_category_field">';
 		foreach ( $labels as $value => $label ) {
 			printf( '<option value="%1$s"%2$s>%3$s</option>', esc_attr( $value ), selected( $current, $value, false ), esc_html( $label ) );
 		}
 		echo '</select></p>';
-		echo '<p class="description">' . esc_html__( 'Which EU rate applies to this product when VAT is charged at the customer\'s country rate.', 'eu-vat-handling-for-edd' ) . '</p>';
+		echo '<p class="description">' . esc_html__( 'Which EU rate applies to this product when VAT is charged at the customer\'s country rate.', 'vat-right-for-edd' ) . '</p>';
 	}
 
 	public function save( int $post_id ): void {

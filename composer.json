@@ -1,5 +1,5 @@
 {
-    "name": "jgalea/eu-vat-handling-for-edd",
+    "name": "jgalea/vat-right-for-edd",
     "description": "Decides, applies and records EU VAT treatment on every Easy Digital Downloads order.",
     "type": "wordpress-plugin",
     "license": "GPL-3.0-or-later",

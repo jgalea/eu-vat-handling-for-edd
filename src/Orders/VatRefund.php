@@ -209,7 +209,7 @@ final class VatRefund {
 			$order_id,
 			sprintf(
 				/* translators: %s: reason in words. */
-				__( 'The VAT was not refunded automatically: %s. Refund it by hand if it is due.', 'eu-vat-handling-for-edd' ),
+				__( 'The VAT was not refunded automatically: %s. Refund it by hand if it is due.', 'vat-right-for-edd' ),
 				self::reason_text( $reason )
 			)
 		);
@@ -231,7 +231,7 @@ final class VatRefund {
 			$order_id,
 			sprintf(
 				/* translators: %s: error message from EDD. */
-				__( 'The automatic VAT refund failed: %s. Nothing was refunded.', 'eu-vat-handling-for-edd' ),
+				__( 'The automatic VAT refund failed: %s. Nothing was refunded.', 'vat-right-for-edd' ),
 				$message
 			)
 		);
@@ -263,7 +263,7 @@ final class VatRefund {
 			$order_id,
 			sprintf(
 				/* translators: 1: amount with currency, 2: refund order number. */
-				__( 'The VAT number validated after the order, so the VAT (%1$s) was refunded automatically (refund %2$s).', 'eu-vat-handling-for-edd' ),
+				__( 'The VAT number validated after the order, so the VAT (%1$s) was refunded automatically (refund %2$s).', 'vat-right-for-edd' ),
 				edd_currency_filter( edd_format_amount( $tax ), strtoupper( (string) $order->currency ) ),
 				$refund_id
 			)
@@ -285,19 +285,19 @@ final class VatRefund {
 	public static function reason_text( string $reason ): string {
 		switch ( $reason ) {
 			case 'gateway_unsupported':
-				return __( 'its payment gateway is not one the plugin refunds through', 'eu-vat-handling-for-edd' );
+				return __( 'its payment gateway is not one the plugin refunds through', 'vat-right-for-edd' );
 			case 'no_decision':
-				return __( 'the order has no VAT decision', 'eu-vat-handling-for-edd' );
+				return __( 'the order has no VAT decision', 'vat-right-for-edd' );
 			case 'tax_differs_from_decision':
-				return __( 'the tax on the order does not match the VAT decision', 'eu-vat-handling-for-edd' );
+				return __( 'the tax on the order does not match the VAT decision', 'vat-right-for-edd' );
 			case 'already_refunded':
-				return __( 'the order has already been refunded in part', 'eu-vat-handling-for-edd' );
+				return __( 'the order has already been refunded in part', 'vat-right-for-edd' );
 			case 'not_refundable':
-				return __( 'EDD does not allow this order to be refunded', 'eu-vat-handling-for-edd' );
+				return __( 'EDD does not allow this order to be refunded', 'vat-right-for-edd' );
 			case 'no_tax_charged':
-				return __( 'no VAT was charged on the order', 'eu-vat-handling-for-edd' );
+				return __( 'no VAT was charged on the order', 'vat-right-for-edd' );
 			case 'not_exempt_now':
-				return __( 'the order would not be exempt from VAT with this number now', 'eu-vat-handling-for-edd' );
+				return __( 'the order would not be exempt from VAT with this number now', 'vat-right-for-edd' );
 			default:
 				return $reason;
 		}

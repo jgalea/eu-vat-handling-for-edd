@@ -118,7 +118,7 @@ class RestController {
 		if ( null === $period ) {
 			return new WP_Error(
 				'vatright_edd_bad_period',
-				__( 'Give a report period: from and to dates, or year with month, or year with quarter.', 'eu-vat-handling-for-edd' ),
+				__( 'Give a report period: from and to dates, or year with month, or year with quarter.', 'vat-right-for-edd' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -185,7 +185,7 @@ class RestController {
 		$order_id = (int) $request['id'];
 		$order    = edd_get_order( $order_id );
 		if ( ! $order || 'sale' !== $order->type ) {
-			return new WP_Error( 'vatright_edd_no_order', __( 'Order not found.', 'eu-vat-handling-for-edd' ), array( 'status' => 404 ) );
+			return new WP_Error( 'vatright_edd_no_order', __( 'Order not found.', 'vat-right-for-edd' ), array( 'status' => 404 ) );
 		}
 
 		$decision = DecisionStore::get( $order_id );

@@ -1,5 +1,5 @@
 {
-  "name": "eu-vat-handling-for-edd",
+  "name": "vat-right-for-edd",
   "private": true,
   "devDependencies": {
     "@wordpress/env": "^11.17.0",

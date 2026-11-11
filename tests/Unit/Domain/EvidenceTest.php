@@ -93,4 +93,17 @@ class EvidenceTest extends TestCase {
 			( new Evidence( 'DE', null, 'FR', null ) )->to_array()
 		);
 	}
+
+	public function test_monaco_and_france_are_one_vat_territory_so_they_do_not_conflict(): void {
+		$result = ( new Evidence( 'MC', null, 'FR', null ) )->resolve();
+		$this->assertFalse( $result['conflict'] );
+		$this->assertSame( 'FR', $result['country'] );
+		$this->assertSame( 2, $result['pieces'] );
+	}
+
+	public function test_the_isle_of_man_and_the_uk_do_not_conflict(): void {
+		$result = ( new Evidence( 'IM', null, 'GB', null ) )->resolve();
+		$this->assertFalse( $result['conflict'] );
+		$this->assertSame( 'GB', $result['country'] );
+	}
 }

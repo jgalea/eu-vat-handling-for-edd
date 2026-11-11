@@ -22,7 +22,7 @@ class VatEditTest extends LedgerTestCase {
 
 	public function set_up() {
 		parent::set_up();
-		$this->edit = new VatEdit( $this->ledger );
+		$this->edit = new VatEdit( $this->ledger, $this->rates );
 	}
 
 	/**
@@ -271,9 +271,19 @@ class VatEditTest extends LedgerTestCase {
 		$record = DecisionStore::get( (int) $order->id )->with_flag( OrderFinaliser::TAX_DIFFERS_FLAG );
 		DecisionStore::apply( (int) $order->id, $record, 'test' );
 
-		$this->edit_ok( $order, '', 'DE', Correction::OSS_DESTINATION, 'Moved to Germany' );
+		$this->edit_ok( $order, '', 'AT', Correction::OSS_DESTINATION, 'Moved to Austria' );
 
 		$this->assertNotContains( OrderFinaliser::TAX_DIFFERS_FLAG, DecisionStore::get( (int) $order->id )->flags() );
+	}
+
+	public function test_a_correction_to_a_country_with_another_rate_keeps_the_mismatch_flag(): void {
+		$order  = $this->consumer_order();
+		$record = DecisionStore::get( (int) $order->id )->with_flag( OrderFinaliser::TAX_DIFFERS_FLAG );
+		DecisionStore::apply( (int) $order->id, $record, 'test' );
+
+		$this->edit_ok( $order, '', 'DE', Correction::OSS_DESTINATION, 'Moved to Germany' );
+
+		$this->assertContains( OrderFinaliser::TAX_DIFFERS_FLAG, DecisionStore::get( (int) $order->id )->flags() );
 	}
 
 	public function test_a_pending_order_stops_being_rechecked_once_an_admin_decided(): void {

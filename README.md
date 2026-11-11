@@ -1,4 +1,4 @@
-<h1 align="center">EU VAT Handling for EDD</h1>
+<h1 align="center">VAT Right for Easy Digital Downloads</h1>
 
 <p align="center">
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/LICENSE-GPL-5C9E31?style=for-the-badge"></a>
@@ -70,7 +70,7 @@ Tests never call live services; registry responses come from recorded fixtures.
 composer test:unit
 composer lint
 composer stan
-npx wp-env run tests-cli --env-cwd=wp-content/plugins/eu-vat-handling-for-edd vendor/bin/phpunit --bootstrap tests/bootstrap-integration.php --testsuite integration
+npx wp-env run tests-cli --env-cwd=wp-content/plugins/vat-right-for-edd vendor/bin/phpunit --bootstrap tests/bootstrap-integration.php --testsuite integration
 npx playwright test
 ```
 

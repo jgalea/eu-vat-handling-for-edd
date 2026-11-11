@@ -5,7 +5,7 @@ parameters:
 	level: 8
 	paths:
 		- src
-		- eu-vat-handling-for-edd.php
+		- vat-right-for-edd.php
 	bootstrapFiles:
 		- vendor/mralaminahamed/easy-digital-downloads-stubs/easy-digital-downloads-constants-stubs.stub
 	scanFiles:

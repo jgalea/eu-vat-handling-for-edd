@@ -33,7 +33,7 @@ class UninstallTest extends LedgerTestCase {
 
 	private function uninstall(): void {
 		if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
-			define( 'WP_UNINSTALL_PLUGIN', 'eu-vat-handling-for-edd/eu-vat-handling-for-edd.php' );
+			define( 'WP_UNINSTALL_PLUGIN', 'vat-right-for-edd/vat-right-for-edd.php' );
 		}
 		include dirname( __DIR__, 2 ) . '/uninstall.php';
 	}

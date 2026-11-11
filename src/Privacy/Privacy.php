@@ -34,7 +34,7 @@ class Privacy {
 	 */
 	public function add_exporter( array $exporters ): array {
 		$exporters[ self::GROUP ] = array(
-			'exporter_friendly_name' => __( 'EU VAT records', 'eu-vat-handling-for-edd' ),
+			'exporter_friendly_name' => __( 'EU VAT records', 'vat-right-for-edd' ),
 			'callback'               => array( $this, 'export' ),
 		);
 		return $exporters;
@@ -46,7 +46,7 @@ class Privacy {
 	 */
 	public function add_eraser( array $erasers ): array {
 		$erasers[ self::GROUP ] = array(
-			'eraser_friendly_name' => __( 'EU VAT records', 'eu-vat-handling-for-edd' ),
+			'eraser_friendly_name' => __( 'EU VAT records', 'vat-right-for-edd' ),
 			'callback'             => array( $this, 'erase' ),
 		);
 		return $erasers;
@@ -64,11 +64,11 @@ class Privacy {
 		if ( $customer && '' !== $saved ) {
 			$items[] = array(
 				'group_id'    => self::GROUP,
-				'group_label' => __( 'EU VAT records', 'eu-vat-handling-for-edd' ),
+				'group_label' => __( 'EU VAT records', 'vat-right-for-edd' ),
 				'item_id'     => 'vatright-edd-customer-' . (int) $customer->id,
 				'data'        => array(
 					array(
-						'name'  => __( 'Saved VAT number', 'eu-vat-handling-for-edd' ),
+						'name'  => __( 'Saved VAT number', 'vat-right-for-edd' ),
 						'value' => $saved,
 					),
 				),
@@ -81,33 +81,33 @@ class Privacy {
 			$record   = is_array( $record ) ? $record : array();
 			$data     = array(
 				array(
-					'name'  => __( 'Order', 'eu-vat-handling-for-edd' ),
+					'name'  => __( 'Order', 'vat-right-for-edd' ),
 					'value' => (string) $order->get_number(),
 				),
 				array(
-					'name'  => __( 'VAT number', 'eu-vat-handling-for-edd' ),
+					'name'  => __( 'VAT number', 'vat-right-for-edd' ),
 					'value' => (string) edd_get_order_meta( $order_id, DecisionStore::NUMBER_META, true ),
 				),
 				array(
-					'name'  => __( 'Registered name', 'eu-vat-handling-for-edd' ),
+					'name'  => __( 'Registered name', 'vat-right-for-edd' ),
 					'value' => (string) ( $record['validation']['name'] ?? '' ),
 				),
 				array(
-					'name'  => __( 'Registered address', 'eu-vat-handling-for-edd' ),
+					'name'  => __( 'Registered address', 'vat-right-for-edd' ),
 					'value' => (string) ( $record['validation']['address'] ?? '' ),
 				),
 				array(
-					'name'  => __( 'Consultation number', 'eu-vat-handling-for-edd' ),
+					'name'  => __( 'Consultation number', 'vat-right-for-edd' ),
 					'value' => (string) ( $record['validation']['consultation'] ?? '' ),
 				),
 				array(
-					'name'  => __( 'Country of IP address', 'eu-vat-handling-for-edd' ),
+					'name'  => __( 'Country of IP address', 'vat-right-for-edd' ),
 					'value' => (string) ( $record['evidence']['ip'] ?? '' ),
 				),
 			);
 			$items[]  = array(
 				'group_id'    => self::GROUP,
-				'group_label' => __( 'EU VAT records', 'eu-vat-handling-for-edd' ),
+				'group_label' => __( 'EU VAT records', 'vat-right-for-edd' ),
 				'item_id'     => 'vatright-edd-order-' . $order_id,
 				'data'        => array_values(
 					array_filter(
@@ -122,31 +122,31 @@ class Privacy {
 			foreach ( $this->ledger_rows( $order_id ) as $row ) {
 				$items[] = array(
 					'group_id'    => self::GROUP . '-ledger',
-					'group_label' => __( 'EU VAT ledger', 'eu-vat-handling-for-edd' ),
+					'group_label' => __( 'EU VAT ledger', 'vat-right-for-edd' ),
 					'item_id'     => 'vatright-edd-ledger-' . $row['id'],
 					'data'        => array(
 						array(
-							'name'  => __( 'Order', 'eu-vat-handling-for-edd' ),
+							'name'  => __( 'Order', 'vat-right-for-edd' ),
 							'value' => (string) $order->get_number(),
 						),
 						array(
-							'name'  => __( 'Period', 'eu-vat-handling-for-edd' ),
+							'name'  => __( 'Period', 'vat-right-for-edd' ),
 							'value' => $row['period'],
 						),
 						array(
-							'name'  => __( 'Scheme', 'eu-vat-handling-for-edd' ),
+							'name'  => __( 'Scheme', 'vat-right-for-edd' ),
 							'value' => $row['scheme'],
 						),
 						array(
-							'name'  => __( 'VAT number', 'eu-vat-handling-for-edd' ),
+							'name'  => __( 'VAT number', 'vat-right-for-edd' ),
 							'value' => (string) $row['customer_vat'],
 						),
 						array(
-							'name'  => __( 'Net', 'eu-vat-handling-for-edd' ),
+							'name'  => __( 'Net', 'vat-right-for-edd' ),
 							'value' => $row['net'] . ' ' . $row['currency'],
 						),
 						array(
-							'name'  => __( 'VAT', 'eu-vat-handling-for-edd' ),
+							'name'  => __( 'VAT', 'vat-right-for-edd' ),
 							'value' => $row['vat'] . ' ' . $row['currency'],
 						),
 					),
@@ -202,7 +202,7 @@ class Privacy {
 				$retained   = true;
 				$messages[] = sprintf(
 					/* translators: 1: order number, 2: date */
-					__( 'The VAT number and registry check for order %1$s are kept until %2$s because tax law requires VAT records to be kept.', 'eu-vat-handling-for-edd' ),
+					__( 'The VAT number and registry check for order %1$s are kept until %2$s because tax law requires VAT records to be kept.', 'vat-right-for-edd' ),
 					$order->get_number(),
 					wp_date( get_option( 'date_format' ), Retention::retained_until( $order )->getTimestamp() )
 				);
@@ -224,7 +224,7 @@ class Privacy {
 		if ( ! function_exists( 'wp_add_privacy_policy_content' ) ) {
 			return;
 		}
-		wp_add_privacy_policy_content( 'EU VAT Handling for EDD', wp_kses_post( wpautop( $this->policy_text() ) ) );
+		wp_add_privacy_policy_content( 'VAT Right for Easy Digital Downloads', wp_kses_post( wpautop( $this->policy_text() ) ) );
 	}
 
 	public function policy_text(): string {
@@ -236,7 +236,7 @@ class Privacy {
 We store the VAT number, the registry result including that name and address and the consultation number, and the country of the customer\'s IP address with the order. We use the IP country, together with the billing country, as evidence of where the sale takes place. Registry results are also cached for a short period.
 
 EU VAT rules require us to keep these records for %d years after the end of the year of the sale. Within that period a request to erase them cannot be met, and we keep only what the VAT records need. After that period the VAT number, registered name and address, consultation number and IP country are removed from the order and the VAT ledger automatically.',
-				'eu-vat-handling-for-edd'
+				'vat-right-for-edd'
 			),
 			Settings::get()->retention_years()
 		);

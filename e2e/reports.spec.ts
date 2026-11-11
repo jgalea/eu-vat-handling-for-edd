@@ -5,7 +5,7 @@ import { wp } from './helpers';
 const SCREEN = '/wp-admin/edit.php?post_type=download&page=vatright-edd-reports';
 
 test.beforeAll( () => {
-	expect( wp( 'eval-file', 'wp-content/plugins/eu-vat-handling-for-edd/e2e/reports-seed.php' ) ).toContain( '@@1@@' );
+	expect( wp( 'eval-file', 'wp-content/plugins/vat-right-for-edd/e2e/reports-seed.php' ) ).toContain( '@@1@@' );
 } );
 
 test.afterAll( () => {

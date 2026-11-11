@@ -67,7 +67,7 @@ class EcSalesList {
 	}
 
 	public static function unknown_title(): string {
-		return __( 'VAT number not recorded, not included above', 'eu-vat-handling-for-edd' );
+		return __( 'VAT number not recorded, not included above', 'vat-right-for-edd' );
 	}
 
 	/**
@@ -125,10 +125,10 @@ class EcSalesList {
 	 */
 	public static function csv( array $rows, array $unknown = array() ): array {
 		$header = array(
-			__( 'VAT number', 'eu-vat-handling-for-edd' ),
-			__( 'Country', 'eu-vat-handling-for-edd' ),
-			__( 'Goods or services', 'eu-vat-handling-for-edd' ),
-			__( 'Net amount (EUR)', 'eu-vat-handling-for-edd' ),
+			__( 'VAT number', 'vat-right-for-edd' ),
+			__( 'Country', 'vat-right-for-edd' ),
+			__( 'Goods or services', 'vat-right-for-edd' ),
+			__( 'Net amount (EUR)', 'vat-right-for-edd' ),
 		);
 		$lines  = array();
 		foreach ( $rows as $row ) {
@@ -136,7 +136,7 @@ class EcSalesList {
 		}
 		if ( array() !== $unknown ) {
 			$lines[] = array();
-			$lines[] = array( self::unknown_title(), __( 'Order', 'eu-vat-handling-for-edd' ), '', __( 'Net amount (EUR)', 'eu-vat-handling-for-edd' ) );
+			$lines[] = array( self::unknown_title(), __( 'Order', 'vat-right-for-edd' ), '', __( 'Net amount (EUR)', 'vat-right-for-edd' ) );
 			foreach ( $unknown as $row ) {
 				$lines[] = array( '', $row['order_id'], '', null === $row['net_eur'] ? '' : number_format( $row['net_eur'], 2, '.', '' ) );
 			}

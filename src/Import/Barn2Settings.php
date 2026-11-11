@@ -84,7 +84,8 @@ class Barn2Settings {
 				continue;
 			}
 			list( $key, $type ) = $target;
-			if ( ! $overwrite && self::is_set( $stored, $key ) ) {
+			$current            = 'hmrc_client_secret' === $key ? array( $key => Settings::get()->hmrc_client_secret() ) : $stored;
+			if ( ! $overwrite && self::is_set( $current, $key ) ) {
 				$report[ $option ] = self::ALREADY_SET;
 				continue;
 			}
@@ -108,6 +109,10 @@ class Barn2Settings {
 		}
 
 		if ( $apply ) {
+			if ( isset( $changes['hmrc_client_secret'] ) ) {
+				update_option( Settings::SECRET_OPTION, $changes['hmrc_client_secret'], false );
+				unset( $changes['hmrc_client_secret'] );
+			}
 			if ( array() !== $changes ) {
 				update_option( Settings::OPTION, array_merge( $stored, $changes ) );
 			}

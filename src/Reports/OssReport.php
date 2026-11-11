@@ -76,13 +76,13 @@ class OssReport {
 	public static function csv( array $report ): array {
 		$currency = $report['currency'];
 		$header   = array(
-			__( 'Member state of consumption', 'eu-vat-handling-for-edd' ),
-			__( 'VAT rate %', 'eu-vat-handling-for-edd' ),
-			__( 'Supply type', 'eu-vat-handling-for-edd' ),
+			__( 'Member state of consumption', 'vat-right-for-edd' ),
+			__( 'VAT rate %', 'vat-right-for-edd' ),
+			__( 'Supply type', 'vat-right-for-edd' ),
 			/* translators: %s: currency code. */
-			sprintf( __( 'Taxable amount (%s)', 'eu-vat-handling-for-edd' ), $currency ),
+			sprintf( __( 'Taxable amount (%s)', 'vat-right-for-edd' ), $currency ),
 			/* translators: %s: currency code. */
-			sprintf( __( 'VAT amount (%s)', 'eu-vat-handling-for-edd' ), $currency ),
+			sprintf( __( 'VAT amount (%s)', 'vat-right-for-edd' ), $currency ),
 		);
 
 		$lines = array();
@@ -92,7 +92,7 @@ class OssReport {
 
 		if ( array() !== $report['corrections'] ) {
 			$lines[] = array();
-			$lines[] = array( __( 'Corrections to earlier periods', 'eu-vat-handling-for-edd' ), __( 'VAT rate %', 'eu-vat-handling-for-edd' ), __( 'Supply type', 'eu-vat-handling-for-edd' ), __( 'Taxable amount', 'eu-vat-handling-for-edd' ), __( 'VAT amount', 'eu-vat-handling-for-edd' ), __( 'Period corrected', 'eu-vat-handling-for-edd' ) );
+			$lines[] = array( __( 'Corrections to earlier periods', 'vat-right-for-edd' ), __( 'VAT rate %', 'vat-right-for-edd' ), __( 'Supply type', 'vat-right-for-edd' ), __( 'Taxable amount', 'vat-right-for-edd' ), __( 'VAT amount', 'vat-right-for-edd' ), __( 'Period corrected', 'vat-right-for-edd' ) );
 			foreach ( $report['corrections'] as $row ) {
 				$lines[] = array( $row['member_state'], $row['rate_percent'], $row['supply_type'], self::money( $row['taxable'] ), self::money( $row['vat'] ), $row['relates_to_period'] );
 			}
@@ -100,7 +100,7 @@ class OssReport {
 
 		if ( array() !== $report['needs_correction'] ) {
 			$lines[] = array();
-			$lines[] = array( self::needs_correction_title(), __( 'Order', 'eu-vat-handling-for-edd' ), __( 'Rate charged %', 'eu-vat-handling-for-edd' ), __( 'Supply type', 'eu-vat-handling-for-edd' ), __( 'Taxable amount', 'eu-vat-handling-for-edd' ), __( 'VAT charged', 'eu-vat-handling-for-edd' ) );
+			$lines[] = array( self::needs_correction_title(), __( 'Order', 'vat-right-for-edd' ), __( 'Rate charged %', 'vat-right-for-edd' ), __( 'Supply type', 'vat-right-for-edd' ), __( 'Taxable amount', 'vat-right-for-edd' ), __( 'VAT charged', 'vat-right-for-edd' ) );
 			foreach ( $report['needs_correction'] as $row ) {
 				$lines[] = array( $row['member_state'], $row['order_id'], $row['rate_percent'], $row['supply_type'], self::money( $row['taxable'] ), self::money( $row['vat'] ) );
 			}
@@ -110,10 +110,10 @@ class OssReport {
 			$lines[] = array();
 			$lines[] = array(
 				/* translators: %s: conversion rule. */
-				sprintf( __( 'Exchange rates used: %s', 'eu-vat-handling-for-edd' ), $report['rate_rule'] ),
-				__( 'Period', 'eu-vat-handling-for-edd' ),
-				__( 'Rate date', 'eu-vat-handling-for-edd' ),
-				__( 'Units per EUR', 'eu-vat-handling-for-edd' ),
+				sprintf( __( 'Exchange rates used: %s', 'vat-right-for-edd' ), $report['rate_rule'] ),
+				__( 'Period', 'vat-right-for-edd' ),
+				__( 'Rate date', 'vat-right-for-edd' ),
+				__( 'Units per EUR', 'vat-right-for-edd' ),
 			);
 			foreach ( $report['rates'] as $rate ) {
 				$lines[] = array( $rate['currency'], $rate['period'], $rate['rate_date'], $rate['rate'] );
@@ -124,7 +124,7 @@ class OssReport {
 	}
 
 	public static function needs_correction_title(): string {
-		return __( 'Charged at your own rate, needs correction (not included above)', 'eu-vat-handling-for-edd' );
+		return __( 'Charged at your own rate, needs correction (not included above)', 'vat-right-for-edd' );
 	}
 
 	private static function money( float $amount ): string {

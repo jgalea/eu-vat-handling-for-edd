@@ -26,7 +26,7 @@ export function wpEval( php: string ): any {
 }
 
 export function resetState() {
-	const out = wp( 'eval-file', 'wp-content/plugins/eu-vat-handling-for-edd/e2e/reset.php' );
+	const out = wp( 'eval-file', 'wp-content/plugins/vat-right-for-edd/e2e/reset.php' );
 	expect( out ).toContain( '@@1@@' );
 }
 

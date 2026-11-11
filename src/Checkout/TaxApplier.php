@@ -150,7 +150,7 @@ class TaxApplier {
 			return $tax;
 		}
 		/* translators: %s: formatted tax amount, zero */
-		return sprintf( __( '%s (reverse charge)', 'eu-vat-handling-for-edd' ), (string) $tax );
+		return sprintf( __( '%s (reverse charge)', 'vat-right-for-edd' ), (string) $tax );
 	}
 
 	/**

@@ -222,6 +222,7 @@ class OrdersColumnTest extends OrdersTestCase {
 		return array(
 			'single evidence'           => array( 'single_evidence', false ),
 			'self-certified conflict'   => array( 'evidence_conflict_self_certified', false ),
+			'unconfirmed conflict'      => array( 'evidence_conflict', false ),
 			'added by hand'             => array( 'manual', false ),
 			'corrected by an admin'     => array( 'admin_corrected', false ),
 			'refunded automatically'    => array( 'vat_auto_refunded', false ),

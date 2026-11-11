@@ -79,7 +79,7 @@ class Revalidation {
 			Scheduler::once( self::HOOK, array( $order_id, $attempt + 1 ), self::DELAYS[ $attempt ] );
 			return;
 		}
-		edd_insert_payment_note( $order_id, __( 'The VAT number could not be checked after repeated attempts. Check it by hand from the EU VAT box.', 'eu-vat-handling-for-edd' ) );
+		edd_insert_payment_note( $order_id, __( 'The VAT number could not be checked after repeated attempts. Check it by hand from the EU VAT box.', 'vat-right-for-edd' ) );
 	}
 
 	/**
@@ -100,7 +100,7 @@ class Revalidation {
 		try {
 			$result = $this->validator->validate( $number, true, true );
 		} catch ( Throwable $e ) {
-			edd_debug_log( 'EU VAT Handling: revalidation failed for order ' . $order_id . ': ' . $e->getMessage() );
+			edd_debug_log( 'VAT Right: revalidation failed for order ' . $order_id . ': ' . $e->getMessage() );
 			return self::UNAVAILABLE;
 		}
 
@@ -114,7 +114,7 @@ class Revalidation {
 			return self::INVALID;
 		}
 
-		edd_insert_payment_note( $order_id, __( 'VAT number re-check: the registry is still unavailable.', 'eu-vat-handling-for-edd' ) );
+		edd_insert_payment_note( $order_id, __( 'VAT number re-check: the registry is still unavailable.', 'vat-right-for-edd' ) );
 		return self::UNAVAILABLE;
 	}
 
@@ -128,10 +128,10 @@ class Revalidation {
 		DecisionStore::apply( $order_id, $this->patched( $decision, $result, $trigger, $refund_due ? 'validated_after_outage' : null ), $trigger, $actor );
 
 		if ( ! $refund_due ) {
-			edd_insert_payment_note( $order_id, __( 'VAT number re-check: the registry confirms the number is valid.', 'eu-vat-handling-for-edd' ) );
+			edd_insert_payment_note( $order_id, __( 'VAT number re-check: the registry confirms the number is valid.', 'vat-right-for-edd' ) );
 			return;
 		}
-		edd_insert_payment_note( $order_id, __( 'VAT was charged because the registry was unavailable. The number is valid, so the customer may be due a refund of the VAT.', 'eu-vat-handling-for-edd' ) );
+		edd_insert_payment_note( $order_id, __( 'VAT was charged because the registry was unavailable. The number is valid, so the customer may be due a refund of the VAT.', 'vat-right-for-edd' ) );
 		$outcome = null === $this->refund ? VatRefund::OFF : $this->refund->refund_if_enabled( $order_id );
 		if ( VatRefund::REFUNDED === $outcome ) {
 			$this->notify( $order_id, RevalidatedEmail::REFUNDED );
@@ -145,10 +145,10 @@ class Revalidation {
 		DecisionStore::apply( $order_id, $this->patched( $decision, $result, $trigger, $unfounded ? 'invalid_after_exemption' : null ), $trigger, $actor );
 
 		if ( ! $unfounded ) {
-			edd_insert_payment_note( $order_id, __( 'VAT number re-check: the registry reports the number as invalid. VAT stays charged.', 'eu-vat-handling-for-edd' ) );
+			edd_insert_payment_note( $order_id, __( 'VAT number re-check: the registry reports the number as invalid. VAT stays charged.', 'vat-right-for-edd' ) );
 			return;
 		}
-		edd_insert_payment_note( $order_id, __( 'VAT was not charged on this order, but the registry reports the VAT number as invalid. VAT may be due.', 'eu-vat-handling-for-edd' ) );
+		edd_insert_payment_note( $order_id, __( 'VAT was not charged on this order, but the registry reports the VAT number as invalid. VAT may be due.', 'vat-right-for-edd' ) );
 		$this->notify( $order_id, RevalidatedEmail::INVALID );
 	}
 
