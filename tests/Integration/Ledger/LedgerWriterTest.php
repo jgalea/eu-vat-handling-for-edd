@@ -203,6 +203,44 @@ class LedgerWriterTest extends LedgerTestCase {
 		$this->assertSame( 18.0, (float) $row['rate_percent'], 'The row carries the rate that was charged.' );
 	}
 
+	public function test_a_rewrite_keeps_the_rate_the_order_was_first_booked_with(): void {
+		$this->settings( array( 'oss_registered' => true ) );
+		$this->buy( $this->download(), 'DE' );
+		$order = $this->place_order( 'DE' );
+		$this->complete( $order );
+		$this->assertSame( 19.0, (float) $this->rows( (int) $order->id )[0]['rate_percent'] );
+
+		$moved = static function ( $rate, $country ) {
+			return 'DE' === $country ? 19.4 : $rate;
+		};
+		add_filter( 'vatright_edd_resolved_rate', $moved, 10, 2 );
+		$this->ledger->record_order( edd_get_order( (int) $order->id ) );
+		remove_filter( 'vatright_edd_resolved_rate', $moved, 10 );
+		$row = $this->rows( (int) $order->id )[0];
+		$this->assertSame( 19.0, (float) $row['rate_percent'], 'A rate changed later does not move a booked order.' );
+
+		$gone = static function ( $rate, $country ) {
+			return 'DE' === $country ? null : $rate;
+		};
+		add_filter( 'vatright_edd_resolved_rate', $gone, 10, 2 );
+		$this->ledger->record_order( edd_get_order( (int) $order->id ) );
+		remove_filter( 'vatright_edd_resolved_rate', $gone, 10 );
+		$row = $this->rows( (int) $order->id )[0];
+		$this->assertSame( 0, (int) $row['rate_missing'], 'A rate deleted later does not mark a booked order rate_missing.' );
+		$this->assertSame( 19.0, (float) $row['rate_percent'] );
+	}
+
+	public function test_a_dry_run_pins_nothing(): void {
+		$this->settings( array( 'oss_registered' => true ) );
+		$this->buy( $this->download(), 'DE' );
+		$order = $this->place_order( 'DE' );
+		$this->ledger->plan( $order, DecisionStore::get( (int) $order->id ) );
+		$this->assertSame( '', (string) edd_get_order_meta( (int) $order->id, LedgerWriter::RATES_META, true ) );
+
+		$this->complete( $order );
+		$this->assertNotSame( '', (string) edd_get_order_meta( (int) $order->id, LedgerWriter::RATES_META, true ), 'Control: a real write pins the rates.' );
+	}
+
 	public function test_a_normal_sale_is_not_marked_rate_missing(): void {
 		$this->buy( $this->download(), 'FR' );
 		$order = $this->place_order( 'FR' );

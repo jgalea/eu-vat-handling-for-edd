@@ -26,6 +26,8 @@ class LedgerWriter {
 
 	const FX_META = '_vatright_edd_fx';
 
+	const RATES_META = '_vatright_edd_rates';
+
 	const FX_RETRY_HOOK = 'vatright_edd_ledger_fx_retry';
 
 	const LIVE = 'live';
@@ -41,6 +43,9 @@ class LedgerWriter {
 
 	/** @var RateResolver */
 	private $rates;
+
+	/** @var bool Whether bucketing saves the rates it pins; off for a dry run. */
+	private $pin = true;
 
 	public function __construct( Fx $fx, RateResolver $rates ) {
 		$this->fx    = $fx;
@@ -262,6 +267,18 @@ class LedgerWriter {
 	 * @return array<int,array{entry_type:string,period:string,scheme:string}>
 	 */
 	public function plan( Order $order, Decision $decision ): array {
+		$this->pin = false;
+		try {
+			return $this->planned_rows( $order, $decision );
+		} finally {
+			$this->pin = true;
+		}
+	}
+
+	/**
+	 * @return array<int,array{entry_type:string,period:string,scheme:string}>
+	 */
+	private function planned_rows( Order $order, Decision $decision ): array {
 		$plan    = array();
 		$period  = self::period_for( self::supply_time( $order ) );
 		$sales   = $this->buckets( $order, $order, $decision );
@@ -363,6 +380,8 @@ class LedgerWriter {
 	private function buckets( Order $source, Order $order, Decision $decision ): array {
 		$is_sale = (int) $source->id === (int) $order->id;
 		$flagged = in_array( 'rate_missing', $decision->flags(), true );
+		$pinned  = $this->pinned_rates( (int) $order->id );
+		$before  = $pinned;
 
 		$buckets = array();
 		foreach ( $source->get_items() as $item ) {
@@ -374,7 +393,8 @@ class LedgerWriter {
 				(float) $item->tax,
 				(int) $item->product_id,
 				$source,
-				$flagged
+				$flagged,
+				$pinned
 			);
 		}
 		foreach ( $source->get_fees() as $fee ) {
@@ -386,8 +406,12 @@ class LedgerWriter {
 				(float) $fee->tax,
 				0,
 				$source,
-				$flagged
+				$flagged,
+				$pinned
 			);
+		}
+		if ( $this->pin && $pinned !== $before ) {
+			edd_update_order_meta( (int) $order->id, self::RATES_META, wp_slash( (string) wp_json_encode( $pinned ) ) );
 		}
 
 		return array_filter(
@@ -405,9 +429,11 @@ class LedgerWriter {
 
 	/**
 	 * @param array<string,array{rate_percent:float,net:float,vat:float,line:LineDecision|null,missing:bool}> $buckets
+	 * @param array{categories:array<int|string,string>,rates:array<string,float|null>} $pinned
+	 * @param-out array{categories:array<int|string,string>,rates:array<string,float|null>} $pinned
 	 */
-	private function add( array &$buckets, ?LineDecision $line, float $net, float $vat, int $product_id, Order $source, bool $flagged ): void {
-		$percent = $this->rate_percent( $net, $vat, $line, $product_id, $source );
+	private function add( array &$buckets, ?LineDecision $line, float $net, float $vat, int $product_id, Order $source, bool $flagged, array &$pinned ): void {
+		$percent = $this->rate_percent( $net, $vat, $line, $product_id, $source, $pinned );
 		$key     = $percent . '|' . ( null === $line ? '' : $line->supply_type() . $line->place_of_supply() . $line->scheme() );
 		if ( ! isset( $buckets[ $key ] ) ) {
 			$buckets[ $key ] = array(
@@ -420,7 +446,7 @@ class LedgerWriter {
 		}
 		$buckets[ $key ]['net'] += $net;
 		$buckets[ $key ]['vat'] += $vat;
-		if ( 0.0 !== round( $vat, 4 ) && null !== $line && ( $flagged || null === $this->rates->rate( $line->tax_country(), RateResolver::STANDARD ) ) ) {
+		if ( 0.0 !== round( $vat, 4 ) && null !== $line && ( $flagged || null === $this->pinned_rate( $pinned, $line->tax_country(), 0 ) ) ) {
 			$buckets[ $key ]['missing'] = true;
 		}
 	}
@@ -428,9 +454,13 @@ class LedgerWriter {
 	/**
 	 * The rate the VAT was charged at. EDD rounds tax to the cent, so the
 	 * quotient of a small line drifts from the rate; it is snapped to the
-	 * country's current rate when it is close.
+	 * country's rate when it is close: the rate as it stood when the order was
+	 * first booked, so a rate changed later doesn't move the order.
+	 *
+	 * @param array{categories:array<int|string,string>,rates:array<string,float|null>} $pinned
+	 * @param-out array{categories:array<int|string,string>,rates:array<string,float|null>} $pinned
 	 */
-	private function rate_percent( float $net, float $vat, ?LineDecision $line, int $product_id, Order $source ): float {
+	private function rate_percent( float $net, float $vat, ?LineDecision $line, int $product_id, Order $source, array &$pinned ): float {
 		if ( 0.0 === round( $vat, 4 ) ) {
 			return 0.0;
 		}
@@ -439,13 +469,46 @@ class LedgerWriter {
 		}
 		$effective = abs( $vat / $net ) * 100;
 		if ( null !== $line ) {
-			$category = $product_id > 0 ? DownloadVatCategory::for_download( $product_id ) : RateResolver::STANDARD;
-			$known    = $this->rates->rate( $line->tax_country(), $category );
+			$known = $this->pinned_rate( $pinned, $line->tax_country(), $product_id );
 			if ( null !== $known && abs( $known - $effective ) <= 0.5 ) {
 				return round( $known, 4 );
 			}
 		}
 		return round( $effective, 2 );
+	}
+
+	/**
+	 * The rates and download VAT categories the order's ledger rows were first
+	 * written with. Later writes reuse them, so changing a rate or a download's
+	 * category afterwards doesn't change how a booked order reports.
+	 *
+	 * @return array{categories:array<int|string,string>,rates:array<string,float|null>}
+	 */
+	private function pinned_rates( int $order_id ): array {
+		$stored = json_decode( (string) edd_get_order_meta( $order_id, self::RATES_META, true ), true );
+		return array(
+			'categories' => is_array( $stored['categories'] ?? null ) ? $stored['categories'] : array(),
+			'rates'      => is_array( $stored['rates'] ?? null ) ? $stored['rates'] : array(),
+		);
+	}
+
+	/**
+	 * @param array{categories:array<int|string,string>,rates:array<string,float|null>} $pinned
+	 * @param-out array{categories:array<int|string,string>,rates:array<string,float|null>} $pinned
+	 */
+	private function pinned_rate( array &$pinned, string $country, int $product_id ): ?float {
+		$category = RateResolver::STANDARD;
+		if ( $product_id > 0 ) {
+			if ( ! isset( $pinned['categories'][ (string) $product_id ] ) ) {
+				$pinned['categories'][ (string) $product_id ] = DownloadVatCategory::for_download( $product_id );
+			}
+			$category = (string) $pinned['categories'][ (string) $product_id ];
+		}
+		$key = $country . '|' . $category;
+		if ( ! array_key_exists( $key, $pinned['rates'] ) ) {
+			$pinned['rates'][ $key ] = $this->rates->rate( $country, $category );
+		}
+		return null === $pinned['rates'][ $key ] ? null : (float) $pinned['rates'][ $key ];
 	}
 
 	/**
