@@ -5,7 +5,7 @@ Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 7.4
 Requires Plugins: easy-digital-downloads
-Stable tag: 0.1.6
+Stable tag: 0.1.7
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -145,6 +145,22 @@ VAT Right for Easy Digital Downloads is a tool, not tax advice. You, the store o
 5. The EU VAT reports: OSS return and EC Sales List.
 
 == Changelog ==
+
+= 0.1.7 =
+* New: a setup checklist on the settings screen, with a button that applies the bundled EU rates.
+* New: per-order VAT transactions CSV with the evidence, the registry answer and the amounts.
+* New: receipts and invoices of reverse-charged orders show the company name and address the VAT registry returned.
+* New: orders excluded from the VAT area by postcode alone, and orders charged at a rate other than the decided country's, are flagged for review.
+* Fix: an order's VAT ledger keeps the rates it was first booked with, so changing a tax rate or a download's VAT category later doesn't change how earlier orders appear in the OSS return and EC Sales List.
+* Fix: a digital sale whose location evidence contradicts itself is charged in the IP country when only one piece supports the billing country, and flagged as an evidence conflict when two agree against it. Countries that share a VAT territory, such as Monaco and France, don't count as a conflict.
+* Fix: a billing country EDD doesn't list is treated as unknown: VAT is charged and the order is flagged. Business-only mode counts Monaco as France.
+* Fix: VAT-exempt roles leave out the role new sign-ups get while any sign-up path is open, including EDD Auto Register, and an order keeps the roles its cart was decided with.
+* Fix: the lookup limit is an absolute cap with a share set aside for first lookups, rationed each hour per IPv6 /48 and IPv4 /24.
+* Fix: the HMRC client secret is stored in its own option that isn't autoloaded; an existing secret moves there on upgrade.
+* Fix: a warning shows when the retention period is under the 10 years OSS records need.
+* Fix: report download buttons only show when the period has something to export, and email tags return plain text, so an ampersand in a company name prints correctly.
+* Fix: settings errors show on the settings screen, the menu item is named EU VAT rates, and the order screen's messages are translatable.
+* Fix: the Orders list filters flagged orders on an indexed key, which is faster on large stores.
 
 = 0.1.6 =
 * Renamed to VAT Right for Easy Digital Downloads, slug vat-right-for-edd.
